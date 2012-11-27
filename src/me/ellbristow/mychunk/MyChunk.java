@@ -1,9 +1,11 @@
 package me.ellbristow.mychunk;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import me.ellbristow.mychunk.lang.Lang;
 import me.ellbristow.mychunk.listeners.*;
+import me.ellbristow.mychunk.utils.Metrics;
 import me.ellbristow.mychunk.utils.SQLiteBridge;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
@@ -58,6 +60,13 @@ public class MyChunk extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new MobListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
         getServer().getPluginManager().registerEvents(new SignListener(), this);
+        
+        try {
+            Metrics metrics = new Metrics(this);
+            metrics.start();
+        } catch (IOException e) {
+            // Failed to submit the stats :-(
+        }
         
     }
     
@@ -372,14 +381,14 @@ public class MyChunk extends JavaPlugin {
                         sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
                         return false;
                     }
-                    if (allowNether) {
-                        allowNether = false;
+                    if (allowEnd) {
+                        allowEnd = false;
                         sender.sendMessage(ChatColor.GOLD + Lang.get("ToggleEndCannot"));
                     } else {
-                        allowNether = true;
+                        allowEnd = true;
                         sender.sendMessage(ChatColor.GOLD + Lang.get("ToggleEndCan"));
                     }
-                    config.set("allowNether", allowNether);
+                    config.set("allowEnd", allowEnd);
                     saveConfig();
                     return true;
                 }  else if (args[1].equalsIgnoreCase("notify")) {
