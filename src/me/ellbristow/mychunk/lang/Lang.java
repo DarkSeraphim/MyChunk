@@ -81,7 +81,7 @@ public class Lang {
         loadLangPhrase("AllowNeighbours", "Allow Neighbours");
         loadLangPhrase("ChunkPrice", "Chunk Price");
         loadLangPhrase("AllowOverbuy", "Allow Overbuy");
-        loadLangPhrase("OverbuyFee", "Overbuy Fee");
+        loadLangPhrase("OverbuyFee", "Fee");
         loadLangPhrase("ProtectUnclaimed", "Protect Unclaimed");
         loadLangPhrase("Resales", "resales");
         loadLangPhrase("UnclaimRefunds", "Unclaim Refunds");
@@ -89,12 +89,15 @@ public class Lang {
         loadLangPhrase("ClaimExpiry", "Claim Expiry");
         loadLangPhrase("AllowNether", "Allow Nether");
         loadLangPhrase("AllowEnd", "Allow End");
+        loadLangPhrase("OwnerNotifications", "Owner Notifications");
         loadLangPhrase("PermissionFlags", "Permission Flags");
         loadLangPhrase("Reloaded", "Mychunk files have been reloaded!");
         loadLangPhrase("ToggleNetherCannot", "Users now CANNOT claim chunks in Nether worlds");
         loadLangPhrase("ToggleNetherCan", "Users now CAN claim chunks in Nether worlds");
         loadLangPhrase("ToggleEndCannot", "Users now CANNOT claim chunks in End worlds");
         loadLangPhrase("ToggleEndCan", "Users now CAN claim chunks in End worlds");
+        loadLangPhrase("ToggleNotifyOn", "Owners will now receive protection notifications");
+        loadLangPhrase("ToggleNotifyOff", "Owners will now NOT receive protection notifications");
         
         
         //Errors

@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityInteractEvent;
 
 public class MobListener implements Listener {
@@ -36,14 +37,16 @@ public class MobListener implements Listener {
         
         if (event.isCancelled()) return;
         
-        LivingEntity mob = event.getEntity();
-        
-        if (mob instanceof Monster || mob instanceof Slime) {
-            
-            if (!MyChunkChunk.getAllowMobs(event.getLocation().getBlock().getChunk())) {
-                event.setCancelled(true);
+        if (!event.getSpawnReason().equals(SpawnReason.EGG)) {
+            LivingEntity mob = event.getEntity();
+
+            if (mob instanceof Monster || mob instanceof Slime) {
+
+                if (!MyChunkChunk.getAllowMobs(event.getLocation().getBlock().getChunk())) {
+                    event.setCancelled(true);
+                }
+
             }
-            
         }
         
     }
