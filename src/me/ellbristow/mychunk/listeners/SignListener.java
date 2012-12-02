@@ -94,7 +94,7 @@ public class SignListener implements Listener {
             int playerMax = MyChunk.getMaxChunks(player);
             int playerClaimed = MyChunkChunk.getOwnedChunkCount(player.getName());
 
-            if (playerMax != 0 && playerClaimed >= playerMax) {
+            if (playerMax != 0 && playerClaimed >= playerMax && (!MyChunk.getToggle("allowOverbuy") || (!player.hasPermission("mychunk.claim.overbuy")))) {
 
                 player.sendMessage(ChatColor.RED + Lang.get("MaxChunksReached") + " (" + playerMax + ")!");
                 breakSign(block);
@@ -141,7 +141,7 @@ public class SignListener implements Listener {
 
                 int ownedChunks = MyChunkChunk.getOwnedChunkCount(player.getName());
 
-                if ((ownedChunks < playerMax || (MyChunk.getToggle("allowOverbuy") && player.hasPermission("mychunk.claim.overbuy"))) || player.hasPermission("mychunk.claim.unlimited") || playerMax == 0) {
+                if ((ownedChunks < playerMax || (MyChunk.getToggle("allowOverbuy") && player.hasPermission("mychunk.claim.overbuy"))) || playerMax == 0) {
 
                     if (MyChunk.getToggle("foundEconomy") && chunk.getClaimPrice() != 0 && !player.hasPermission("mychunk.free") && (playerMax == 0 || MyChunkChunk.getOwnedChunkCount(player.getName()) < playerMax)) {
 

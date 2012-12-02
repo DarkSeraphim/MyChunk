@@ -1,13 +1,14 @@
 package me.ellbristow.mychunk;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import me.ellbristow.mychunk.utils.SQLiteBridge;
+import java.util.*;
+import me.ellbristow.mychunk.events.MyChunkClaimEvent;
+import me.ellbristow.mychunk.events.MyChunkUnclaimEvent;
 import me.ellbristow.mychunk.lang.Lang;
+import me.ellbristow.mychunk.utils.SQLiteBridge;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
@@ -102,6 +103,7 @@ public class MyChunkChunk {
      * @param playerName Name of the player claiming the chunk
      */
     public void claim(String playerName) {
+        MyChunkClaimEvent event = new MyChunkClaimEvent(chunkWorld, chunkX, chunkZ, owner, playerName);
         this.owner = playerName;
         SQLiteBridge.query("INSERT OR REPLACE INTO MyChunks (world, x, z, owner, salePrice, allowMobs, allowed, lastActive) VALUES ('"+chunkWorld+"', "+chunkX+", "+chunkZ+", '"+playerName+"', 0, 0, '', "+lastActive+")");
         forSale = false;
@@ -125,12 +127,14 @@ public class MyChunkChunk {
         }
         above = chunkNW.getWorld().getBlockAt(chunkNW.getX(), chunkNW.getY()+1, chunkNW.getZ());
         above.setTypeId(50);
+        Bukkit.getServer().getPluginManager().callEvent(event);
     }
     
     /**
      * Unclaim the chunk
      */
     public void unclaim() {
+        MyChunkUnclaimEvent event = new MyChunkUnclaimEvent(chunkWorld, chunkX, chunkZ, owner);
         owner = "Unowned";
         SQLiteBridge.query("DELETE FROM MyChunks WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
         Block above = chunkNE.getWorld().getBlockAt(chunkNE.getX(), chunkNE.getY()+1, chunkNE.getZ());
@@ -149,6 +153,7 @@ public class MyChunkChunk {
         if (above.getTypeId()==50) {
             above.setTypeId(0);
         }
+        Bukkit.getServer().getPluginManager().callEvent(event);
     }
     
     /**
@@ -868,7 +873,28 @@ public class MyChunkChunk {
      * @param chunk Chunk to be unclaimed
      */
     public static void unclaim(Chunk chunk) {
+        MyChunkUnclaimEvent event = new MyChunkUnclaimEvent(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), getOwner(chunk));
         SQLiteBridge.query("DELETE FROM MyChunks WHERE world = '"+chunk.getWorld().getName()+"' AND x = "+chunk.getX()+" AND z = " + chunk.getZ());
+        Bukkit.getServer().getPluginManager().callEvent(event);
+    }
+    
+    /**
+     * Used by DynmapMyChunk to fetch all chunks in a world
+     * 
+     * @param w World to fetch chunks from
+     */
+    public static Set<LiteChunk> getChunks(World w) {
+        Set<LiteChunk> worldChunks = new HashSet<LiteChunk>();
+        HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("owner, x, z", "MyChunks", "world = '"+w.getName()+"'", "", "");
+        if (!results.isEmpty()) {
+            for (HashMap<String, Object> result : results.values()) {
+                String owner = result.get("owner").toString();
+                int x = Integer.parseInt(result.get("x").toString());
+                int z = Integer.parseInt(result.get("z").toString());
+                worldChunks.add(new LiteChunk(w.getName(), x, z, owner));
+            }
+        }
+        return worldChunks;
     }
     
 }
