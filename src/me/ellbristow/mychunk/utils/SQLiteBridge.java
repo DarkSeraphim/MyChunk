@@ -1,6 +1,7 @@
 package me.ellbristow.mychunk.utils;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.*;
 import java.util.HashMap;
 import org.bukkit.Bukkit;
@@ -10,7 +11,7 @@ public class SQLiteBridge {
 
     private static final Plugin plugin;
     private static Connection conn;
-    private static File sqlFile;
+    private static final File sqlFile;
     private static Statement statement;
     private static HashMap<Integer, HashMap<String, Object>> rows = new HashMap<Integer, HashMap<String, Object>>();
     private static int numRows = 0;
@@ -18,6 +19,13 @@ public class SQLiteBridge {
     static {
         plugin = Bukkit.getPluginManager().getPlugin("MyChunk");
         sqlFile = new File("plugins/" + plugin.getDataFolder().getName() + File.separator + plugin.getName() + ".db");
+        if (!sqlFile.exists()) {
+            try {
+                sqlFile.createNewFile();
+            } catch (IOException ex) {
+                Bukkit.getLogger().severe(ex.getMessage());
+            }
+        }
     }
     
     public static Connection getConnection() {

@@ -1,9 +1,6 @@
 package me.ellbristow.mychunk.listeners;
 
-import me.ellbristow.mychunk.MyChunk;
-import me.ellbristow.mychunk.MyChunkChunk;
-import me.ellbristow.mychunk.MyChunkVaultLink;
-import me.ellbristow.mychunk.WorldGuardHook;
+import me.ellbristow.mychunk.*;
 import me.ellbristow.mychunk.lang.Lang;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -101,7 +98,7 @@ public class PlayerListener implements Listener {
             lang = "NoPermsWater";
         }
         
-        if (!MyChunkChunk.isAllowed(chunk, player, flag) && !WorldGuardHook.isRegion(block.getLocation())) {
+        if (!MyChunkChunk.isAllowed(chunk, player, flag) && !WorldGuardHook.isRegion(block.getLocation()) && !FactionsHook.isClaimed(block.getLocation())) {
             
             player.sendMessage(ChatColor.RED + Lang.get(lang));
             event.setCancelled(true);
@@ -300,6 +297,8 @@ public class PlayerListener implements Listener {
                 
                 if (toChunkOwner.equalsIgnoreCase("server")) {
                     player.sendMessage(ChatColor.LIGHT_PURPLE + "~"+Lang.get("Server") + forSale);
+                } else if (toChunkOwner.equalsIgnoreCase("public")) {
+                    player.sendMessage(ChatColor.GREEN + "~"+Lang.get("Public") + forSale);
                 } else {
                     player.sendMessage(ChatColor.GOLD + "~" + toChunkOwner + forSale);
                 }
@@ -370,6 +369,8 @@ public class PlayerListener implements Listener {
                 
                 if (toChunkOwner.equalsIgnoreCase("server")) {
                     player.sendMessage(ChatColor.LIGHT_PURPLE + "~"+Lang.get("Server") + forSale);
+                } else if (toChunkOwner.equalsIgnoreCase("public")) {
+                    player.sendMessage(ChatColor.GREEN + "~"+Lang.get("Public") + forSale);
                 } else {
                     player.sendMessage(ChatColor.GOLD + "~" + toChunkOwner + forSale);
                 }

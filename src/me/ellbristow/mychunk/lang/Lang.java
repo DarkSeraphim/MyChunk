@@ -34,6 +34,7 @@ public class Lang {
         loadLangPhrase("false", "False");
         loadLangPhrase("Unowned", "Unowned");
         loadLangPhrase("Server", "Server");
+        loadLangPhrase("Public", "Public");
         loadLangPhrase("Price", "Price");
         loadLangPhrase("Player", "Player");
         loadLangPhrase("Everyone", "EVERYONE");
@@ -52,6 +53,7 @@ public class Lang {
         
         // Info
         loadLangPhrase("ChunkForSale", "Chunk For Sale");
+        loadLangPhrase("FirstChunkFree", "Your first chunk claim is free!");
         loadLangPhrase("AmountDeducted", "was deducted from your account");
         loadLangPhrase("BoughtFor", "bought one of your chunks for");
         loadLangPhrase("ChunkClaimed", "Chunk claimed!");
@@ -98,6 +100,10 @@ public class Lang {
         loadLangPhrase("ToggleEndCan", "Users now CAN claim chunks in End worlds");
         loadLangPhrase("ToggleNotifyOn", "Owners will now receive protection notifications");
         loadLangPhrase("ToggleNotifyOff", "Owners will now NOT receive protection notifications");
+        loadLangPhrase("ToggleFirstChunkFreeOn", "Players can now claim 1 chunk for free");
+        loadLangPhrase("ToggleFirstChunkFreeOff", "Players now DO NOT get their first chunk free!");
+        loadLangPhrase("RefundSet", "Refund Percentage set to ");
+        loadLangPhrase("Percentage", "Percentage");
         
         
         //Errors
@@ -136,6 +142,11 @@ public class Lang {
         loadLangPhrase("WorldName", "World Name");
         loadLangPhrase("NoEcoPlugin", "There is no economy plugin running! Command aborted.");
         loadLangPhrase("NotFound", "not found");
+        loadLangPhrase("FactionsClash", "You cannot claim land owned by a faction!");
+        loadLangPhrase("MyChunkClash", "That land is already owned!");
+        loadLangPhrase("NotPublicSign", "You can't use htat sign in public chunks!");
+        loadLangPhrase("SpecifyRefund", "You must specify a new refund percentage!");
+        loadLangPhrase("RefundNotNumber", "Refund percentage must be a number!");
         
         // Permissions
         loadLangPhrase("NoPermsCommand", "You do not have permission to use this command!");
@@ -159,8 +170,10 @@ public class Lang {
         loadLangPhrase("NoPermsClaimArea", "You do not have permission to use [ClaimArea] signs!");
         loadLangPhrase("NoPermsBuyOwned", "You do not have permission to buy owned chunks!");
         loadLangPhrase("NoPermsClaimServer", "You do not have permission to claim chunks for the server!");
+        loadLangPhrase("NoPermsClaimPublic", "You do not have permission to claim public chunks!");
         loadLangPhrase("NoPermsClaimOther", "You do not have permission to claim chunks for other players!");
         loadLangPhrase("NoPermsUnclaimServer", "You do not have permission to unclaim chunks for the server!");
+        loadLangPhrase("NoPermsUnclaimPublic", "You do not have permission to unclaim public chunks!");
         loadLangPhrase("NoPermsUnclaimOther", "You do not have permission to unclaim chunks for other players!");
         loadLangPhrase("NoPermsNether", "You do not have permission to claim chunks in Nether worlds!");
         loadLangPhrase("NoPermsEnd", "You do not have permission to claim chunks in End worlds!");

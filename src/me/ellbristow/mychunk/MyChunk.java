@@ -26,6 +26,7 @@ public class MyChunk extends JavaPlugin {
     
     // Toggleable settings
     private static boolean unclaimRefund = false;
+    private static double refundPercent = 100.00;
     private static boolean allowNeighbours = false;
     private static boolean allowOverbuy = false;
     private static boolean protectUnclaimed = false;
@@ -37,6 +38,7 @@ public class MyChunk extends JavaPlugin {
     private static boolean overbuyP2P = true;
     private static double chunkPrice = 0.00;
     private static double overbuyPrice = 0.00;
+    private static boolean firstChunkFree = false;
     private static int maxChunks = 8;
     private static boolean notify = true;
     private MyChunkVaultLink vault;
@@ -48,11 +50,11 @@ public class MyChunk extends JavaPlugin {
     @Override
     public void onEnable() {
         
-        // init SQLite
-        initSQLite();
-        
         // init Config
         loadConfig(false);
+        
+        // init SQLite
+        initSQLite();
         
         // Register Events
         getServer().getPluginManager().registerEvents(new AmbientListener(), this);
@@ -60,6 +62,10 @@ public class MyChunk extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new MobListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
         getServer().getPluginManager().registerEvents(new SignListener(), this);
+        if (FactionsHook.foundFactions()) {
+            getServer().getPluginManager().registerEvents(new FactionsHook(), this);
+            getLogger().info("Hooked into [Factions]");
+        }
         
         try {
             Metrics metrics = new Metrics(this);
@@ -97,11 +103,7 @@ public class MyChunk extends JavaPlugin {
                 }
                 sender.sendMessage(ChatColor.GOLD + Lang.get("DefaultMax")+": " + ChatColor.WHITE + maxChunks + yourMax);
                 if (foundEconomy){
-                    String paid = Lang.get("No");
-                    if (unclaimRefund) {
-                        paid = Lang.get("Yes");
-                    }
-                    sender.sendMessage(ChatColor.GOLD + Lang.get("ChunkPrice")+": " + ChatColor.WHITE + MyChunkVaultLink.getEconomy().format(chunkPrice) + " " + ChatColor.GOLD + Lang.get("UnclaimRefunds")+": " + ChatColor.WHITE + paid);
+                    sender.sendMessage(ChatColor.GOLD + Lang.get("ChunkPrice")+": " + ChatColor.WHITE + MyChunkVaultLink.getEconomy().format(chunkPrice) + " " + ChatColor.GOLD + Lang.get("UnclaimRefunds")+": " + ChatColor.WHITE + (unclaimRefund && refundPercent != 0 ? refundPercent + "%" : "No"));
                     String overFee = "";
                     if (allowOverbuy) {
                         String resales = "exc.";
@@ -153,7 +155,7 @@ public class MyChunk extends JavaPlugin {
                 return false;
             } else if (args[0].equalsIgnoreCase("toggle")) {
                 sender.sendMessage(ChatColor.RED + Lang.get("SpecifyToggle"));
-                sender.sendMessage(ChatColor.RED + "/mychunk toggle {refund | overbuy | neighbours | resales | unclaimed | expiry | allownether | allowend | notify}");
+                sender.sendMessage(ChatColor.RED + "/mychunk toggle {refund | overbuy | neighbours | resales | unclaimed | expiry | allownether | allowend | notify | firstChunkFree }");
                 return false;
             } else if (args[0].equalsIgnoreCase("purgep")) {
                 sender.sendMessage(ChatColor.RED + Lang.get("SpecifyPurgePlayer"));
@@ -162,6 +164,10 @@ public class MyChunk extends JavaPlugin {
             } else if (args[0].equalsIgnoreCase("purgew")) {
                 sender.sendMessage(ChatColor.RED + Lang.get("SpecifyPurgeWorld"));
                 sender.sendMessage(ChatColor.RED + "/mychunk purgew ["+Lang.get("WorldName")+"]");
+                return false;
+            } else if (args[0].equalsIgnoreCase("refund")) {
+                sender.sendMessage(ChatColor.RED + Lang.get("SpecifyRefund"));
+                sender.sendMessage(ChatColor.RED + "/mychunk refund ["+Lang.get("Percentage")+"]");
                 return false;
             } else if (args[0].equalsIgnoreCase("reload")) {
                 if (!sender.hasPermission("mychunk.commands.reload")) {
@@ -391,7 +397,7 @@ public class MyChunk extends JavaPlugin {
                     config.set("allowEnd", allowEnd);
                     saveConfig();
                     return true;
-                }  else if (args[1].equalsIgnoreCase("notify")) {
+                } else if (args[1].equalsIgnoreCase("notify")) {
                     if (!sender.hasPermission("mychunk.commands.toggle.notify")) {
                         sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
                         return false;
@@ -404,6 +410,21 @@ public class MyChunk extends JavaPlugin {
                         sender.sendMessage(ChatColor.GOLD + Lang.get("ToggleNotifyOn"));
                     }
                     config.set("owner_notifications", notify);
+                    saveConfig();
+                    return true;
+                } else if (args[1].equalsIgnoreCase("firstChunkFree")) {
+                    if (!sender.hasPermission("mychunk.commands.toggle.firstchunkfree")) {
+                        sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
+                        return false;
+                    }
+                    if (firstChunkFree) {
+                        firstChunkFree = false;
+                        sender.sendMessage(ChatColor.GOLD + Lang.get("ToggleFirstChunkFreeOff"));
+                    } else {
+                        firstChunkFree = true;
+                        sender.sendMessage(ChatColor.GOLD + Lang.get("ToggleFirstChunkFreeOn"));
+                    }
+                    config.set("first_chunk_free", firstChunkFree);
                     saveConfig();
                     return true;
                 }
@@ -478,7 +499,7 @@ public class MyChunk extends JavaPlugin {
                     MyChunkChunk.unclaim(thisChunk);
                 }
                 sender.sendMessage(ChatColor.GOLD + "All chunks for " + ChatColor.WHITE + player.getName() + ChatColor.GOLD + " are now Unowned!");
-            }  else if (args[0].equalsIgnoreCase("purgew")) {
+            } else if (args[0].equalsIgnoreCase("purgew")) {
                 if (!sender.hasPermission("mychunk.commands.purgew")) {
                     sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
                     return false;
@@ -491,6 +512,22 @@ public class MyChunk extends JavaPlugin {
                 String worldName = world.getName();
                 SQLiteBridge.query("DELETE FROM MyChunks WHERE world = '"+worldName+"'");
                 sender.sendMessage(ChatColor.GOLD + "All chunks in " + ChatColor.WHITE + worldName + ChatColor.GOLD + " are now Unowned!");
+            } else if (args[0].equalsIgnoreCase("refund")) {
+                if (!sender.hasPermission("mychunk.commands.refund")) {
+                    sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
+                    return false;
+                }
+                double percent;
+                try {
+                    percent = Double.parseDouble(args[1]);
+                } catch (NumberFormatException ex) {
+                    sender.sendMessage(ChatColor.RED + Lang.get("RefundNotNumber"));
+                    return false;
+                }
+                refundPercent = percent;
+                config.set("refund_percent", refundPercent);
+                saveConfig();
+                sender.sendMessage(ChatColor.GOLD + Lang.get("RefundSet") + ChatColor.WHITE + refundPercent + "%");
             }
         }
         return false;
@@ -593,6 +630,8 @@ public class MyChunk extends JavaPlugin {
         config.set("allowEnd", allowEnd);
         notify = config.getBoolean("owner_notifications", true);
         config.set("owner_notifications", notify);
+        refundPercent = config.getDouble("refund_percent", 100);
+        config.set("refund_percent", refundPercent);
         if (getServer().getPluginManager().isPluginEnabled("Vault")) {
             vault = new MyChunkVaultLink(this);
             getLogger().info("[Vault] found and hooked!");
@@ -610,6 +649,8 @@ public class MyChunk extends JavaPlugin {
                 config.set("overbuy_price", overbuyPrice);
                 overbuyP2P = config.getBoolean("charge_overbuy_on_resales", true);
                 config.set("charge_overbuy_on_resales", overbuyP2P);
+                firstChunkFree = config.getBoolean("first_chunk_free", false);
+                config.set("first_chunk_free", firstChunkFree);
             } else if (!reload) {
                 getLogger().info("No economy plugin found! Chunks will be free");
             }
@@ -631,6 +672,7 @@ public class MyChunk extends JavaPlugin {
      */
     public static int getIntSetting(String setting) {
         if (setting.equalsIgnoreCase("claimExpiryDays")) return claimExpiryDays;
+        if (setting.equalsIgnoreCase("max_chunks")) return maxChunks;
         return 0;
     }
     
@@ -640,6 +682,7 @@ public class MyChunk extends JavaPlugin {
      * Checkable settings: (not case sensitive)<br>
      * chunkPrice - Default price of a chunk<br>
      * overbuyPrice - Premium added to chunk price when overbuying
+     * overbuyPrice - Percentage refunded when unclaiming chunks
      * 
      * @param setting
      * @return Setting value or 0 if not found
@@ -647,6 +690,7 @@ public class MyChunk extends JavaPlugin {
     public static double getDoubleSetting(String setting) {
         if (setting.equalsIgnoreCase("chunkPrice")) return chunkPrice;
         if (setting.equalsIgnoreCase("overbuyPrice")) return overbuyPrice;
+        if (setting.equalsIgnoreCase("refundPercent")) return refundPercent;
         return 0;
     }
     
@@ -662,8 +706,9 @@ public class MyChunk extends JavaPlugin {
      * protectUnclaimed - Checks if unclaimed chunks are protected<br>
      * unclaimRefund - Checks if players receive a refund hen unclaiming chunks<br>
      * unclaimedTNT - Checks if TNT is blocked when protectUnclimed is on<br>
-     * useClaimExpiry - Checks if chunk ownership expires
-     * ownerNotifications - Checks if owners receive notifications
+     * useClaimExpiry - Checks if chunk ownership expires<br>
+     * ownerNotifications - Checks if owners receive notifications<br>
+     * firstChunkFree - Checks if players can claim 1 chunk for free
      * 
      * @param setting
      * @return Setting state or false if not found
@@ -680,6 +725,7 @@ public class MyChunk extends JavaPlugin {
         if (setting.equalsIgnoreCase("unclaimedTNT")) return unclaimedTNT;
         if (setting.equalsIgnoreCase("useClaimExpiry")) return useClaimExpiry;
         if (setting.equalsIgnoreCase("ownerNotifications")) return notify;
+        if (setting.equalsIgnoreCase("firstChunkFree")) return firstChunkFree;
         return false;
     }
     

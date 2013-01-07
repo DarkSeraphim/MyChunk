@@ -1,10 +1,10 @@
 name: MyChunk
 main: me.ellbristow.mychunk.MyChunk
-version: 2.2.0
+version: 2.3.0
 author: ellbristow
 description: >
              Buy/Sell chunks for currency, get protection, make profit.
-softdepend: [Vault,My Worlds,Multiverse,dynmap,DynmapMyChunk]
+softdepend: [Vault,My Worlds,Multiverse,dynmap,DynmapMyChunk,Factions]
 
 commands:
   mychunk:
@@ -24,6 +24,7 @@ permissions:
       mychunk.override: true
       mychunk.sell: true
       mychunk.server.*: true
+      mychunk.public.*: true
       mychunk.unclaim.*: true
       mychunk.allowmobs: true
   
@@ -49,6 +50,7 @@ permissions:
       mychunk.commands.toggle.*: true
       mychunk.commands.purge.*: true
       mychunk.commands.reload: true
+      mychunk.commands.refund: true
   mychunk.commands.price:
     description: Access to command /mychunk price
     default: op
@@ -67,6 +69,9 @@ permissions:
   mychunk.commands.flags:
     description: Access to command /mychunk flags
     default: op
+  mychunk.commands.refund:
+    description: Access to command /mychunk refund
+    default: op
   mychunk.commands.toggle.*:
     description: Access to all commands starting with /mychunk toggle
     default: op
@@ -81,6 +86,7 @@ permissions:
       mychunk.commands.toggle.allownether: true
       mychunk.commands.toggle.allowend: true
       mychunk.commands.toggle.notify: true
+      mychunk.commands.toggle.firstChunkFree: true
   mychunk.commands.toggle.refund:
     description: Access to command /mychunk toggle refund
     default: op
@@ -111,6 +117,9 @@ permissions:
   mychunk.commands.toggle.notify:
     description: Access to command /mychunk toggle notify
     default: op
+  mychunk.commands.toggle.firstChunkFree:
+    description: Access to command /mychunk toggle firstChunkFree
+    default: op
   mychunk.commands.purge.*:
     description: Access to all /muchunk purgep and /mychunk purgew
     default: op
@@ -132,6 +141,7 @@ permissions:
        mychunk.claim: true
        mychunk.claim.others: true
        mychunk.claim.server: true
+       mychunk.claim.public: true
        mychunk.claim.unlimited: true
        mychunk.claim.others.unlimited: true
        mychunk.claim.overbuy: true
@@ -150,6 +160,9 @@ permissions:
     default: op
   mychunk.claim.server:
     description: Can claim chunks for the server
+    default: op
+  mychunk.claim.public:
+    description: Can claim chunks public chunks
     default: op
   mychunk.claim.overbuy:
     description: Can buy more than the max limit for the overbuy price
@@ -213,6 +226,53 @@ permissions:
     description: Can empty water buckets in Server owned chunks
     default: op
 
+# Public Permissions
+
+  mychunk.public.*:
+    description: Has all public permissions
+    default: true
+    children:
+      mychunk.public.build: true
+      mychunk.public.chests: true
+      mychunk.public.destroy: true
+      mychunk.public.doors: true
+      mychunk.public.ignite: true
+      mychunk.public.lava: true
+      mychunk.public.use: true
+      mychunk.public.special: true
+      mychunk.public.signs: true
+      mychunk.public.water: true
+  mychunk.public.build:
+    description: Can build in public chunks
+    default: op
+  mychunk.public.chests:
+    description: Can open chests in public chunks
+    default: op
+  mychunk.public.destroy:
+    description: Can destroy blocks in public chunks
+    default: op
+  mychunk.public.doors:
+    description: Can open doors in public chunks
+    default: op
+  mychunk.public.ignite:
+    description: Can use explosives and Flint & Steel in public chunks
+    default: op
+  mychunk.public.lava:
+    description: Can empty lava uckets in public chunks
+    default: op
+  mychunk.public.use:
+    description: Can use levers, buttons etc in public chunks
+    default: op
+  mychunk.public.special:
+    description: Can access furnaces, dispensers and brewing stands in public chunks
+    default: op
+  mychunk.public.signs:
+    description: Can use [Allow], [For Sale] etc in public chunks
+    default: op
+  mychunk.public.water:
+    description: Can empty water buckets in public chunks
+    default: op
+
 # Unclaim Permissions
   mychunk.unclaim.*:
     description: Can unclaim chunks for others/server
@@ -220,11 +280,15 @@ permissions:
     children:
       mychunk.unclaim.others: true
       mychunk.unclaim.server: true
+      mychunk.unclaim.public: true
   mychunk.unclaim.others:
     description: Can unclaim chunks for other players
     default: op
   mychunk.unclaim.server:
-    description: Can unclaim chunks for other players
+    description: Can unclaim chunks for the server
+    default: op
+  mychunk.unclaim.public:
+    description: Can unclaim public chunks
     default: op
 
 # Speical Sign Permissions

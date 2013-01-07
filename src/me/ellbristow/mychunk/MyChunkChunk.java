@@ -77,11 +77,15 @@ public class MyChunkChunk {
             chunkSE = findCorner("SE");
             chunkSW = findCorner("SW");
             chunkNW = findCorner("NW");
-            allowMobs = "1".equals(chunkData.get(0).get("allowMobs"));
-
+            if (owner.equalsIgnoreCase("Public")) {
+                allowMobs = true;
+            } else {
+                allowMobs = "1".equals(chunkData.get(0).get("allowMobs"));
+            }
+            
             // Claim expiry check
             lastActive = Long.parseLong(chunkData.get(0).get("lastActive")+"");
-            if (!owner.equalsIgnoreCase("Server")){
+            if (!owner.equalsIgnoreCase("Server") && !owner.equalsIgnoreCase("Public")){
                 if (lastActive == 0) {
                     lastActive = new Date().getTime() / 1000;
                     SQLiteBridge.query("UPDATE MyChunks SET lastActive = " + lastActive + " WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
@@ -107,26 +111,28 @@ public class MyChunkChunk {
         this.owner = playerName;
         SQLiteBridge.query("INSERT OR REPLACE INTO MyChunks (world, x, z, owner, salePrice, allowMobs, allowed, lastActive) VALUES ('"+chunkWorld+"', "+chunkX+", "+chunkZ+", '"+playerName+"', 0, 0, '', "+lastActive+")");
         forSale = false;
-        if (chunkNE.isLiquid() || chunkNE.getTypeId() == 79) {
-            chunkNE.setTypeId(4);
+        if (!playerName.equalsIgnoreCase("Public")) {
+            if (chunkNE.isLiquid() || chunkNE.getTypeId() == 79) {
+                chunkNE.setTypeId(4);
+            }
+            Block above = chunkNE.getWorld().getBlockAt(chunkNE.getX(), chunkNE.getY()+1, chunkNE.getZ());
+            above.setTypeId(50);
+            if (chunkSE.isLiquid() || chunkSE.getTypeId() == 79) {
+                chunkSE.setTypeId(4);
+            }
+            above = chunkSE.getWorld().getBlockAt(chunkSE.getX(), chunkSE.getY()+1, chunkSE.getZ());
+            above.setTypeId(50);
+            if (chunkSW.isLiquid() || chunkSW.getTypeId() == 79) {
+                chunkSW.setTypeId(4);
+            }
+            above = chunkSW.getWorld().getBlockAt(chunkSW.getX(), chunkSW.getY()+1, chunkSW.getZ());
+            above.setTypeId(50);
+            if (chunkNW.isLiquid() || chunkNW.getTypeId() == 79) {
+                chunkNW.setTypeId(4);
+            }
+            above = chunkNW.getWorld().getBlockAt(chunkNW.getX(), chunkNW.getY()+1, chunkNW.getZ());
+            above.setTypeId(50);
         }
-        Block above = chunkNE.getWorld().getBlockAt(chunkNE.getX(), chunkNE.getY()+1, chunkNE.getZ());
-        above.setTypeId(50);
-        if (chunkSE.isLiquid() || chunkSE.getTypeId() == 79) {
-            chunkSE.setTypeId(4);
-        }
-        above = chunkSE.getWorld().getBlockAt(chunkSE.getX(), chunkSE.getY()+1, chunkSE.getZ());
-        above.setTypeId(50);
-        if (chunkSW.isLiquid() || chunkSW.getTypeId() == 79) {
-            chunkSW.setTypeId(4);
-        }
-        above = chunkSW.getWorld().getBlockAt(chunkSW.getX(), chunkSW.getY()+1, chunkSW.getZ());
-        above.setTypeId(50);
-        if (chunkNW.isLiquid() || chunkNW.getTypeId() == 79) {
-            chunkNW.setTypeId(4);
-        }
-        above = chunkNW.getWorld().getBlockAt(chunkNW.getX(), chunkNW.getY()+1, chunkNW.getZ());
-        above.setTypeId(50);
         Bukkit.getServer().getPluginManager().callEvent(event);
     }
     
@@ -633,7 +639,7 @@ public class MyChunkChunk {
             
             String owner = results.get(0).get("owner").toString();
             
-            if (player.hasPermission("mychunk.override") && !owner.equalsIgnoreCase("Server")) {
+            if (player.hasPermission("mychunk.override") && !owner.equalsIgnoreCase("Server") && !owner.equalsIgnoreCase("Public")) {
                 return true;
             }
             
@@ -658,6 +664,8 @@ public class MyChunkChunk {
                 
                 if (owner.equalsIgnoreCase("Server")) {
                     return serverCheck(player, flag);
+                } else if (owner.equalsIgnoreCase("Public")) {
+                    return publicCheck(player, flag);
                 }
                 
                 return false;
@@ -706,7 +714,7 @@ public class MyChunkChunk {
     
     public static boolean getAllowMobs(Chunk chunk) {
         
-        HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("allowMobs", "MyChunks", "world = '"+chunk.getWorld().getName()+"' AND x = "+chunk.getX()+" AND z = " + chunk.getZ(), "", "");
+        HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("allowMobs", "MyChunks", "owner != 'Public' AND world = '"+chunk.getWorld().getName()+"' AND x = "+chunk.getX()+" AND z = " + chunk.getZ(), "", "");
         
         if (!results.isEmpty()) {
             if (results.get(0).get("allowMobs").toString().equalsIgnoreCase("0")) {
@@ -859,6 +867,23 @@ public class MyChunkChunk {
         if (flag.equals("U") && player.hasPermission("mychunk.server.use")) return true;
         if (flag.equals("W") && player.hasPermission("mychunk.server.water")) return true;
         if (flag.equals("X") && player.hasPermission("mychunk.server.signs")) return true;
+        
+        return false;
+        
+    }
+    
+    private static boolean publicCheck(Player player, String flag) {
+        
+        if (flag.equals("B") && player.hasPermission("mychunk.public.build")) return true;
+        if (flag.equals("C") && player.hasPermission("mychunk.public.chests")) return true;
+        if (flag.equals("D") && player.hasPermission("mychunk.public.destroy")) return true;
+        if (flag.equals("I") && player.hasPermission("mychunk.public.ignite")) return true;
+        if (flag.equals("L") && player.hasPermission("mychunk.pubcli.lava")) return true;
+        if (flag.equals("O") && player.hasPermission("mychunk.public.doors")) return true;
+        if (flag.equals("S") && player.hasPermission("mychunk.public.special")) return true;
+        if (flag.equals("U") && player.hasPermission("mychunk.public.use")) return true;
+        if (flag.equals("W") && player.hasPermission("mychunk.public.water")) return true;
+        if (flag.equals("X") && player.hasPermission("mychunk.public.signs")) return true;
         
         return false;
         

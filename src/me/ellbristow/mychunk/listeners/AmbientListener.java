@@ -42,7 +42,7 @@ public class AmbientListener implements Listener {
                 
                 Block block = it.next();
                 
-                if (MyChunkChunk.isClaimed(block.getChunk())) {
+                if (MyChunkChunk.isClaimed(block.getChunk()) && !MyChunkChunk.getOwner(block.getChunk()).equalsIgnoreCase("Public") && !MyChunk.getToggle("protectUnclaimed")) {
                     saveBlocks.add(block);
                 } else if (MyChunk.getToggle("protectUnclaimed")) {
                     
@@ -74,7 +74,7 @@ public class AmbientListener implements Listener {
             String chunk1 = MyChunkChunk.getOwner(event.getBlock().getChunk());
             String chunk2 = MyChunkChunk.getOwner(event.getBlock().getRelative(event.getDirection()).getChunk());
             
-            if (!chunk2.equalsIgnoreCase("") && !chunk1.equalsIgnoreCase(chunk2)) {
+            if (!chunk2.equalsIgnoreCase("") && !chunk2.equalsIgnoreCase("Public") && !chunk1.equalsIgnoreCase(chunk2)) {
                 
                 // Pushing into an owned chunk with a different owner
                 event.setCancelled(true);
@@ -96,7 +96,7 @@ public class AmbientListener implements Listener {
                     String chunk1 = MyChunkChunk.getOwner(block.getChunk());
                     String chunk2 = MyChunkChunk.getOwner(block.getRelative(event.getDirection()).getChunk());
                     
-                    if (!chunk2.equalsIgnoreCase("") && !chunk1.equalsIgnoreCase(chunk2)) {
+                    if (!chunk2.equalsIgnoreCase("") && !chunk1.equalsIgnoreCase(chunk2) && !chunk2.equalsIgnoreCase("Public")) {
                         
                         // Pushing into an owned chunk with a different owner
                         event.setCancelled(true);
@@ -124,7 +124,7 @@ public class AmbientListener implements Listener {
                     String chunk1 = MyChunkChunk.getOwner(event.getBlock().getChunk());
                     String chunk2 = MyChunkChunk. getOwner(event.getRetractLocation().getBlock().getChunk());
                     
-                    if (!chunk2.equalsIgnoreCase("") && !chunk1.equalsIgnoreCase(chunk2)) {
+                    if (!chunk2.equalsIgnoreCase("") && !chunk1.equalsIgnoreCase(chunk2) && !chunk2.equalsIgnoreCase("Public")) {
                         
                         // Pulling out of an owned chunk with a different owner
                         
@@ -165,24 +165,23 @@ public class AmbientListener implements Listener {
             
             if (owner.equalsIgnoreCase("Server")) {
                 event.setCancelled(true);
-            } else {
-                
-                LivingEntity shooter = potion.getShooter();
-                
-                if (shooter instanceof Player) {
-                    
-                    Player player = (Player)shooter;
-                    
-                    if (owner.equalsIgnoreCase(player.getName())) {
-                        event.setCancelled(true);
-                    }
-                    
-                } else {
-                    event.setCancelled(true);
-                }
-                
+                return;
             }
             
+            LivingEntity shooter = potion.getShooter();
+            
+            if (shooter instanceof Player) {
+                
+                Player player = (Player)shooter;
+
+                if (owner.equalsIgnoreCase(player.getName())) {
+                    event.setCancelled(true);
+                }
+
+            } else {
+                event.setCancelled(true);
+            }
+
         }
         
     }
@@ -194,7 +193,7 @@ public class AmbientListener implements Listener {
         
         if (event.getEntityType().equals(EntityType.ZOMBIE)) {
             
-            if (MyChunkChunk.isClaimed(event.getBlock().getChunk()) || MyChunk.getToggle("protectUnclaimed")) {
+            if ((MyChunkChunk.isClaimed(event.getBlock().getChunk()) && !MyChunkChunk.getOwner(event.getBlock().getChunk()).equalsIgnoreCase("Public")) || MyChunk.getToggle("protectUnclaimed")) {
                 event.setCancelled(true);
             }
             
