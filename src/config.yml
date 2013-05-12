@@ -25,6 +25,8 @@
 # 
 # claimExpiresAfter: Days (Real Life) to wait until a plot is put up for sale due to inactivity
 #
+# worlds: Worlds in which this plugin will be active - use /mychunk world enable [world] in-game to enable a world
+#
 #
 
 chunk_price: 0.00
@@ -37,3 +39,4 @@ charge_overbuy_on_resales: true
 protect_unclaimed: false
 useClaimExpiry: false
 claimExpiresAfter: 7
+worlds: []

@@ -104,7 +104,10 @@ public class Lang {
         loadLangPhrase("ToggleFirstChunkFreeOff", "Players now DO NOT get their first chunk free!");
         loadLangPhrase("RefundSet", "Refund Percentage set to ");
         loadLangPhrase("Percentage", "Percentage");
-        
+        loadLangPhrase("WorldEnabled", "World enabled");
+        loadLangPhrase("WorldDisabled", "World disabled");
+        loadLangPhrase("AllWorldsEnabled", "All worlds enabled");
+        loadLangPhrase("AllWorldsDisabled", "All worlds disabled");
         
         //Errors
         loadLangPhrase("AlreadyOwner", "You already own this chunk!");
@@ -147,6 +150,7 @@ public class Lang {
         loadLangPhrase("NotPublicSign", "You can't use htat sign in public chunks!");
         loadLangPhrase("SpecifyRefund", "You must specify a new refund percentage!");
         loadLangPhrase("RefundNotNumber", "Refund percentage must be a number!");
+        loadLangPhrase("CommandMustBeRunByPlayer", "This command must be run by a player!");
         
         // Permissions
         loadLangPhrase("NoPermsCommand", "You do not have permission to use this command!");

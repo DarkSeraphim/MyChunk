@@ -23,6 +23,7 @@ public class PlayerListener implements Listener {
     public void onPlayerDamage (EntityDamageByEntityEvent event) {
         
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getEntity().getWorld().getName())) return;
 
         Entity entity = event.getEntity();
         
@@ -73,6 +74,7 @@ public class PlayerListener implements Listener {
     public void onPlayerEmptyBucket (PlayerBucketEmptyEvent event) {
         
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getPlayer().getWorld().getName())) return;
         
         Player player = event.getPlayer();
         int bucket = event.getBucket().getId();
@@ -112,6 +114,7 @@ public class PlayerListener implements Listener {
     public void onPlayerInteract (PlayerInteractEvent event) {
         
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getPlayer().getWorld().getName())) return;
         
         if (event.getAction().equals(Action.LEFT_CLICK_BLOCK) || event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
             
@@ -263,6 +266,7 @@ public class PlayerListener implements Listener {
     public void onPlayerMove (PlayerMoveEvent event) {
         
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getPlayer().getWorld().getName())) return;
         
         Location fromLoc = event.getFrom();
         Location toLoc = event.getTo();
@@ -335,6 +339,7 @@ public class PlayerListener implements Listener {
     public void onPlayerTeleport(PlayerTeleportEvent event) {
         
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getPlayer().getWorld().getName())) return;
         
         Location fromLoc = event.getFrom();
         Location toLoc = event.getTo();
