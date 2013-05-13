@@ -1,6 +1,6 @@
 name: MyChunk
 main: me.ellbristow.mychunk.MyChunk
-version: 2.3.0
+version: 2.4.0
 author: ellbristow
 description: >
              Buy/Sell chunks for currency, get protection, make profit.
@@ -51,6 +51,9 @@ permissions:
       mychunk.commands.purge.*: true
       mychunk.commands.reload: true
       mychunk.commands.refund: true
+      mychunk.commands.ramprate: true
+      mychunk.commands.info: true
+      mychunk.commands.info.others: true
   mychunk.commands.price:
     description: Access to command /mychunk price
     default: op
@@ -60,11 +63,20 @@ permissions:
   mychunk.commands.max:
     description: Access to command /mychunk max
     default: op
+  mychunk.commands.ramprate:
+    description: Access to command /mychunk ramprate
+    default: op
   mychunk.commands.expirydays:
     description: Access to command /mychunk expirydays
     default: op
   mychunk.commands.stats:
     description: Access to command /mychunk
+    default: op
+  mychunk.commands.info:
+    description: Access to command /mychunk info
+    default: op
+  mychunk.commands.info.others:
+    description: Access to command /mychunk info [player]
     default: op
   mychunk.commands.flags:
     description: Access to command /mychunk flags
@@ -87,6 +99,10 @@ permissions:
       mychunk.commands.toggle.allowend: true
       mychunk.commands.toggle.notify: true
       mychunk.commands.toggle.firstChunkFree: true
+      mychunk.commands.toggle.preventEntry: true
+      mychunk.commands.toggle.preventPVP: true
+      mychunk.commands.toggle.mobGrief: true
+      mychunk.commands.toggle.rampchunkprice: true
   mychunk.commands.toggle.refund:
     description: Access to command /mychunk toggle refund
     default: op
@@ -119,6 +135,18 @@ permissions:
     default: op
   mychunk.commands.toggle.firstChunkFree:
     description: Access to command /mychunk toggle firstChunkFree
+    default: op
+  mychunk.commands.toggle.preventEntry:
+    description: Access to command /mychunk toggle preventEntry
+    default: op
+  mychunk.commands.toggle.preventPVP:
+    description: Access to command /mychunk toggle preventPVP
+    default: op
+  mychunk.commands.toggle.mobGrief:
+    description: Access to command /mychunk toggle mobGrief
+    default: op
+  mychunk.commands.toggle.rampchunkprice:
+    description: Access to command /mychunk toggle rampchunkprice
     default: op
   mychunk.commands.purge.*:
     description: Access to all /muchunk purgep and /mychunk purgew
@@ -189,6 +217,7 @@ permissions:
       mychunk.server.chests: true
       mychunk.server.destroy: true
       mychunk.server.doors: true
+      mychunk.server.entry: true
       mychunk.server.ignite: true
       mychunk.server.lava: true
       mychunk.server.use: true
@@ -206,6 +235,9 @@ permissions:
     default: op
   mychunk.server.doors:
     description: Can open doors in server owned chunks
+    default: op
+  mychunk.server.entry:
+    description: Can enter server owned chunks
     default: op
   mychunk.server.ignite:
     description: Can use explosives and Flint & Steel in server owned chunks
@@ -294,4 +326,7 @@ permissions:
 # Speical Sign Permissions
   mychunk.allowmobs:
     description: Can use [AllowMobs] signs
+    default: op
+  mychunk.allowpvp:
+    description: Can use [AllowPVP] signs
     default: op

@@ -2,6 +2,7 @@ package me.ellbristow.mychunk;
 
 import java.util.*;
 import me.ellbristow.mychunk.events.MyChunkClaimEvent;
+import me.ellbristow.mychunk.events.MyChunkForSaleEvent;
 import me.ellbristow.mychunk.events.MyChunkUnclaimEvent;
 import me.ellbristow.mychunk.lang.Lang;
 import me.ellbristow.mychunk.utils.SQLiteBridge;
@@ -26,8 +27,9 @@ public class MyChunkChunk {
     private Block chunkNW;
     private boolean forSale;
     private double claimPrice;
-    private static String[] availableFlags = {"*","B","C","D","I","L","O","S","U","W"};
+    private static String[] availableFlags = {"*","B","C","E","D","I","L","O","S","U","W"};
     private boolean allowMobs;
+    private boolean allowPVP;
     private long lastActive;
     
     public MyChunkChunk (Block block) {
@@ -37,6 +39,11 @@ public class MyChunkChunk {
     
     public MyChunkChunk (String world, int x, int y) {
         chunk = Bukkit.getServer().getWorld(world).getChunkAt(x, y);
+        getFromChunk(chunk);
+    }
+    
+    public MyChunkChunk (Chunk getChunk) {
+        chunk = getChunk;
         getFromChunk(chunk);
     }
     
@@ -50,6 +57,7 @@ public class MyChunkChunk {
             claimPrice = MyChunk.getDoubleSetting("chunkPrice");
             forSale = false;
             allowMobs = true;
+            allowPVP = !MyChunk.getToggle("preventPVP");
             lastActive = new Date().getTime() / 1000;
             chunkNE = findCorner("NE");
             chunkSE = findCorner("SE");
@@ -79,8 +87,15 @@ public class MyChunkChunk {
             chunkNW = findCorner("NW");
             if (owner.equalsIgnoreCase("Public")) {
                 allowMobs = true;
+            } else if (chunkData.get(0).get("allowMobs").toString().equals("1")) {
+                allowMobs = true;
             } else {
-                allowMobs = "1".equals(chunkData.get(0).get("allowMobs"));
+                allowMobs = false;
+            }
+            if (chunkData.get(0).get("allowPVP").toString().equals("1")) {
+                allowPVP = true;
+            } else {
+                allowPVP = false;
             }
             
             // Claim expiry check
@@ -107,7 +122,7 @@ public class MyChunkChunk {
      * @param playerName Name of the player claiming the chunk
      */
     public void claim(String playerName) {
-        MyChunkClaimEvent event = new MyChunkClaimEvent(chunkWorld, chunkX, chunkZ, owner, playerName);
+        MyChunkClaimEvent event = new MyChunkClaimEvent(chunkWorld, chunkX, chunkZ, owner, playerName, forSale);
         this.owner = playerName;
         SQLiteBridge.query("INSERT OR REPLACE INTO MyChunks (world, x, z, owner, salePrice, allowMobs, allowed, lastActive) VALUES ('"+chunkWorld+"', "+chunkX+", "+chunkZ+", '"+playerName+"', 0, 0, '', "+lastActive+")");
         forSale = false;
@@ -340,6 +355,25 @@ public class MyChunkChunk {
     }
     
     /**
+     * Change whether PVP is allowed in this chunk
+     * 
+     * @param allow New setting
+     */
+    public void setAllowPVP(Boolean allow) {
+        allowPVP = allow;
+        SQLiteBridge.query("UPDATE MyChunks SET allowPVP = " + (allow?"1":"0") + " WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
+    }
+    
+    /**
+     * Check if mobs can spawn/damage in this chunk
+     * 
+     * @return 
+     */
+    public boolean getAllowPVP() {
+        return allowPVP;
+    }
+    
+    /**
      * Get the standard claim price for this chunk
      * 
      * @return 
@@ -493,7 +527,9 @@ public class MyChunkChunk {
     public void setForSale(Double price) {
         forSale = true;
         claimPrice = price;
+        MyChunkForSaleEvent event = new MyChunkForSaleEvent(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), getOwner(chunk), true);
         SQLiteBridge.query("UPDATE MyChunks SET salePrice = " + claimPrice + " WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
+        Bukkit.getServer().getPluginManager().callEvent(event);
     }
     
     /**
@@ -501,7 +537,9 @@ public class MyChunkChunk {
      */
     public void setNotForSale() {
         forSale = false;
+        MyChunkForSaleEvent event = new MyChunkForSaleEvent(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), getOwner(chunk), false);
         SQLiteBridge.query("UPDATE MyChunks SET salePrice = 0 WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
+        Bukkit.getServer().getPluginManager().callEvent(event);
     }
     
     /**
@@ -610,6 +648,7 @@ public class MyChunkChunk {
      * B : Build<br>
      * C : Chest Access<br>
      * D : Destroy<br>
+     * E : Enter Chunk<br>
      * I : Ignite<br>
      * L : Lava Buckets<br>
      * O : Open Wooden Doors<br>
@@ -860,6 +899,7 @@ public class MyChunkChunk {
         if (flag.equals("B") && player.hasPermission("mychunk.server.build")) return true;
         if (flag.equals("C") && player.hasPermission("mychunk.server.chests")) return true;
         if (flag.equals("D") && player.hasPermission("mychunk.server.destroy")) return true;
+        if (flag.equals("E") && player.hasPermission("mychunk.server.entry")) return true;
         if (flag.equals("I") && player.hasPermission("mychunk.server.ignite")) return true;
         if (flag.equals("L") && player.hasPermission("mychunk.server.lava")) return true;
         if (flag.equals("O") && player.hasPermission("mychunk.server.doors")) return true;
@@ -884,6 +924,7 @@ public class MyChunkChunk {
         if (flag.equals("U") && player.hasPermission("mychunk.public.use")) return true;
         if (flag.equals("W") && player.hasPermission("mychunk.public.water")) return true;
         if (flag.equals("X") && player.hasPermission("mychunk.public.signs")) return true;
+        if (flag.equals("E")) return true;
         
         return false;
         
@@ -910,16 +951,42 @@ public class MyChunkChunk {
      */
     public static Set<LiteChunk> getChunks(World w) {
         Set<LiteChunk> worldChunks = new HashSet<LiteChunk>();
-        HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("owner, x, z", "MyChunks", "world = '"+w.getName()+"'", "", "");
+        HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("owner, x, z, salePrice", "MyChunks", "world = '"+w.getName()+"'", "", "");
         if (!results.isEmpty()) {
             for (HashMap<String, Object> result : results.values()) {
                 String owner = result.get("owner").toString();
                 int x = Integer.parseInt(result.get("x").toString());
                 int z = Integer.parseInt(result.get("z").toString());
-                worldChunks.add(new LiteChunk(w.getName(), x, z, owner));
+                double price = Double.parseDouble(result.get("salePrice").toString());
+                worldChunks.add(new LiteChunk(w.getName(), x, z, owner, price != 0));
             }
         }
         return worldChunks;
+    }
+    
+    /**
+     * Returns the number of chunks a player owns
+     * 
+     * @param playerName
+     * @return Number of chunks
+     */
+    public static List<MyChunkChunk> getOwnedChunks(String playerName) {
+        
+        HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("world, x, z", "MyChunks", "owner = '"+playerName+"'", "","");
+        
+        List<MyChunkChunk> chunkArray = new ArrayList<MyChunkChunk>();
+        
+        for (int i = 0; i < results.size(); i++) {
+            HashMap<String, Object> result = results.get(i);
+            String world = result.get("world").toString();
+            int x = Integer.parseInt(result.get("x").toString());
+            int z = Integer.parseInt(result.get("z").toString());
+            MyChunkChunk chunk = new MyChunkChunk(world, x, z);
+            chunkArray.add(chunk);
+        }
+        
+        return chunkArray;
+        
     }
     
 }

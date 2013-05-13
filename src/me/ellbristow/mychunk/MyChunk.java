@@ -7,10 +7,7 @@ import me.ellbristow.mychunk.lang.Lang;
 import me.ellbristow.mychunk.listeners.*;
 import me.ellbristow.mychunk.utils.Metrics;
 import me.ellbristow.mychunk.utils.SQLiteBridge;
-import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -29,23 +26,28 @@ public class MyChunk extends JavaPlugin {
     private static double refundPercent = 100.00;
     private static boolean allowNeighbours = false;
     private static boolean allowOverbuy = false;
+    private static boolean allowMobGrief = true;
     private static boolean protectUnclaimed = false;
     private static boolean unclaimedTNT = false;
     private static boolean useClaimExpiry = false;
     private static boolean allowNether = true;
     private static boolean allowEnd = true;
+    private static boolean preventEntry = false;
+    private static boolean preventPVP = false;
     private static int claimExpiryDays;
     private static boolean overbuyP2P = true;
     private static double chunkPrice = 0.00;
     private static double overbuyPrice = 0.00;
     private static boolean firstChunkFree = false;
+    private static boolean rampChunkPrice = false;
+    private static double priceRampRate = 25.00;
     private static int maxChunks = 8;
     private static boolean notify = true;
     private MyChunkVaultLink vault;
     
     // LOOK! SQLite stuff!
-    private String[] tableColumns = {"world","x","z","owner","allowed","salePrice","allowMobs","lastActive", "PRIMARY KEY"};
-    private String[] tableDims = {"TEXT NOT NULL", "INTEGER NOT NULL", "INTEGER NOT NULL", "TEXT NOT NULL", "TEXT NOT NULL", "INTEGER NOT NULL", "INTEGER(1) NOT NULL", "LONG NOT NULL", "(world, x, z)"};
+    private String[] tableColumns = {"world","x","z","owner","allowed","salePrice","allowMobs","allowPVP","lastActive", "PRIMARY KEY"};
+    private String[] tableDims = {"TEXT NOT NULL", "INTEGER NOT NULL", "INTEGER NOT NULL", "TEXT NOT NULL", "TEXT NOT NULL", "INTEGER NOT NULL", "INTEGER(1) NOT NULL", "INTEGER(1) NOT NULL", "LONG NOT NULL", "(world, x, z)"};
     
     @Override
     public void onEnable() {
@@ -103,7 +105,20 @@ public class MyChunk extends JavaPlugin {
                 }
                 sender.sendMessage(ChatColor.GOLD + Lang.get("DefaultMax")+": " + ChatColor.WHITE + maxChunks + yourMax);
                 if (foundEconomy){
-                    sender.sendMessage(ChatColor.GOLD + Lang.get("ChunkPrice")+": " + ChatColor.WHITE + MyChunkVaultLink.getEconomy().format(chunkPrice) + " " + ChatColor.GOLD + Lang.get("UnclaimRefunds")+": " + ChatColor.WHITE + (unclaimRefund && refundPercent != 0 ? refundPercent + "%" : "No"));
+                    double thisPrice = chunkPrice;
+                    String rampMessage = ChatColor.GOLD + Lang.get("PriceRamping")+": " + ChatColor.WHITE + (rampChunkPrice && priceRampRate != 0 ? "Yes" : "No");
+                    if (rampChunkPrice && priceRampRate != 0) {
+                        rampMessage += " " + ChatColor.GOLD + Lang.get("RampRate") + ": " + ChatColor.WHITE + priceRampRate;
+                        if (sender instanceof Player) {
+                            int claimed = MyChunkChunk.getOwnedChunkCount(sender.getName());
+                            if (firstChunkFree && claimed > 0) {
+                                claimed--;
+                            }
+                            thisPrice += priceRampRate * claimed;
+                        }
+                    }
+                    sender.sendMessage(rampMessage);
+                    sender.sendMessage(ChatColor.GOLD + Lang.get("ChunkPrice")+": " + ChatColor.WHITE + MyChunkVaultLink.getEconomy().format(thisPrice) + " " + ChatColor.GOLD + Lang.get("UnclaimRefunds")+": " + ChatColor.WHITE + (unclaimRefund && refundPercent != 0 ? refundPercent + "%" : "No"));
                     String overFee = "";
                     if (allowOverbuy) {
                         String resales = "exc.";
@@ -114,9 +129,10 @@ public class MyChunk extends JavaPlugin {
                     }
                     sender.sendMessage(ChatColor.GOLD + Lang.get("AllowOverbuy")+": " + ChatColor.WHITE + Lang.get(""+allowOverbuy) + overFee);
                 }
-                sender.sendMessage("");
-                sender.sendMessage(ChatColor.GOLD + Lang.get("OwnerNotifications") + ": " + ChatColor.WHITE + (notify?Lang.get("Yes"):Lang.get("No")));
+                sender.sendMessage(ChatColor.GOLD + Lang.get("AllowMobGrief") + ": " + ChatColor.WHITE + (allowMobGrief?Lang.get("Yes"):Lang.get("No")));
+                sender.sendMessage(ChatColor.GOLD + Lang.get("OwnerNotifications") + ": " + ChatColor.WHITE + (notify?Lang.get("Yes"):Lang.get("No"))+ " " + ChatColor.GOLD + Lang.get("PreventEntry") + ": " + ChatColor.WHITE + (preventEntry?Lang.get("Yes"):Lang.get("No")));
                 sender.sendMessage(ChatColor.GOLD + Lang.get("AllowNeighbours")+": " + ChatColor.WHITE + Lang.get(""+allowNeighbours) + ChatColor.GOLD + "  "+Lang.get("ProtectUnclaimed")+": " + ChatColor.WHITE + Lang.get(""+protectUnclaimed));
+                sender.sendMessage(ChatColor.GOLD + Lang.get("PreventEntry")+": " + ChatColor.WHITE + (preventEntry?Lang.get("Yes"):Lang.get("No")) + ChatColor.GOLD + "  " + Lang.get("PreventPVP")+": " + ChatColor.WHITE + (preventPVP?Lang.get("Yes"):Lang.get("No")));
                 String claimExpiry;
                 if (!useClaimExpiry) {
                     claimExpiry = Lang.get("Disabled");
@@ -134,8 +150,8 @@ public class MyChunk extends JavaPlugin {
                 if (sender.hasPermission("mychunk.commands.flags")) {
                     sender.sendMessage(ChatColor.GOLD + "MyChunk "+Lang.get("PermissionFlags"));
                     sender.sendMessage(ChatColor.GREEN + "*" + ChatColor.GOLD + " = "+Lang.get("All")+" | " + ChatColor.GREEN + "B" + ChatColor.GOLD + " = "+Lang.get("Build")+" | " + ChatColor.GREEN + "C" + ChatColor.GOLD + " = "+Lang.get("AccessChests")+" | " + ChatColor.GREEN + "D"  + ChatColor.GOLD + " = "+Lang.get("Destroy"));
-                    sender.sendMessage(ChatColor.GREEN + "I"  + ChatColor.GOLD + " = "+Lang.get("IgniteBlocks")+" | " + ChatColor.GREEN + "L"  + ChatColor.GOLD + " = "+Lang.get("DropLava")+" | " + ChatColor.GREEN + "O"  + ChatColor.GOLD + " = "+Lang.get("OpenWoodenDoors"));
-                    sender.sendMessage(ChatColor.GREEN + "U"  + ChatColor.GOLD + " = "+Lang.get("UseButtonsLevers")+" | " + ChatColor.GREEN + "W"  + ChatColor.GOLD + " = "+Lang.get("DropWater"));
+                    sender.sendMessage(ChatColor.GREEN + "E" + ChatColor.GOLD + Lang.get("Enter") + " | " + ChatColor.GREEN + "I"  + ChatColor.GOLD + " = "+Lang.get("IgniteBlocks")+" | " + ChatColor.GREEN + "L"  + ChatColor.GOLD + " = "+Lang.get("DropLava") );
+                    sender.sendMessage(ChatColor.GREEN + "O"  + ChatColor.GOLD + " = "+Lang.get("OpenWoodenDoors") + " | " + ChatColor.GREEN + "U"  + ChatColor.GOLD + " = "+Lang.get("UseButtonsLevers")+" | " + ChatColor.GREEN + "W"  + ChatColor.GOLD + " = "+Lang.get("DropWater"));
                     return true;
                 } else {
                     sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
@@ -155,7 +171,7 @@ public class MyChunk extends JavaPlugin {
                 return false;
             } else if (args[0].equalsIgnoreCase("toggle")) {
                 sender.sendMessage(ChatColor.RED + Lang.get("SpecifyToggle"));
-                sender.sendMessage(ChatColor.RED + "/mychunk toggle {refund | overbuy | neighbours | resales | unclaimed | expiry | allownether | allowend | notify | firstChunkFree }");
+                sender.sendMessage(ChatColor.RED + "/mychunk toggle {refund | overbuy | neighbours | resales | unclaimed | expiry | allownether | allowend | notify | firstChunkFree | preventEntry | preventPVP | mobGrief }");
                 return false;
             } else if (args[0].equalsIgnoreCase("purgep")) {
                 sender.sendMessage(ChatColor.RED + Lang.get("SpecifyPurgePlayer"));
@@ -169,6 +185,10 @@ public class MyChunk extends JavaPlugin {
                 sender.sendMessage(ChatColor.RED + Lang.get("SpecifyRefund"));
                 sender.sendMessage(ChatColor.RED + "/mychunk refund ["+Lang.get("Percentage")+"]");
                 return false;
+            } else if (args[0].equalsIgnoreCase("rampRate")) {
+                sender.sendMessage(ChatColor.RED + Lang.get("SpecifyRampRate"));
+                sender.sendMessage(ChatColor.RED + "/mychunk rampRate ["+Lang.get("NewRampRate")+"]");
+                return false;
             } else if (args[0].equalsIgnoreCase("reload")) {
                 if (!sender.hasPermission("mychunk.commands.reload")) {
                     sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
@@ -178,6 +198,25 @@ public class MyChunk extends JavaPlugin {
                 loadConfig(true);
                 Lang.reload();
                 sender.sendMessage(ChatColor.GOLD + Lang.get("Reloaded"));
+            } else if (args[0].equalsIgnoreCase("info")) {
+                if (!sender.hasPermission("mychunk.commands.info")) {
+                    sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
+                    return false;
+                }
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(ChatColor.RED + Lang.get("ServerNoChunks"));
+                    return true;
+                }
+                List<MyChunkChunk> chunks = MyChunkChunk.getOwnedChunks(sender.getName());
+                if (chunks.isEmpty()) {
+                    sender.sendMessage(ChatColor.RED + "You do not own any chunks!");
+                } else {
+                    sender.sendMessage(ChatColor.GOLD + "Your owned chunks: (" + chunks.size() + ")");
+                    for (int i = 0; i < chunks.size(); i++) {
+                        Chunk thisChunk = Bukkit.getWorld(chunks.get(i).getWorldName()).getChunkAt(chunks.get(i).getX(), chunks.get(i).getZ());
+                        sender.sendMessage(ChatColor.GOLD + " World: " + ChatColor.GRAY + thisChunk.getWorld().getName() + ChatColor.GOLD + " X: " + ChatColor.GRAY + thisChunk.getBlock(7, 0, 7).getX() + ChatColor.GOLD + " Z: " + ChatColor.GRAY + thisChunk.getBlock(7, 0, 7).getZ());
+                    }
+                }
             }
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("price")) {
@@ -223,6 +262,31 @@ public class MyChunk extends JavaPlugin {
                         overbuyPrice = newPrice;
                         saveConfig();
                         sender.sendMessage(ChatColor.GOLD + "Overbuy price set to " + MyChunkVaultLink.getEconomy().format(newPrice));
+                        return true;
+                    }
+                } else {
+                    sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
+                    return false;
+                }
+            } else if (args[0].equalsIgnoreCase("rampRate")) {
+                if (sender.hasPermission("mychunk.commands.ramprate")) {
+                    if (!foundEconomy) {
+                        sender.sendMessage(ChatColor.RED + Lang.get("NoEcoPlugin"));
+                        return false;
+                    } else {
+                        double newRate;
+                        try {
+                            newRate = Double.parseDouble(args[1]);
+                        } catch (NumberFormatException e) {
+                            // TODO: Lang
+                            sender.sendMessage(ChatColor.RED + "Rate must be a number! (e.g. 5.00)");
+                            sender.sendMessage(ChatColor.RED + "/mychunk rampRate {New rate}");
+                            return false;
+                        }
+                        config.set("pricae_ramp_rate", newRate);
+                        priceRampRate = newRate;
+                        saveConfig();
+                        sender.sendMessage(ChatColor.GOLD + "Chunk ramp rate set to " + newRate);
                         return true;
                     }
                 } else {
@@ -427,6 +491,66 @@ public class MyChunk extends JavaPlugin {
                     config.set("first_chunk_free", firstChunkFree);
                     saveConfig();
                     return true;
+                } else if (args[1].equalsIgnoreCase("rampChunkPrice")) {
+                    if (!sender.hasPermission("mychunk.commands.toggle.rampchunkprice")) {
+                        sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
+                        return false;
+                    }
+                    if (rampChunkPrice) {
+                        rampChunkPrice = false;
+                        sender.sendMessage(ChatColor.GOLD + Lang.get("ToggleRampChunkPriceOff"));
+                    } else {
+                        rampChunkPrice = true;
+                        sender.sendMessage(ChatColor.GOLD + Lang.get("ToggleRampChunkPriceOn"));
+                    }
+                    config.set("ramp_chunk_price", rampChunkPrice);
+                    saveConfig();
+                    return true;
+                } else if (args[1].equalsIgnoreCase("preventEntry")) {
+                    if (!sender.hasPermission("mychunk.commands.toggle.preventEntry")) {
+                        sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
+                        return false;
+                    }
+                    if (preventEntry) {
+                        preventEntry = false;
+                        sender.sendMessage(ChatColor.GOLD + Lang.get("ToggleEntryOff"));
+                    } else {
+                        preventEntry = true;
+                        sender.sendMessage(ChatColor.GOLD + Lang.get("ToggleEntryOn"));
+                    }
+                    config.set("prevent_chunk_entry", preventEntry);
+                    saveConfig();
+                    return true;
+                } else if (args[1].equalsIgnoreCase("preventPVP")) {
+                    if (!sender.hasPermission("mychunk.commands.toggle.preventPVP")) {
+                        sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
+                        return false;
+                    }
+                    if (preventPVP) {
+                        preventPVP = false;
+                        sender.sendMessage(ChatColor.GOLD + Lang.get("TogglePVPOff"));
+                    } else {
+                        preventPVP = true;
+                        sender.sendMessage(ChatColor.GOLD + Lang.get("TogglePVPOn"));
+                    }
+                    config.set("preventPVP", preventPVP);
+                    saveConfig();
+                    return true;
+                } else if (args[1].equalsIgnoreCase("mobGrief")) {
+                    if (!sender.hasPermission("mychunk.commands.toggle.mobGrief")) {
+                        sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
+                        return false;
+                    }
+                    if (allowMobGrief) {
+                        allowMobGrief = false;
+                        sender.sendMessage(ChatColor.GOLD + Lang.get("ToggleMobGriefOff"));
+                    } else {
+                        allowMobGrief = true;
+                        sender.sendMessage(ChatColor.GOLD + Lang.get("ToggleMobGriefOn"));
+                    }
+                    config.set("allow_mob_greifing", allowMobGrief);
+                    saveConfig();
+                    return true;
                 }
             } else if (args[0].equalsIgnoreCase("max")) {
                 if (sender.hasPermission("mychunk.commands.max")) {
@@ -482,7 +606,7 @@ public class MyChunk extends JavaPlugin {
                     return false;
                 }
                 OfflinePlayer player = getServer().getOfflinePlayer(args[1]);
-                if (!player.hasPlayedBefore()) {
+                if (!player.hasPlayedBefore() && !player.isOnline()) {
                     sender.sendMessage(ChatColor.RED + "Player "+ChatColor.WHITE+args[1]+ChatColor.RED+" not found!");
                     return false;
                 }
@@ -528,6 +652,26 @@ public class MyChunk extends JavaPlugin {
                 config.set("refund_percent", refundPercent);
                 saveConfig();
                 sender.sendMessage(ChatColor.GOLD + Lang.get("RefundSet") + ChatColor.WHITE + refundPercent + "%");
+            }  else if (args[0].equalsIgnoreCase("info")) {
+                if (!sender.hasPermission("mychunk.commands.info.others")) {
+                    sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
+                    return false;
+                }
+                OfflinePlayer player = getServer().getOfflinePlayer(args[1]);
+                if (!player.hasPlayedBefore() && !player.isOnline()) {
+                    sender.sendMessage(ChatColor.RED + "Player "+ChatColor.WHITE+args[1]+ChatColor.RED+" not found!");
+                    return false;
+                }
+                List<MyChunkChunk> chunks = MyChunkChunk.getOwnedChunks(player.getName());
+                if (chunks.isEmpty()) {
+                    sender.sendMessage(ChatColor.RED + player.getName() + " does not own any chunks!");
+                } else {
+                    sender.sendMessage(ChatColor.GOLD + player.getName() + "'s owned chunks: (" + chunks.size() + ")");
+                    for (int i = 0; i < chunks.size(); i++) {
+                        Chunk thisChunk = Bukkit.getWorld(chunks.get(i).getWorldName()).getChunkAt(chunks.get(i).getX(), chunks.get(i).getZ());
+                        sender.sendMessage(ChatColor.GOLD + " World: " + ChatColor.GRAY + thisChunk.getWorld().getName() + ChatColor.GOLD + " X: " + ChatColor.GRAY + thisChunk.getBlock(7, 0, 7).getX() + ChatColor.GOLD + " Z: " + ChatColor.GRAY + thisChunk.getBlock(7, 0, 7).getZ());
+                    }
+                }
             }
         }
         return false;
@@ -577,6 +721,10 @@ public class MyChunk extends JavaPlugin {
             // Create empty table
             SQLiteBridge.createTable("MyChunks", tableColumns, tableDims);
         }
+        // Check Missing Columns
+        if (!SQLiteBridge.tableContainsColumn("MyChunks", "allowPVP")) {
+            SQLiteBridge.addColumn("MyChunks", "allowPVP INT(1) NOT NULL DEFAULT 0");
+        }
         File chunkFile = new File(getDataFolder(),"chunks.yml");
         if (chunkFile.exists()) {
             // Transfer old data
@@ -599,7 +747,7 @@ public class MyChunk extends JavaPlugin {
                     if (!values.equals("")) {
                         values += ",";
                     }
-                    SQLiteBridge.query("INSERT OR REPLACE INTO MyChunks (world,x,z,owner,allowed,salePrice,allowMobs,lastActive) VALUES ('"+world+"',"+x+","+z+",'"+owner+"','"+allowed+"',"+salePrice+","+(allowMobs?"1":"0")+","+lastActive+")");
+                    SQLiteBridge.query("INSERT OR REPLACE INTO MyChunks (world,x,z,owner,allowed,salePrice,allowMobs,allowPVP,lastActive) VALUES ('"+world+"',"+x+","+z+",'"+owner+"','"+allowed+"',"+salePrice+","+(allowMobs?"1":"0")+",0,"+lastActive+")");
                 }
             }
             getLogger().info("YML > SQLite Conversion Complete!");
@@ -632,6 +780,12 @@ public class MyChunk extends JavaPlugin {
         config.set("owner_notifications", notify);
         refundPercent = config.getDouble("refund_percent", 100);
         config.set("refund_percent", refundPercent);
+        allowMobGrief = config.getBoolean("allow_mob_griefing", true);
+        config.set("allow_mob_griefing", allowMobGrief);
+        preventEntry = config.getBoolean("prevent_chunk_entry", false);
+        config.set("prevent_chunk_entry", preventEntry);
+        preventPVP = config.getBoolean("preventPVP", false);
+        config.set("preventPVP", preventPVP);
         if (getServer().getPluginManager().isPluginEnabled("Vault")) {
             vault = new MyChunkVaultLink(this);
             getLogger().info("[Vault] found and hooked!");
@@ -651,6 +805,10 @@ public class MyChunk extends JavaPlugin {
                 config.set("charge_overbuy_on_resales", overbuyP2P);
                 firstChunkFree = config.getBoolean("first_chunk_free", false);
                 config.set("first_chunk_free", firstChunkFree);
+                rampChunkPrice = config.getBoolean("ramp_chunk_price", false);
+                config.set("ramp_chunk_price", rampChunkPrice);
+                priceRampRate = config.getDouble("price_ramp_rate", 25.00);
+                config.set("price_ramp_rate", priceRampRate);
             } else if (!reload) {
                 getLogger().info("No economy plugin found! Chunks will be free");
             }
@@ -681,6 +839,7 @@ public class MyChunk extends JavaPlugin {
      * <p>
      * Checkable settings: (not case sensitive)<br>
      * chunkPrice - Default price of a chunk<br>
+     * priceRampRate - Default price of a chunk<br>
      * overbuyPrice - Premium added to chunk price when overbuying
      * overbuyPrice - Percentage refunded when unclaiming chunks
      * 
@@ -689,6 +848,7 @@ public class MyChunk extends JavaPlugin {
      */
     public static double getDoubleSetting(String setting) {
         if (setting.equalsIgnoreCase("chunkPrice")) return chunkPrice;
+        if (setting.equalsIgnoreCase("priceRampRate")) return priceRampRate;
         if (setting.equalsIgnoreCase("overbuyPrice")) return overbuyPrice;
         if (setting.equalsIgnoreCase("refundPercent")) return refundPercent;
         return 0;
@@ -709,6 +869,7 @@ public class MyChunk extends JavaPlugin {
      * useClaimExpiry - Checks if chunk ownership expires<br>
      * ownerNotifications - Checks if owners receive notifications<br>
      * firstChunkFree - Checks if players can claim 1 chunk for free
+     * rampChunkPrice - Checks if chunk prices increase with each claim
      * 
      * @param setting
      * @return Setting state or false if not found
@@ -726,6 +887,10 @@ public class MyChunk extends JavaPlugin {
         if (setting.equalsIgnoreCase("useClaimExpiry")) return useClaimExpiry;
         if (setting.equalsIgnoreCase("ownerNotifications")) return notify;
         if (setting.equalsIgnoreCase("firstChunkFree")) return firstChunkFree;
+        if (setting.equalsIgnoreCase("preventEntry")) return preventEntry;
+        if (setting.equalsIgnoreCase("preventPVP")) return preventPVP;
+        if (setting.equalsIgnoreCase("allowMobGrief")) return allowMobGrief;
+        if (setting.equalsIgnoreCase("rampChunkPrice")) return rampChunkPrice;
         return false;
     }
     

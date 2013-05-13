@@ -24,7 +24,8 @@
 # useClaimExpiry: Automatically put plots up for sale if the user is inactive
 # 
 # claimExpiresAfter: Days (Real Life) to wait until a plot is put up for sale due to inactivity
-#
+# 
+# preventPVP: Stop PVP in unclaimed chunks. Claimed chunks can set PVP on a per chunk basis
 #
 
 chunk_price: 0.00
@@ -37,3 +38,4 @@ charge_overbuy_on_resales: true
 protect_unclaimed: false
 useClaimExpiry: false
 claimExpiresAfter: 7
+preventPVP: false

@@ -14,7 +14,12 @@ public class Lang {
     private static HashMap<String, String> lang = new HashMap<String, String>();
 
     public static String get(String key) {
-        return lang.get(key);
+        String newLang = lang.get(key);
+        if (newLang != null) {
+            return newLang;
+        } else {
+            return key;
+        }
     }
     
     static {
@@ -45,6 +50,7 @@ public class Lang {
         loadLangPhrase("Build", "Build");
         loadLangPhrase("Destroy", "Destroy");
         loadLangPhrase("AccessChests", "Access Chests");
+        loadLangPhrase("Enter", "Enter Chunk");
         loadLangPhrase("IgniteBlocks", "Ignite Blocks");
         loadLangPhrase("DropLava", "Drop Lava");
         loadLangPhrase("DropWater", "Drop Water");
@@ -56,6 +62,7 @@ public class Lang {
         loadLangPhrase("FirstChunkFree", "Your first chunk claim is free!");
         loadLangPhrase("AmountDeducted", "was deducted from your account");
         loadLangPhrase("BoughtFor", "bought one of your chunks for");
+        loadLangPhrase("ClaimedYourChunk", "claimed a chunk you were selling");
         loadLangPhrase("ChunkClaimed", "Chunk claimed!");
         loadLangPhrase("ChunkClaimedFor", "Chunk claimed for");
         loadLangPhrase("ChunkUnclaimed", "Chunk unclaimed!");
@@ -81,9 +88,10 @@ public class Lang {
         loadLangPhrase("DefaultMax", "Default Max Chunks Per Player");
         loadLangPhrase("Chunk", "Max Chunks");
         loadLangPhrase("AllowNeighbours", "Allow Neighbours");
-        loadLangPhrase("ChunkPrice", "Chunk Price");
+        loadLangPhrase("ChunkPrice", "Next Chunk Price");
         loadLangPhrase("AllowOverbuy", "Allow Overbuy");
         loadLangPhrase("OverbuyFee", "Fee");
+        loadLangPhrase("AllowMobGrief", "Allow Mob Griefing");
         loadLangPhrase("ProtectUnclaimed", "Protect Unclaimed");
         loadLangPhrase("Resales", "resales");
         loadLangPhrase("UnclaimRefunds", "Unclaim Refunds");
@@ -92,6 +100,8 @@ public class Lang {
         loadLangPhrase("AllowNether", "Allow Nether");
         loadLangPhrase("AllowEnd", "Allow End");
         loadLangPhrase("OwnerNotifications", "Owner Notifications");
+        loadLangPhrase("PreventEntry", "Prevent Chunk Entry");
+        loadLangPhrase("PreventPVP", "PVP Prevention");
         loadLangPhrase("PermissionFlags", "Permission Flags");
         loadLangPhrase("Reloaded", "Mychunk files have been reloaded!");
         loadLangPhrase("ToggleNetherCannot", "Users now CANNOT claim chunks in Nether worlds");
@@ -100,10 +110,17 @@ public class Lang {
         loadLangPhrase("ToggleEndCan", "Users now CAN claim chunks in End worlds");
         loadLangPhrase("ToggleNotifyOn", "Owners will now receive protection notifications");
         loadLangPhrase("ToggleNotifyOff", "Owners will now NOT receive protection notifications");
+        loadLangPhrase("ToggleEntryOn", "Chunk entry protection enabled");
+        loadLangPhrase("ToggleEntryOff", "Chunk entry protection disabled");
+        loadLangPhrase("TogglePVPOn", "PVP protection enabled");
+        loadLangPhrase("TogglePVPOff", "PVP protection disabled");
+        loadLangPhrase("ToggleMobGriefOn", "Mob Griefing IS now Allowed");
+        loadLangPhrase("ToggleMobGriefOff", "Mob Griefing is NO LONGER Allowed");
         loadLangPhrase("ToggleFirstChunkFreeOn", "Players can now claim 1 chunk for free");
         loadLangPhrase("ToggleFirstChunkFreeOff", "Players now DO NOT get their first chunk free!");
         loadLangPhrase("RefundSet", "Refund Percentage set to ");
         loadLangPhrase("Percentage", "Percentage");
+        loadLangPhrase("NewRampRate", "New rate");
         
         
         //Errors
@@ -146,7 +163,11 @@ public class Lang {
         loadLangPhrase("MyChunkClash", "That land is already owned!");
         loadLangPhrase("NotPublicSign", "You can't use htat sign in public chunks!");
         loadLangPhrase("SpecifyRefund", "You must specify a new refund percentage!");
+        loadLangPhrase("SpecifyRampRate", "You must specify a new price ramp rate!");
         loadLangPhrase("RefundNotNumber", "Refund percentage must be a number!");
+        loadLangPhrase("ServerNoChunks", "The console doesn't own any chunks!");
+        loadLangPhrase("NoEntry", "has denied you access to this chunk!");
+        loadLangPhrase("NoPVP", "PVP is not allowed here!");
         
         // Permissions
         loadLangPhrase("NoPermsCommand", "You do not have permission to use this command!");

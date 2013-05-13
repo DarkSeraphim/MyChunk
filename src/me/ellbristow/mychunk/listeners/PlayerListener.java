@@ -29,36 +29,50 @@ public class PlayerListener implements Listener {
         if (entity instanceof Player) {
             
             Player hurtPlayer = (Player)entity;
-            Chunk chunk = hurtPlayer.getLocation().getChunk();
+            MyChunkChunk chunk = new MyChunkChunk(hurtPlayer.getLocation().getChunk());
             
-            if (MyChunkChunk.isClaimed(chunk)) {
+            if (chunk.isClaimed()) {
                 
                 Entity damager = event.getDamager();
                 
-                if (damager instanceof Player) {
+                if (damager instanceof Player && !chunk.getAllowPVP()) {
                     
                     event.setCancelled(true);
                     Player naughty = (Player)damager;
                     naughty.sendMessage(ChatColor.RED + Lang.get("NoPermsPVP"));
                     
-                } else if (damager instanceof Monster || damager instanceof Slime) {
+                } else if ((damager instanceof Monster || damager instanceof Slime) && !chunk.getAllowMobs()) {
                     
-                    if (!MyChunkChunk.getAllowMobs(chunk)) {
-                        event.setCancelled(true);
-                    }
+                    event.setCancelled(true);
                     
                 } else if (damager instanceof Projectile) {
                     
                     Entity shooter = ((Projectile) event.getDamager()).getShooter();
                     
-                    if (shooter instanceof Player && entity instanceof Player) {
+                    if (shooter instanceof Player && entity instanceof Player && !chunk.getAllowPVP()) {
                         event.setCancelled(true);
-                    } else if (shooter instanceof Monster && entity instanceof Player) {
-                        
-                        if (!MyChunkChunk.getAllowMobs(chunk)) {
-                            event.setCancelled(true);
-                        }
-                        
+                    } else if (shooter instanceof Monster && entity instanceof Player && !chunk.getAllowMobs()) {
+                        event.setCancelled(true);
+                    }
+                    
+                }
+                
+            } else if (MyChunk.getToggle("preventPVP")) {
+                
+                Entity damager = event.getDamager();
+                
+                if (damager instanceof Player && !chunk.getAllowPVP()) {
+                    
+                    event.setCancelled(true);
+                    Player naughty = (Player)damager;
+                    naughty.sendMessage(ChatColor.RED + Lang.get("NoPermsPVP"));
+                    
+                } else if (damager instanceof Projectile) {
+                    
+                    Entity shooter = ((Projectile) event.getDamager()).getShooter();
+                    
+                    if (shooter instanceof Player && entity instanceof Player && !chunk.getAllowPVP()) {
+                        event.setCancelled(true);
                     }
                     
                 }
@@ -149,7 +163,7 @@ public class PlayerListener implements Listener {
                 
                 }
                 
-            } else if (block.getTypeId() == 77) {
+            } else if (block.getTypeId() == 77 || block.getTypeId() == 143) {
                 
                 // Button
                 
@@ -183,7 +197,7 @@ public class PlayerListener implements Listener {
                     
                 }
                 
-            } else if (block.getTypeId() == 54) {
+            } else if (block.getTypeId() == 54 || block.getTypeId() == 146) {
                 
                 // Chest
                 
@@ -200,7 +214,7 @@ public class PlayerListener implements Listener {
                     
                 }
                 
-            } else if (block.getTypeId() == 61 || block.getTypeId() == 62 || block.getTypeId() == 23 || block.getTypeId() == 117) {
+            } else if (block.getTypeId() == 61 || block.getTypeId() == 62 || block.getTypeId() == 23 || block.getTypeId() == 117 || block.getTypeId() == 116 || block.getTypeId() == 118 || block.getTypeId() == 120 || block.getTypeId() == 137 || block.getTypeId() == 138 || block.getTypeId() == 140 || block.getTypeId() == 145 || block.getTypeId() == 154 || block.getTypeId() == 158) {
                 
                 // Special Block
                 
@@ -217,9 +231,9 @@ public class PlayerListener implements Listener {
                     
                 }
                 
-            } else if (block.getTypeId() == 93 || block.getTypeId() == 93) {
+            } else if (block.getTypeId() == 93 || block.getTypeId() == 94 || block.getTypeId() == 149 || block.getTypeId() == 150) {
                 
-                // Redstone Repeaters
+                // Redstone Repeaters/Comparators
                 
                 if (!MyChunkChunk.isAllowed(chunk, player, "B")) {
                     
@@ -269,56 +283,102 @@ public class PlayerListener implements Listener {
         
         if (fromLoc.getChunk() != toLoc.getChunk()) {
             
-            Chunk fromChunk = fromLoc.getChunk();
-            Chunk toChunk = toLoc.getChunk();
+            String message = "";
+            MyChunkChunk fromChunk = new MyChunkChunk(fromLoc.getChunk());
+            MyChunkChunk toChunk = new MyChunkChunk(toLoc.getChunk());
             Player player = event.getPlayer();
-            String fromChunkOwner = MyChunkChunk.getOwner(fromChunk);
-            String toChunkOwner = MyChunkChunk.getOwner(toChunk);
+            String fromChunkOwner = fromChunk.getOwner();
+            String toChunkOwner = toChunk.getOwner();
             
+            done:
             if (!fromChunkOwner.equalsIgnoreCase(toChunkOwner)) {
                 
+                if (MyChunk.getToggle("preventEntry")) {
+                    if (toChunk.isClaimed() && (!toChunk.getOwner().equalsIgnoreCase(player.getName())) && !toChunk.isAllowed(player.getName(), "E") && !toChunk.isForSale() && !player.hasPermission("mychunk.override")) {
+                        if (!toChunk.getOwner().equalsIgnoreCase("Server") ^ !player.hasPermission("mychunk.server.entry")) {
+                            message += toChunk.getOwner() + " " + ChatColor.RED + Lang.get("NoEntry");
+                            event.setCancelled(true);
+                            break done;
+                        }
+                    }
+                }
+                
                 if (toChunkOwner.equals("")) {
-                    player.sendMessage(ChatColor.GRAY + "~"+Lang.get("Unowned"));
-                    return;
+                    message += ChatColor.GRAY + "~"+Lang.get("Unowned");
+                    break done;
                 }
                 
                 String forSale = "";
                 
                 if (MyChunk.getToggle("foundEconomy")) {
                     
-                    double claimPrice = MyChunkChunk.getClaimPrice(toChunk, player);
-                    
-                    if (claimPrice != 0) {
-                        
-                        forSale = ChatColor.YELLOW + " ["+Lang.get("ChunkForSale")+ ": " + MyChunkVaultLink.getEconomy().format(claimPrice) + "]";
+                    if (toChunk.isForSale()) {
+                        double claimPrice = toChunk.getClaimPrice();
 
+                        if (claimPrice != 0) {
+
+                            forSale = ChatColor.YELLOW + " ["+Lang.get("ChunkForSale")+ ": " + MyChunkVaultLink.getEconomy().format(claimPrice) + "]";
+
+                        }
                     }
                 }
                 
                 if (toChunkOwner.equalsIgnoreCase("server")) {
-                    player.sendMessage(ChatColor.LIGHT_PURPLE + "~"+Lang.get("Server") + forSale);
+                    message += ChatColor.LIGHT_PURPLE + "~"+Lang.get("Server") + forSale;
                 } else if (toChunkOwner.equalsIgnoreCase("public")) {
-                    player.sendMessage(ChatColor.GREEN + "~"+Lang.get("Public") + forSale);
+                    message += ChatColor.GREEN + "~"+Lang.get("Public") + forSale;
                 } else {
-                    player.sendMessage(ChatColor.GOLD + "~" + toChunkOwner + forSale);
+                    message += ChatColor.GOLD + "~" + toChunkOwner + forSale;
                 }
                 
             } else if (!toChunkOwner.equals("")) {
                 
-                if (MyChunk.getToggle("foundEconomy")) {
-
-                    double claimPrice = MyChunkChunk.getClaimPrice(toChunk, player);
-
-                    if (claimPrice == 0) {
-                        return;
+                if (MyChunk.getToggle("preventEntry")) {
+                    if (toChunk.isClaimed() && (!toChunk.getOwner().equalsIgnoreCase(player.getName())) && !toChunk.isAllowed(player.getName(), "E") && !toChunk.isForSale() && !player.hasPermission("mychunk.override")) {
+                        if (!toChunk.getOwner().equalsIgnoreCase("Server") ^ !player.hasPermission("mychunk.server.entry")) {
+                            message += toChunk.getOwner() + " " + ChatColor.RED + Lang.get("NoEntry");
+                            event.setCancelled(true);
+                            return;
+                        }
                     }
+                }
+                
+                if (MyChunk.getToggle("foundEconomy")) {
+                    if (toChunk.isForSale()) {
+                        double claimPrice = toChunk.getClaimPrice();
 
-                    String forSale = ChatColor.YELLOW + "["+Lang.get("ChunkForSale") + ": " + MyChunkVaultLink.getEconomy().format(claimPrice) + "]";
+                        if (claimPrice == 0) {
+                            return;
+                        }
 
-                    player.sendMessage(forSale);
+                        String forSale = ChatColor.YELLOW + "["+Lang.get("ChunkForSale") + ": " + MyChunkVaultLink.getEconomy().format(claimPrice) + "]";
+
+                        message += forSale;
+                    }
                 }
                 
             }
+            
+            if (fromChunk.getAllowPVP() != toChunk.getAllowPVP()) {
+                if (toChunk.getAllowPVP()) {
+                    message += ChatColor.DARK_RED + " PVP";
+                } else {
+                    message += ChatColor.GREEN + " NoPVP";
+                }
+            }
+            
+            if (fromChunk.getAllowMobs() != toChunk.getAllowMobs()) {
+                if (toChunk.getAllowMobs()) {
+                    message += ChatColor.DARK_RED + " Mobs";
+                } else {
+                    message += ChatColor.GREEN + " NoMobs";
+                }
+            }
+            
+            if (!message.isEmpty()) {
+                player.sendMessage(message);
+            }
+            
         }
     }
     
