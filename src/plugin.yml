@@ -51,6 +51,7 @@ permissions:
       mychunk.commands.purge.*: true
       mychunk.commands.reload: true
       mychunk.commands.refund: true
+      mychunk.commands.world.*: true
   mychunk.commands.price:
     description: Access to command /mychunk price
     default: op
