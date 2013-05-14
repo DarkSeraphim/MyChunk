@@ -120,8 +120,11 @@ public class Lang {
         loadLangPhrase("ToggleFirstChunkFreeOff", "Players now DO NOT get their first chunk free!");
         loadLangPhrase("RefundSet", "Refund Percentage set to ");
         loadLangPhrase("Percentage", "Percentage");
+        loadLangPhrase("WorldEnabled", "World enabled");
+        loadLangPhrase("WorldDisabled", "World disabled");
+        loadLangPhrase("AllWorldsEnabled", "All worlds enabled");
+        loadLangPhrase("AllWorldsDisabled", "All worlds disabled");
         loadLangPhrase("NewRampRate", "New rate");
-        
         
         //Errors
         loadLangPhrase("AlreadyOwner", "You already own this chunk!");
@@ -165,6 +168,7 @@ public class Lang {
         loadLangPhrase("SpecifyRefund", "You must specify a new refund percentage!");
         loadLangPhrase("SpecifyRampRate", "You must specify a new price ramp rate!");
         loadLangPhrase("RefundNotNumber", "Refund percentage must be a number!");
+        loadLangPhrase("CommandMustBeRunByPlayer", "This command must be run by a player!");
         loadLangPhrase("ServerNoChunks", "The console doesn't own any chunks!");
         loadLangPhrase("NoEntry", "has denied you access to this chunk!");
         loadLangPhrase("NoPVP", "PVP is not allowed here!");

@@ -24,7 +24,9 @@
 # useClaimExpiry: Automatically put plots up for sale if the user is inactive
 # 
 # claimExpiresAfter: Days (Real Life) to wait until a plot is put up for sale due to inactivity
-# 
+#
+# worlds: Worlds in which this plugin will be active - use /mychunk world enable [world] in-game to enable a world
+#
 # preventPVP: Stop PVP in unclaimed chunks. Claimed chunks can set PVP on a per chunk basis
 #
 
@@ -38,4 +40,5 @@ charge_overbuy_on_resales: true
 protect_unclaimed: false
 useClaimExpiry: false
 claimExpiresAfter: 7
+worlds: []
 preventPVP: false

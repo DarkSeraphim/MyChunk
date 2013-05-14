@@ -26,6 +26,7 @@ public class MobListener implements Listener {
     public void onEntityInteract(EntityInteractEvent event) {
         
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getEntity().getWorld().getName())) return;
         
         Block block = event.getBlock();
         
@@ -39,6 +40,7 @@ public class MobListener implements Listener {
     public void onMonsterSpawn (CreatureSpawnEvent event) {
         
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getEntity().getWorld().getName())) return;
         
         if (!event.getSpawnReason().equals(SpawnReason.EGG)) {
             LivingEntity mob = event.getEntity();

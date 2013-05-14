@@ -32,6 +32,7 @@ public class BlockListener implements Listener {
     public void onBlockPlace (BlockPlaceEvent event) {
         
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getBlock().getLocation().getWorld().getName())) return;
         
         Player player = event.getPlayer();
         Block block = event.getBlock();
@@ -54,6 +55,7 @@ public class BlockListener implements Listener {
     public void onBlockBreak (BlockBreakEvent event) {
         
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getBlock().getLocation().getWorld().getName())) return;
         
         Player player = event.getPlayer();
         Block block = event.getBlock();
@@ -80,6 +82,7 @@ public class BlockListener implements Listener {
     public void onBlockIgnite (BlockIgniteEvent event) {
         
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getBlock().getLocation().getWorld().getName())) return;
         
         if (event.getCause().equals(BlockIgniteEvent.IgniteCause.FLINT_AND_STEEL)) {
             
@@ -108,6 +111,7 @@ public class BlockListener implements Listener {
     public void onBlockFromTo (BlockFromToEvent event) {
         
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getBlock().getLocation().getWorld().getName())) return;
         
         Block block = event.getBlock();
         Block toBlock = event.getToBlock();
@@ -129,6 +133,7 @@ public class BlockListener implements Listener {
     public void onBlockBurn (BlockBurnEvent event) {
         
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getBlock().getLocation().getWorld().getName())) return;
         
         Block block = event.getBlock();
         
@@ -148,6 +153,7 @@ public class BlockListener implements Listener {
     public void onBlockSpread (BlockSpreadEvent event) {
         
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getBlock().getLocation().getWorld().getName())) return;
         
         if (event.getSource().getType().equals(Material.WATER) || event.getSource().getType().equals(Material.LAVA)) {
             
@@ -163,6 +169,7 @@ public class BlockListener implements Listener {
     public void onHangingBreak(HangingBreakByEntityEvent event) {
         
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getEntity().getWorld().getName())) return;
         
         Entity remover = event.getRemover();
         Chunk chunk = event.getEntity().getLocation().getChunk();
@@ -190,6 +197,7 @@ public class BlockListener implements Listener {
     public void onHangingPlace(HangingPlaceEvent event) {
         
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getEntity().getWorld().getName())) return;
         
         Player player = event.getPlayer();
         Chunk chunk = event.getBlock().getChunk();

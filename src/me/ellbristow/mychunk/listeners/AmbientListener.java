@@ -30,6 +30,7 @@ public class AmbientListener implements Listener {
     public void onExplosion (EntityExplodeEvent event) {
         
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getLocation().getWorld().getName())) return;
         
         List<Block> blocks = event.blockList();
         
@@ -68,6 +69,7 @@ public class AmbientListener implements Listener {
     public void onPistonExtend(BlockPistonExtendEvent event) {
         
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getBlock().getWorld().getName())) return;
         
         if (event.getBlock().getChunk() != event.getBlock().getRelative(event.getDirection()).getChunk()) {
             
@@ -114,6 +116,7 @@ public class AmbientListener implements Listener {
     public void onPistonRetract(BlockPistonRetractEvent event) {
          
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getBlock().getWorld().getName())) return;
         
         if (!event.getDirection().equals(BlockFace.UP) && !event.getDirection().equals(BlockFace.DOWN)) {
             
@@ -158,6 +161,8 @@ public class AmbientListener implements Listener {
     @EventHandler (priority = EventPriority.NORMAL)
     public void onPotionSplash(PotionSplashEvent event) {
         
+        if (!MyChunk.isWorldEnabled(event.getEntity().getWorld().getName())) return;
+        
         ThrownPotion potion = event.getPotion();
         String owner = MyChunkChunk.getOwner(potion.getLocation().getChunk());
         
@@ -190,6 +195,7 @@ public class AmbientListener implements Listener {
     public void onZombieDoorEvent (EntityBreakDoorEvent event) {
         
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getEntity().getWorld().getName())) return;
         
         if (event.getEntityType().equals(EntityType.ZOMBIE)) {
             

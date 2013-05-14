@@ -1,6 +1,6 @@
 name: MyChunk
 main: me.ellbristow.mychunk.MyChunk
-version: 2.4.0
+version: 2.4.1
 author: ellbristow
 description: >
              Buy/Sell chunks for currency, get protection, make profit.
@@ -51,6 +51,7 @@ permissions:
       mychunk.commands.purge.*: true
       mychunk.commands.reload: true
       mychunk.commands.refund: true
+      mychunk.commands.world.*: true
       mychunk.commands.ramprate: true
       mychunk.commands.info: true
       mychunk.commands.info.others: true
@@ -160,6 +161,26 @@ permissions:
     description: Access to /mychunk purgew
   mychunk.commands.reload:
     description: Access to /mychunk reload
+  mychunk.commands.world.*:
+    description: Access to /mychunk world ...
+    default: op
+    children:
+      mychunk.commands.world.enable: true
+      mychunk.commands.world.disable: true
+      mychunk.commands.world.enable.all: true
+      mychunk.commands.world.disable.all: true
+  mychunk.commands.world.enable:
+    description: Access to /mychunk world enable
+    default: op
+  mychunk.commands.world.disable:
+    description: Access to /mychunk world disable
+    default: op
+  mychunk.commands.world.enable.all:
+    description: Access to /mychunk world enable all
+    default: op
+  mychunk.commands.world.disable.all:
+    description: Access to /mychunk world disable all
+    default: op
 
 # Claim Permissions
   mychunk.claim.*:

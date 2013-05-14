@@ -33,6 +33,7 @@ public class SignListener implements Listener {
         if (event.isCancelled()) {
             return;
         }
+        if (!MyChunk.isWorldEnabled(event.getBlock().getWorld().getName())) return;
 
         String line0 = event.getLine(0);
         String line1 = event.getLine(1);
