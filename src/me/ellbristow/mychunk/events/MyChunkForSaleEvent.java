@@ -5,23 +5,19 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
 
-public class MyChunkUnclaimEvent extends Event {
+public class MyChunkForSaleEvent extends Event {
 
     private static final HandlerList handlers = new HandlerList();
     private LiteChunk chunk;
-    private String oldOwner;
+    private String owner;
     
-    public MyChunkUnclaimEvent(String worldName, int x, int z, String oldOwner) {
-        chunk = new LiteChunk(worldName, x, z, "", false);
-        this.oldOwner = oldOwner;
+    public MyChunkForSaleEvent(String worldName, int x, int z, String owner, boolean chunkForSale) {
+        chunk = new LiteChunk(worldName, x, z, owner, chunkForSale);
+        this.owner = owner;
     }
     
     public LiteChunk getLiteChunk() {
         return chunk;
-    }
-    
-    public String getOldOwner() {
-        return oldOwner;
     }
     
     @Override
@@ -31,6 +27,10 @@ public class MyChunkUnclaimEvent extends Event {
     
     public static HandlerList getHandlerList() {
         return handlers;
+    }
+    
+    public String getOwner() {
+        return owner;
     }
 
 }

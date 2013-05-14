@@ -11,8 +11,8 @@ public class MyChunkClaimEvent extends Event {
     private LiteChunk chunk;
     private String oldOwner;
     
-    public MyChunkClaimEvent(String worldName, int x, int z, String oldOwner, String newOwner) {
-        chunk = new LiteChunk(worldName, x, z, newOwner);
+    public MyChunkClaimEvent(String worldName, int x, int z, String oldOwner, String newOwner, boolean chunkForSale) {
+        chunk = new LiteChunk(worldName, x, z, newOwner, chunkForSale);
         this.oldOwner = oldOwner;
     }
     

@@ -27,6 +27,7 @@
 #
 # worlds: Worlds in which this plugin will be active - use /mychunk world enable [world] in-game to enable a world
 #
+# preventPVP: Stop PVP in unclaimed chunks. Claimed chunks can set PVP on a per chunk basis
 #
 
 chunk_price: 0.00
@@ -40,3 +41,4 @@ protect_unclaimed: false
 useClaimExpiry: false
 claimExpiresAfter: 7
 worlds: []
+preventPVP: false

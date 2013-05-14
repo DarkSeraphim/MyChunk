@@ -45,7 +45,7 @@ public class AmbientListener implements Listener {
                 
                 if (MyChunkChunk.isClaimed(block.getChunk()) && !MyChunkChunk.getOwner(block.getChunk()).equalsIgnoreCase("Public") && !MyChunk.getToggle("protectUnclaimed")) {
                     saveBlocks.add(block);
-                } else if (MyChunk.getToggle("protectUnclaimed")) {
+                } else if (MyChunk.getToggle("protectUnclaimed") || !MyChunk.getToggle("allowMobGrief")) {
                     
                     if (!(event.getEntity() instanceof TNTPrimed) || (event.getEntity() instanceof TNTPrimed && MyChunk.getToggle("unclaimedTNT"))) {
                         saveBlocks.add(block);
@@ -199,7 +199,7 @@ public class AmbientListener implements Listener {
         
         if (event.getEntityType().equals(EntityType.ZOMBIE)) {
             
-            if ((MyChunkChunk.isClaimed(event.getBlock().getChunk()) && !MyChunkChunk.getOwner(event.getBlock().getChunk()).equalsIgnoreCase("Public")) || MyChunk.getToggle("protectUnclaimed")) {
+            if ((MyChunkChunk.isClaimed(event.getBlock().getChunk()) && !MyChunkChunk.getOwner(event.getBlock().getChunk()).equalsIgnoreCase("Public")) || MyChunk.getToggle("protectUnclaimed") || MyChunk.getToggle("allowMobGrief")) {
                 event.setCancelled(true);
             }
             
