@@ -27,6 +27,7 @@ permissions:
       mychunk.public.*: true
       mychunk.unclaim.*: true
       mychunk.allowmobs: true
+      mychunk.allowpvp: true
   
   mychunk.free:
     description: Player does not pay to claim chunks

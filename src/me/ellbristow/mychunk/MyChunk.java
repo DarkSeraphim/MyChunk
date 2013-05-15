@@ -703,6 +703,9 @@ public class MyChunk extends JavaPlugin {
                     for (int i = 0; i < chunks.size(); i++) {
                         Chunk thisChunk = Bukkit.getWorld(chunks.get(i).getWorldName()).getChunkAt(chunks.get(i).getX(), chunks.get(i).getZ());
                         sender.sendMessage(ChatColor.GOLD + " World: " + ChatColor.GRAY + thisChunk.getWorld().getName() + ChatColor.GOLD + " X: " + ChatColor.GRAY + thisChunk.getBlock(7, 0, 7).getX() + ChatColor.GOLD + " Z: " + ChatColor.GRAY + thisChunk.getBlock(7, 0, 7).getZ());
+                    }
+                }
+                return true;
             }
         } else if (args.length == 3) {
             if (args[0].equalsIgnoreCase("world")) {
@@ -749,7 +752,9 @@ public class MyChunk extends JavaPlugin {
                         sender.sendMessage(ChatColor.GOLD + Lang.get("AllWorldsDisabled"));
                     } else {
                         sender.sendMessage(ChatColor.GOLD + Lang.get("WorldDisabled") + ": " + args[2]);
+                    }
                 }
+                return true;
             }
         }
         return false;
