@@ -116,7 +116,7 @@ public class SignListener implements Listener {
             
             if (MyChunk.getToggle("foundEconomy")) {
                 
-                if (!player.hasPermission("mychunk.free") && !(playerClaimed == 0 && MyChunk.getToggle("firstChunkFree"))) {
+                if (!line1.equalsIgnoreCase("server") && !line1.equalsIgnoreCase("public") && !player.hasPermission("mychunk.free") && !(playerClaimed == 0 && MyChunk.getToggle("firstChunkFree"))) {
                     if (!isOverbuy) {
 
                         claimPrice = chunk.getClaimPrice();
