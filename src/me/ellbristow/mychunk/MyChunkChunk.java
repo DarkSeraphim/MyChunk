@@ -124,7 +124,7 @@ public class MyChunkChunk {
     public void claim(String playerName) {
         MyChunkClaimEvent event = new MyChunkClaimEvent(chunkWorld, chunkX, chunkZ, owner, playerName, forSale);
         this.owner = playerName;
-        SQLiteBridge.query("INSERT OR REPLACE INTO MyChunks (world, x, z, owner, salePrice, allowMobs, allowed, lastActive) VALUES ('"+chunkWorld+"', "+chunkX+", "+chunkZ+", '"+playerName+"', 0, 0, '', "+lastActive+")");
+        SQLiteBridge.query("INSERT OR REPLACE INTO MyChunks (world, x, z, owner, salePrice, allowMobs, allowPVP, allowed, lastActive) VALUES ('"+chunkWorld+"', "+chunkX+", "+chunkZ+", '"+playerName+"', 0, 0, '', "+lastActive+")");
         forSale = false;
         if (!playerName.equalsIgnoreCase("Public")) {
             if (chunkNE.isLiquid() || chunkNE.getTypeId() == 79) {
