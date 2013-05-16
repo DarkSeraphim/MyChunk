@@ -134,7 +134,7 @@ public class SignListener implements Listener {
                         }
                         claimPrice += MyChunk.getDoubleSetting("priceRampRate") * ramp;
                     }
-                } else {
+                } else if (MyChunk.getToggle("firstChunkFree") && playerClaimed == 0)  {
                     isFreeChunk = true;
                 }
             }
@@ -625,10 +625,7 @@ public class SignListener implements Listener {
                 if (!(MyChunk.getToggle("firstChunkFree") && MyChunkChunk.getOwnedChunkCount(player.getName()) == 0)) {
                     double price = MyChunk.getDoubleSetting("chunkPrice");
                     if (MyChunk.getToggle("rampChunkPrice") && MyChunk.getDoubleSetting("priceRampRate") != 0) {
-                        int claimed = MyChunkChunk.getOwnedChunkCount(player.getName()) -1;
-                        if (MyChunk.getToggle("firstChunkFree") && claimed > 0) {
-                            claimed--;
-                        }
+                        int claimed = MyChunkChunk.getOwnedChunkCount(player.getName());
                         price += MyChunk.getDoubleSetting("priceRampRate") * claimed;
                     }
                     MyChunkVaultLink.getEconomy().depositPlayer(player.getName(), price / 100 * MyChunk.getDoubleSetting("refundPercent"));
