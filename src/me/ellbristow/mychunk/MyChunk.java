@@ -18,7 +18,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class MyChunk extends JavaPlugin {
 
-    private FileConfiguration config;
+    private static FileConfiguration config;
     private static boolean foundEconomy = false;
     
     // Toggleable settings
@@ -43,7 +43,8 @@ public class MyChunk extends JavaPlugin {
     private static double priceRampRate = 25.00;
     private static int maxChunks = 8;
     private static boolean notify = true;
-    private static Set<String> worlds = new HashSet<String>();
+    private static Set<String> enabledWorlds = new HashSet<String>();
+    private static Set<String> disabledWorlds = new HashSet<String>();
     private MyChunkVaultLink vault;
     
     // LOOK! SQLite stuff!
@@ -65,6 +66,7 @@ public class MyChunk extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new MobListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
         getServer().getPluginManager().registerEvents(new SignListener(), this);
+        getServer().getPluginManager().registerEvents(new WorldListener(), this);
         if (FactionsHook.foundFactions()) {
             getServer().getPluginManager().registerEvents(new FactionsHook(), this);
             getLogger().info("Hooked into [Factions]");
@@ -665,8 +667,10 @@ public class MyChunk extends JavaPlugin {
                     }
                     Player player = (Player) sender;
                     String worldName = player.getWorld().getName();
-                    worlds.add(worldName);
-                    config.set("worlds", new ArrayList<String>(worlds));
+                    enabledWorlds.add(worldName);
+                    config.set("worlds", new ArrayList<String>(enabledWorlds));
+                    disabledWorlds.remove(worldName);
+                    config.set("disabledworlds", new ArrayList<String>(disabledWorlds));
                     saveConfig();
                     sender.sendMessage(ChatColor.GOLD + Lang.get("WorldEnabled") + ": " + worldName);
                 } else if (args[1].equalsIgnoreCase("disable")) {
@@ -680,8 +684,10 @@ public class MyChunk extends JavaPlugin {
                     }
                     Player player = (Player) sender;
                     String worldName = player.getWorld().getName();
-                    worlds.remove(worldName);
-                    config.set("worlds", new ArrayList<String>(worlds));
+                    disabledWorlds.add(worldName);
+                    config.set("disabledworlds", new ArrayList<String>(disabledWorlds));
+                    enabledWorlds.remove(worldName);
+                    config.set("worlds", new ArrayList<String>(enabledWorlds));
                     saveConfig();
                     sender.sendMessage(ChatColor.GOLD + Lang.get("WorldDisabled") + ": " + worldName);
                 }
@@ -720,12 +726,15 @@ public class MyChunk extends JavaPlugin {
                             return false;
                         }
                         for (World world : getServer().getWorlds()) {
-                            worlds.add(world.getName());
+                            enabledWorlds.add(world.getName());
                         }
+                        disabledWorlds.clear();
                     } else {
-                        worlds.add(args[2]);
+                        enabledWorlds.add(args[2]);
+                        disabledWorlds.remove(args[2]);
                     }
-                    config.set("worlds", new ArrayList<String>(worlds));
+                    config.set("worlds", new ArrayList<String>(enabledWorlds));
+                    config.set("disabledworlds", new ArrayList<String>(disabledWorlds));
                     saveConfig();
                     if (args[2].equalsIgnoreCase("all")) {
                         sender.sendMessage(ChatColor.GOLD + Lang.get("AllWorldsEnabled"));
@@ -742,11 +751,16 @@ public class MyChunk extends JavaPlugin {
                             sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
                             return false;
                         }
-                        worlds.clear();
+                        enabledWorlds.clear();
+                        for (World world : getServer().getWorlds()) {
+                            disabledWorlds.add(world.getName());
+                        }
                     } else {
-                        worlds.remove(args[2]);
+                        enabledWorlds.remove(args[2]);
+                        disabledWorlds.add(args[2]);
                     }
-                    config.set("worlds", new ArrayList<String>(worlds));
+                    config.set("worlds", new ArrayList<String>(enabledWorlds));
+                    config.set("disabledworlds", new ArrayList<String>(disabledWorlds));
                     saveConfig();
                     if (args[2].equalsIgnoreCase("all")) {
                         sender.sendMessage(ChatColor.GOLD + Lang.get("AllWorldsDisabled"));
@@ -864,8 +878,24 @@ public class MyChunk extends JavaPlugin {
         refundPercent = config.getDouble("refund_percent", 100);
         config.set("refund_percent", refundPercent);
         List<String> worldsList = config.getStringList("worlds");
+        enabledWorlds = new HashSet<String>(worldsList);
+        List<String> disabledWorldsList = config.getStringList("disabledworlds");
+        disabledWorlds = new HashSet<String>(disabledWorldsList);
+        if (enabledWorlds.isEmpty() && disabledWorlds.isEmpty()) {
+            // Enable all worlds by default
+            for (World world : getServer().getWorlds()) {
+                enabledWorlds.add(world.getName());
+            }
+        } else {
+            // check all worlds listed
+            for (World world : getServer().getWorlds()) {
+                if (!isWorldEnabled(world.getName()) && !isWorldDisabled(world.getName())) {
+                    enabledWorlds.add(world.getName());
+                }
+            }
+        }
         config.set("worlds", worldsList);
-        worlds = new HashSet<String>(worldsList);
+        config.set("disabledworlds", disabledWorldsList);
         allowMobGrief = config.getBoolean("allow_mob_griefing", true);
         config.set("allow_mob_griefing", allowMobGrief);
         preventEntry = config.getBoolean("prevent_chunk_entry", false);
@@ -981,6 +1011,18 @@ public class MyChunk extends JavaPlugin {
     }
     
     public static boolean isWorldEnabled(String name) {
-        return worlds.contains(name);
+        return enabledWorlds.contains(name);
     }
+    
+    public static boolean isWorldDisabled(String name) {
+        return disabledWorlds.contains(name);
+    }
+    
+    public static void enableWorld(String worldName) {
+        enabledWorlds.add(worldName);
+        disabledWorlds.remove(worldName);
+        config.set("worlds", enabledWorlds);
+        config.set("disabledworlds", disabledWorlds);
+    }
+    
 }
