@@ -86,6 +86,7 @@ public class Lang {
         loadLangPhrase("Yours", "Yours");
         loadLangPhrase("Unlimited", "Unlimited");
         loadLangPhrase("DefaultMax", "Default Max Chunks Per Player");
+        loadLangPhrase("MaxChunkClaim", "Max Chunks You Can Claim");
         loadLangPhrase("Chunk", "Max Chunks");
         loadLangPhrase("AllowNeighbours", "Allow Neighbours");
         loadLangPhrase("ChunkPrice", "Next Chunk Price");
@@ -125,6 +126,7 @@ public class Lang {
         loadLangPhrase("AllWorldsEnabled", "All worlds enabled");
         loadLangPhrase("AllWorldsDisabled", "All worlds disabled");
         loadLangPhrase("NewRampRate", "New rate");
+        loadLangPhrase("NextPage", "Next Page");
         
         //Errors
         loadLangPhrase("AlreadyOwner", "You already own this chunk!");
@@ -172,6 +174,8 @@ public class Lang {
         loadLangPhrase("ServerNoChunks", "The console doesn't own any chunks!");
         loadLangPhrase("NoEntry", "has denied you access to this chunk!");
         loadLangPhrase("NoPVP", "PVP is not allowed here!");
+        loadLangPhrase("CannotFindWorld", "Cannot find a world called");
+        loadLangPhrase("CommandNotRecognised", "Command not recognised:");
         
         // Permissions
         loadLangPhrase("NoPermsCommand", "You do not have permission to use this command!");

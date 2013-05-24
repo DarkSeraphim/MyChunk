@@ -298,7 +298,7 @@ public class PlayerListener implements Listener {
             if (!fromChunkOwner.equalsIgnoreCase(toChunkOwner)) {
                 
                 if (MyChunk.getToggle("preventEntry")) {
-                    if (toChunk.isClaimed() && (!toChunk.getOwner().equalsIgnoreCase(player.getName())) && !toChunk.isAllowed(player.getName(), "E") && !toChunk.isForSale() && !player.hasPermission("mychunk.override")) {
+                    if (toChunk.isClaimed() && !toChunk.getOwner().equalsIgnoreCase("Public") && !toChunk.getOwner().equalsIgnoreCase(player.getName()) && !toChunk.isAllowed(player.getName(), "E") && !toChunk.isForSale() && !player.hasPermission("mychunk.override")) {
                         if (!toChunk.getOwner().equalsIgnoreCase("Server") ^ !player.hasPermission("mychunk.server.entry")) {
                             message += toChunk.getOwner() + " " + ChatColor.RED + Lang.get("NoEntry");
                             event.setCancelled(true);
@@ -338,7 +338,7 @@ public class PlayerListener implements Listener {
             } else if (!toChunkOwner.equals("")) {
                 
                 if (MyChunk.getToggle("preventEntry")) {
-                    if (toChunk.isClaimed() && (!toChunk.getOwner().equalsIgnoreCase(player.getName())) && !toChunk.isAllowed(player.getName(), "E") && !toChunk.isForSale() && !player.hasPermission("mychunk.override")) {
+                    if (toChunk.isClaimed() && !toChunk.getOwner().equalsIgnoreCase("Public") && !toChunk.getOwner().equalsIgnoreCase(player.getName()) && !toChunk.isAllowed(player.getName(), "E") && !toChunk.isForSale() && !player.hasPermission("mychunk.override")) {
                         if (!toChunk.getOwner().equalsIgnoreCase("Server") ^ !player.hasPermission("mychunk.server.entry")) {
                             message += toChunk.getOwner() + " " + ChatColor.RED + Lang.get("NoEntry");
                             event.setCancelled(true);

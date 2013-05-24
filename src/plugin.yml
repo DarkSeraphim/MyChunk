@@ -56,6 +56,19 @@ permissions:
       mychunk.commands.ramprate: true
       mychunk.commands.info: true
       mychunk.commands.info.others: true
+  mychunk.commands.user:
+    description: Access to all commands a normal user would need
+    default: op
+    children:
+      mychunk.commands.stats: true
+      mychunk.commands.flags: true
+      mychunk.commands.info: true
+      mychunk.commands.claim: true
+      mychunk.commands.unclaim: true
+      mychunk.commands.allowmobs: true
+      mychunk.commands.allowpvp: true
+      mychunk.commands.allow: true
+      mychunk.commands.disallow: true
   mychunk.commands.price:
     description: Access to command /mychunk price
     default: op
