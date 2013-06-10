@@ -1,6 +1,6 @@
 name: MyChunk
 main: me.ellbristow.mychunk.MyChunk
-version: 2.4.1
+version: 2.5.0
 author: ellbristow
 description: >
              Buy/Sell chunks for currency, get protection, make profit.
@@ -8,11 +8,15 @@ softdepend: [Vault,My Worlds,Multiverse,dynmap,DynmapMyChunk,Factions]
 
 commands:
   mychunk:
-    description: Main (and only) command
+    description: Use /mychunk ? for command help
 
 permissions:
 
-# Admin Permissions
+#####################
+# Permission Groups #
+#####################
+
+# ALL Permissions #
   mychunk.*:
     description: Admin permission for total access
     default: op
@@ -28,21 +32,14 @@ permissions:
       mychunk.unclaim.*: true
       mychunk.allowmobs: true
       mychunk.allowpvp: true
-  
-  mychunk.free:
-    description: Player does not pay to claim chunks
-    default: op
-  
-  mychunk.override:
-    description: Player can bypass chunk protections (handle with care!)
-    default: op
-
-# Command Permissions
+      
+# ALL Commands #
   mychunk.commands.*:
     description: Access to all MyChunk commands
     default: op
     children:
       mychunk.commands.stats: true
+      mychunk.commands.help: true
       mychunk.commands.price: true
       mychunk.commands.obprice: true
       mychunk.commands.max: true
@@ -56,11 +53,83 @@ permissions:
       mychunk.commands.ramprate: true
       mychunk.commands.info: true
       mychunk.commands.info.others: true
+      
+# ALL Admin Claim Permissions #
+  mychunk.claim.*:
+    description: Can claim chunks for self/server/others
+    default: op
+    children:
+       mychunk.claim: true
+       mychunk.claim.others: true
+       mychunk.claim.server: true
+       mychunk.claim.public: true
+       mychunk.claim.unlimited: true
+       mychunk.claim.others.unlimited: true
+       mychunk.claim.overbuy: true
+       mychunk.claim.area: true
+
+# ALL Unclaim Permissions #
+  mychunk.unclaim.*:
+    description: Can unclaim chunks for others/server
+    default: op
+    children:
+      mychunk.unclaim.others: true
+      mychunk.unclaim.server: true
+      mychunk.unclaim.public: true
+
+# ALL Server Chunk Permissions #
+  mychunk.server.*:
+    description: Can build/destroy/use in server owned chunks.
+    default: false
+    children:
+      mychunk.server.build: true
+      mychunk.server.chests: true
+      mychunk.server.destroy: true
+      mychunk.server.doors: true
+      mychunk.server.entry: true
+      mychunk.server.ignite: true
+      mychunk.server.lava: true
+      mychunk.server.use: true
+      mychunk.server.special: true
+      mychunk.server.signs: true
+      mychunk.server.water: true
+      
+# ALL Public Chunk Permissions #
+  mychunk.public.*:
+    description: Has all public permissions
+    default: true
+    children:
+      mychunk.public.build: true
+      mychunk.public.chests: true
+      mychunk.public.destroy: true
+      mychunk.public.doors: true
+      mychunk.public.ignite: true
+      mychunk.public.lava: true
+      mychunk.public.use: true
+      mychunk.public.special: true
+      mychunk.public.signs: true
+      mychunk.public.water: true
+
+# Default User Permissions #
+# NOTE: Overbuy Not Included #
+  mychunk.user:
+    description: Access to all permissions an average user would need
+    default: op
+    children:
+      mychunk.claim: true
+      mychunk.buy: true
+      mychunk.sell: true
+      mychunk.allowmobs: true
+      mychunk.allowpvp: true
+      mychunk.commands.user: true
+
+# Default User Commands #
   mychunk.commands.user:
     description: Access to all commands a normal user would need
     default: op
     children:
       mychunk.commands.stats: true
+      mychunk.commands.help: true
       mychunk.commands.flags: true
       mychunk.commands.info: true
       mychunk.commands.claim: true
@@ -69,36 +138,107 @@ permissions:
       mychunk.commands.allowpvp: true
       mychunk.commands.allow: true
       mychunk.commands.disallow: true
-  mychunk.commands.price:
-    description: Access to command /mychunk price
+
+##########################
+# Individual Permissions #
+##########################
+
+# General Permissions #
+  
+  mychunk.free:
+    description: Player does not pay to claim chunks
     default: op
-  mychunk.commands.obprice:
-    description: Access to command /mychunk obprice
+  
+  mychunk.override:
+    description: Player can bypass chunk protections (handle with care!)
     default: op
-  mychunk.commands.max:
-    description: Access to command /mychunk max
+  
+  mychunk.sell:
+    description: Can sell chunks with a [For Sale] sign
     default: op
-  mychunk.commands.ramprate:
-    description: Access to command /mychunk ramprate
+    
+  mychunk.buy:
+    description: Can buy chunks set as [For Sale]
     default: op
-  mychunk.commands.expirydays:
-    description: Access to command /mychunk expirydays
+  
+  mychunk.allowmobs:
+    description: Can use [AllowMobs] signs
     default: op
+    
+  mychunk.allowpvp:
+    description: Can use [AllowPVP] signs
+    default: op
+
+# Commands #
+
   mychunk.commands.stats:
     description: Access to command /mychunk
     default: op
+  
+  mychunk.commands.help:
+    description: Access to command /mychunk help
+    default: op
+    
   mychunk.commands.info:
-    description: Access to command /mychunk info
+    description: Access to command /mychunk info {page}
     default: op
+    
   mychunk.commands.info.others:
-    description: Access to command /mychunk info [player]
+    description: Access to command /mychunk info [player] {page}
     default: op
+    
   mychunk.commands.flags:
     description: Access to command /mychunk flags
     default: op
+    
+  mychunk.commands.allowmobs:
+    description: Access to command /mychunk allowmobs
+    default: op
+    
+  mychunk.commands.allowpvp:
+    description: Access to command /mychunk allowpvp
+    default: op
+
+  mychunk.commands.price:
+    description: Access to command /mychunk price
+    default: op
+    
+  mychunk.commands.obprice:
+    description: Access to command /mychunk obprice
+    default: op
+    
+  mychunk.commands.max:
+    description: Access to command /mychunk max
+    default: op
+    
+  mychunk.commands.ramprate:
+    description: Access to command /mychunk ramprate
+    default: op
+    
+  mychunk.commands.expirydays:
+    description: Access to command /mychunk expirydays
+    default: op
+
   mychunk.commands.refund:
     description: Access to command /mychunk refund
     default: op
+    
+  mychunk.commands.reload:
+    description: Access to /mychunk reload
+
+  mychunk.commands.purge.*:
+    description: Access to all /muchunk purgep and /mychunk purgew
+    default: op
+    children:
+      mychunk.commands.purgep: true
+      mychunk.commands.purgew: true  
+  
+  mychunk.commands.purgep:
+    description: Access to /mychunk purgep
+    
+  mychunk.commands.purgew:
+    description: Access to /mychunk purgew
+
   mychunk.commands.toggle.*:
     description: Access to all commands starting with /mychunk toggle
     default: op
@@ -118,250 +258,229 @@ permissions:
       mychunk.commands.toggle.preventPVP: true
       mychunk.commands.toggle.mobGrief: true
       mychunk.commands.toggle.rampchunkprice: true
+    
   mychunk.commands.toggle.refund:
     description: Access to command /mychunk toggle refund
     default: op
+    
   mychunk.commands.toggle.overbuy:
     description: Access to command /mychunk toggle overbuy
     default: op
+    
   mychunk.commands.toggle.resales:
     description: Access to command /mychunk toggle resales
     default: op
+    
   mychunk.commands.toggle.neighbours:
     description: Access to command /mychunk toggle neighbours
     default: op
+    
   mychunk.commands.toggle.unclaimed:
     description: Access to command /mychunk toggle unclaimed
     default: op
+    
   mychunk.commands.toggle.tnt:
     description: Access to command /mychunk toggle tnt
     default: op
+    
   mychunk.commands.toggle.expiry:
     description: Access to command /mychunk toggle expiry
     default: op
+    
   mychunk.commands.toggle.allownether:
     description: Access to command /mychunk toggle allownether
     default: op
+    
   mychunk.commands.toggle.allowend:
     description: Access to command /mychunk toggle allowend
     default: op
+    
   mychunk.commands.toggle.notify:
     description: Access to command /mychunk toggle notify
     default: op
+    
   mychunk.commands.toggle.firstChunkFree:
     description: Access to command /mychunk toggle firstChunkFree
     default: op
+    
   mychunk.commands.toggle.preventEntry:
     description: Access to command /mychunk toggle preventEntry
     default: op
+    
   mychunk.commands.toggle.preventPVP:
     description: Access to command /mychunk toggle preventPVP
     default: op
+    
   mychunk.commands.toggle.mobGrief:
     description: Access to command /mychunk toggle mobGrief
     default: op
+    
   mychunk.commands.toggle.rampchunkprice:
     description: Access to command /mychunk toggle rampchunkprice
     default: op
-  mychunk.commands.purge.*:
-    description: Access to all /muchunk purgep and /mychunk purgew
-    default: op
-    children:
-      mychunk.commands.purgep: true
-      mychunk.commands.purgew: true
-  mychunk.commands.purgep:
-    description: Access to /mychunk purgep
-  mychunk.commands.purgew:
-    description: Access to /mychunk purgew
-  mychunk.commands.reload:
-    description: Access to /mychunk reload
+      
   mychunk.commands.world.*:
     description: Access to /mychunk world ...
     default: op
     children:
+      mychunk.commands.world.list: true
       mychunk.commands.world.enable: true
       mychunk.commands.world.disable: true
       mychunk.commands.world.enable.all: true
       mychunk.commands.world.disable.all: true
+      
+  mychunk.commands.world.list:
+    description: Access to /mychunk world list
+    default: op
+
   mychunk.commands.world.enable:
     description: Access to /mychunk world enable
     default: op
+    
   mychunk.commands.world.disable:
     description: Access to /mychunk world disable
     default: op
+    
   mychunk.commands.world.enable.all:
     description: Access to /mychunk world enable all
     default: op
+    
   mychunk.commands.world.disable.all:
     description: Access to /mychunk world disable all
     default: op
 
-# Claim Permissions
-  mychunk.claim.*:
-    description: Can claim chunks for self/server/others
-    default: op
-    children:
-       mychunk.claim: true
-       mychunk.claim.others: true
-       mychunk.claim.server: true
-       mychunk.claim.public: true
-       mychunk.claim.unlimited: true
-       mychunk.claim.others.unlimited: true
-       mychunk.claim.overbuy: true
-       mychunk.claim.area: true
+# Claim Permissions #
+
   mychunk.claim:
     description: Can claim chunks
     default: op
+    
   mychunk.claim.unlimited:
     description: Can ignore max chunk limit when claiming for self
     default: op
+    
   mychunk.claim.others:
     description: Can claim chunks for other players
     default: op
+    
   mychunk.claim.others.unlimited:
     description: Can ignore max chunk limit when claiming for others
     default: op
+    
   mychunk.claim.server:
     description: Can claim chunks for the server
     default: op
+    
   mychunk.claim.public:
     description: Can claim chunks public chunks
     default: op
+    
   mychunk.claim.overbuy:
     description: Can buy more than the max limit for the overbuy price
     default: op
+    
   mychunk.claim.area:
     description: Can buy chunks usign [ClaimArea] signs
     default: op
+    
+# Unclaim Permissions #
 
-# Resale Permissions
-
-  mychunk.sell:
-    description: Can sell chunks with a [For Sale] sign
-    default: op
-  mychunk.buy:
-    description: Can buy chunks set as [For Sale]
-    default: op
-
-# Server Permissions
-  mychunk.server.*:
-    description: Can build/destroy/use in server owned chunks.
-    default: false
-    children:
-      mychunk.server.build: true
-      mychunk.server.chests: true
-      mychunk.server.destroy: true
-      mychunk.server.doors: true
-      mychunk.server.entry: true
-      mychunk.server.ignite: true
-      mychunk.server.lava: true
-      mychunk.server.use: true
-      mychunk.server.special: true
-      mychunk.server.signs: true
-      mychunk.server.water: true
-  mychunk.server.build:
-    description: Can build in server owned chunks
-    default: op
-  mychunk.server.chests:
-    description: Can open chests in server owned chunks
-    default: op
-  mychunk.server.destroy:
-    description: Can destroy blocks in server owned chunks
-    default: op
-  mychunk.server.doors:
-    description: Can open doors in server owned chunks
-    default: op
-  mychunk.server.entry:
-    description: Can enter server owned chunks
-    default: op
-  mychunk.server.ignite:
-    description: Can use explosives and Flint & Steel in server owned chunks
-    default: op
-  mychunk.server.lava:
-    description: Can empty lava uckets in Server owned chunks
-    default: op
-  mychunk.server.use:
-    description: Can use levers, buttons etc in Server owned chunks
-    default: op
-  mychunk.server.special:
-    description: Can access furnaces, dispensers and brewing stands in Server owned chunks
-    default: op
-  mychunk.server.signs:
-    description: Can use [Allow], [For Sale] etc in Server owned chunks
-    default: op
-  mychunk.server.water:
-    description: Can empty water buckets in Server owned chunks
-    default: op
-
-# Public Permissions
-
-  mychunk.public.*:
-    description: Has all public permissions
-    default: true
-    children:
-      mychunk.public.build: true
-      mychunk.public.chests: true
-      mychunk.public.destroy: true
-      mychunk.public.doors: true
-      mychunk.public.ignite: true
-      mychunk.public.lava: true
-      mychunk.public.use: true
-      mychunk.public.special: true
-      mychunk.public.signs: true
-      mychunk.public.water: true
-  mychunk.public.build:
-    description: Can build in public chunks
-    default: op
-  mychunk.public.chests:
-    description: Can open chests in public chunks
-    default: op
-  mychunk.public.destroy:
-    description: Can destroy blocks in public chunks
-    default: op
-  mychunk.public.doors:
-    description: Can open doors in public chunks
-    default: op
-  mychunk.public.ignite:
-    description: Can use explosives and Flint & Steel in public chunks
-    default: op
-  mychunk.public.lava:
-    description: Can empty lava uckets in public chunks
-    default: op
-  mychunk.public.use:
-    description: Can use levers, buttons etc in public chunks
-    default: op
-  mychunk.public.special:
-    description: Can access furnaces, dispensers and brewing stands in public chunks
-    default: op
-  mychunk.public.signs:
-    description: Can use [Allow], [For Sale] etc in public chunks
-    default: op
-  mychunk.public.water:
-    description: Can empty water buckets in public chunks
-    default: op
-
-# Unclaim Permissions
-  mychunk.unclaim.*:
-    description: Can unclaim chunks for others/server
-    default: op
-    children:
-      mychunk.unclaim.others: true
-      mychunk.unclaim.server: true
-      mychunk.unclaim.public: true
   mychunk.unclaim.others:
     description: Can unclaim chunks for other players
     default: op
+    
   mychunk.unclaim.server:
     description: Can unclaim chunks for the server
     default: op
+    
   mychunk.unclaim.public:
     description: Can unclaim public chunks
     default: op
 
-# Speical Sign Permissions
-  mychunk.allowmobs:
-    description: Can use [AllowMobs] signs
+# Server Chunk Permissions #
+
+  mychunk.server.build:
+    description: Can build in server owned chunks
     default: op
-  mychunk.allowpvp:
-    description: Can use [AllowPVP] signs
+    
+  mychunk.server.chests:
+    description: Can open chests in server owned chunks
+    default: op
+    
+  mychunk.server.destroy:
+    description: Can destroy blocks in server owned chunks
+    default: op
+    
+  mychunk.server.doors:
+    description: Can open doors in server owned chunks
+    default: op
+    
+  mychunk.server.entry:
+    description: Can enter server owned chunks
+    default: op
+    
+  mychunk.server.ignite:
+    description: Can use explosives and Flint & Steel in server owned chunks
+    default: op
+    
+  mychunk.server.lava:
+    description: Can empty lava uckets in Server owned chunks
+    default: op
+    
+  mychunk.server.use:
+    description: Can use levers, buttons etc in Server owned chunks
+    default: op
+    
+  mychunk.server.special:
+    description: Can access furnaces, dispensers and brewing stands in Server owned chunks
+    default: op
+    
+  mychunk.server.signs:
+    description: Can use [Allow], [For Sale] etc in Server owned chunks
+    default: op
+    
+  mychunk.server.water:
+    description: Can empty water buckets in Server owned chunks
+    default: op
+
+# Public Chunk Permissions #
+
+  mychunk.public.build:
+    description: Can build in public chunks
+    default: op
+    
+  mychunk.public.chests:
+    description: Can open chests in public chunks
+    default: op
+    
+  mychunk.public.destroy:
+    description: Can destroy blocks in public chunks
+    default: op
+    
+  mychunk.public.doors:
+    description: Can open doors in public chunks
+    default: op
+    
+  mychunk.public.ignite:
+    description: Can use explosives and Flint & Steel in public chunks
+    default: op
+    
+  mychunk.public.lava:
+    description: Can empty lava uckets in public chunks
+    default: op
+    
+  mychunk.public.use:
+    description: Can use levers, buttons etc in public chunks
+    default: op
+    
+  mychunk.public.special:
+    description: Can access furnaces, dispensers and brewing stands in public chunks
+    default: op
+    
+  mychunk.public.signs:
+    description: Can use [Allow], [For Sale] etc in public chunks
+    default: op
+    
+  mychunk.public.water:
+    description: Can empty water buckets in public chunks
     default: op

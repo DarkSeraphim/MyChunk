@@ -173,7 +173,7 @@ public class SignListener implements Listener {
                         player.sendMessage(MyChunkVaultLink.getEconomy().format(claimPrice) + ChatColor.GOLD + " " + Lang.get("AmountDeducted"));
                     }
 
-                } else {
+                } else if (isFreeChunk) {
                     player.sendMessage(ChatColor.GOLD + " " + Lang.get("FirstChunkFree"));
                 }
 
@@ -1276,7 +1276,7 @@ public class SignListener implements Listener {
                 breakSign(block);
                 return;
 
-            } else if (!chunk.getOwner().equalsIgnoreCase(player.getName()) && !(chunk.getOwner().equalsIgnoreCase("server") && player.hasPermission("mychunk.server.signs")) && !(chunk.getOwner().equalsIgnoreCase("public") && player.hasPermission("mychunk.public.signs"))) {
+            } else if (!player.hasPermission("mychunk.override") && !chunk.getOwner().equalsIgnoreCase(player.getName()) && !(chunk.getOwner().equalsIgnoreCase("server") && player.hasPermission("mychunk.server.signs")) && !(chunk.getOwner().equalsIgnoreCase("public") && player.hasPermission("mychunk.public.signs"))) {
 
                 player.sendMessage(ChatColor.RED + "You can't sell this chunk, you don't own it!");
                 breakSign(block);

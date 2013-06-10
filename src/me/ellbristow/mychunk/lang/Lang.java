@@ -35,13 +35,25 @@ public class Lang {
         // General
         loadLangPhrase("Yes", "Yes");
         loadLangPhrase("No", "No");
+        loadLangPhrase("On", "On");
+        loadLangPhrase("Off", "Off");
         loadLangPhrase("true", "True");
         loadLangPhrase("false", "False");
+        loadLangPhrase("Your", "Your");
+        loadLangPhrase("'s", "'s");
         loadLangPhrase("Unowned", "Unowned");
         loadLangPhrase("Server", "Server");
         loadLangPhrase("Public", "Public");
         loadLangPhrase("Price", "Price");
         loadLangPhrase("Player", "Player");
+        loadLangPhrase("Page", "Page");
+        loadLangPhrase("Limit", "Limit");
+        loadLangPhrase("Rate", "Rate");
+        loadLangPhrase("Days", "Days");
+        loadLangPhrase("World", "World");
+        loadLangPhrase("Setting", "Setting");
+        loadLangPhrase("Optional", "Optional");
+        loadLangPhrase("Required", "Required");
         loadLangPhrase("Everyone", "EVERYONE");
         loadLangPhrase("None", "None");
         loadLangPhrase("By", "by");
@@ -105,6 +117,20 @@ public class Lang {
         loadLangPhrase("PreventPVP", "PVP Prevention");
         loadLangPhrase("PermissionFlags", "Permission Flags");
         loadLangPhrase("Reloaded", "Mychunk files have been reloaded!");
+        loadLangPhrase("ToggleRefundOn", "Unclaiming chunks now provides a refund");
+        loadLangPhrase("ToggleRefundOff", "Unclaming chunks no longer provides a refund");
+        loadLangPhrase("ToggleOverbuyOn", "Players may now overbuy chunks");
+        loadLangPhrase("ToggleOverbuyOff", "Players now cannot overbuy chunks");
+        loadLangPhrase("ToggleResalesOn", "Players may now pay overbuy fees on resales");
+        loadLangPhrase("ToggleResalesOff", "Players no longer pay overbuy fees on resales");
+        loadLangPhrase("ToggleNeighboursOn", "Players may now claim chunks next to other players");
+        loadLangPhrase("ToggleNeighboursOff", "Players no longer claimchunks next to other players");
+        loadLangPhrase("ToggleUnclaimedOn", "Unclaimed chunks are now protected");
+        loadLangPhrase("ToggleUnclaimedOff", "Unclaimed chunks are no longer protected");
+        loadLangPhrase("ToggleTNTOn", "TNT protection in unclaimed chunks is now enabled");
+        loadLangPhrase("ToggleTNTOff", "TNT protection in unclaimed chunks is now disabled");
+        loadLangPhrase("ToggleExpiryOn", "Claimed chunks now expire after inactivity");
+        loadLangPhrase("ToggleExpiryOff", "Claimed chunks no longer expire after inactivity");
         loadLangPhrase("ToggleNetherCannot", "Users now CANNOT claim chunks in Nether worlds");
         loadLangPhrase("ToggleNetherCan", "Users now CAN claim chunks in Nether worlds");
         loadLangPhrase("ToggleEndCannot", "Users now CANNOT claim chunks in End worlds");
@@ -120,6 +146,7 @@ public class Lang {
         loadLangPhrase("ToggleFirstChunkFreeOn", "Players can now claim 1 chunk for free");
         loadLangPhrase("ToggleFirstChunkFreeOff", "Players now DO NOT get their first chunk free!");
         loadLangPhrase("RefundSet", "Refund Percentage set to ");
+        loadLangPhrase("RampRateSet", "Ramp Rate set to ");
         loadLangPhrase("Percentage", "Percentage");
         loadLangPhrase("WorldEnabled", "World enabled");
         loadLangPhrase("WorldDisabled", "World disabled");
@@ -127,6 +154,35 @@ public class Lang {
         loadLangPhrase("AllWorldsDisabled", "All worlds disabled");
         loadLangPhrase("NewRampRate", "New rate");
         loadLangPhrase("NextPage", "Next Page");
+        loadLangPhrase("OwnedChunks", "owned chunks");
+        
+        // Command Messages
+        loadLangPhrase("CommandMessageStats", "Show stats and plugin settings");
+        loadLangPhrase("CommandMessageHelp", "Command Help");
+        loadLangPhrase("CommandMessageInfo", "Claimed chunk info");
+        loadLangPhrase("CommandMessageFlags", "List all available chunk flags");
+        loadLangPhrase("CommandMessageAllowmobs", "Allow mobs to spawn in the current chunk");
+        loadLangPhrase("CommandMessageAllowmobs", "Set if mobs can spawn in the current chunk");
+        loadLangPhrase("CommandMessageAllowpvp", "Set if PVP is allowed in the current chunk");
+        loadLangPhrase("CommandMessageMax", "Set new maximum chunk claim limit");
+        loadLangPhrase("CommandMessageObprice", "Set new overbuy price");
+        loadLangPhrase("CommandMessagePrice", "Set new chunk price");
+        loadLangPhrase("CommandMessageRamprate", "Set new price ramping rate");
+        loadLangPhrase("CommandMessageExpirydays", "Set new chunk expiry cutoff");
+        loadLangPhrase("CommandMessagePercentage", "Set new unclaim refund percentage");
+        loadLangPhrase("CommandMessagePurgep", "Unclaim all chunks claimed by a player");
+        loadLangPhrase("CommandMessagePurgew", "Unclaim all chunks claimed in a world");
+        loadLangPhrase("CommandMessageReload", "Reload MyChunk config");
+        loadLangPhrase("CommandMessageToggle", "Toggle plugin settings");
+        loadLangPhrase("CommandMessageAvailable", "Available settings");
+        loadLangPhrase("CommandMessageChunkPrice", "Chunk price set to");
+        loadLangPhrase("CommandMessageOverbuyPrice", "Overbuy price set to");
+        loadLangPhrase("CommandMessageMax", "Max Chunks is now set at");
+        loadLangPhrase("CommandMessageAllChunksFor", "All chunk for");
+        loadLangPhrase("CommandMessageAllChunksIn", "All chunk in");
+        loadLangPhrase("CommandMessageAreNow", "are now");
+        loadLangPhrase("CommandMessageClaimedChunksExpire", "Claimed chunks will now expire");
+        loadLangPhrase("CommandMessageDaysofInactivity", "day(s) of inactivity");
         
         //Errors
         loadLangPhrase("AlreadyOwner", "You already own this chunk!");
@@ -155,7 +211,7 @@ public class Lang {
         loadLangPhrase("SpecifyNewMaxChunks", "You must specify a new maximum chunk limit!");
         loadLangPhrase("NewLimit", "new limit");
         loadLangPhrase("SpecifyNewChunkPrice", "You must specify a new chunk price!");
-        loadLangPhrase("NewPrice", "new price");
+        loadLangPhrase("NewPrice", "New Price");
         loadLangPhrase("SpecifyNewOverbuyPrice", "You must specify a new overbuy price!");
         loadLangPhrase("SpecifyToggle", "You must specify what to toggle!");
         loadLangPhrase("SpecifyPurgePlayer", "You must specify which player to purge!");
@@ -163,6 +219,8 @@ public class Lang {
         loadLangPhrase("SpecifyPurgeWorld", "You must specify which world to purge!");
         loadLangPhrase("WorldName", "World Name");
         loadLangPhrase("NoEcoPlugin", "There is no economy plugin running! Command aborted.");
+        loadLangPhrase("NoOverbuy", "Overbuy is disabled! Command aborted.");
+        loadLangPhrase("NoUnclaimed", "Unclaimed chunk protection is not enabled! Command aborted.");
         loadLangPhrase("NotFound", "not found");
         loadLangPhrase("FactionsClash", "You cannot claim land owned by a faction!");
         loadLangPhrase("MyChunkClash", "That land is already owned!");
@@ -176,6 +234,17 @@ public class Lang {
         loadLangPhrase("NoPVP", "PVP is not allowed here!");
         loadLangPhrase("CannotFindWorld", "Cannot find a world called");
         loadLangPhrase("CommandNotRecognised", "Command not recognised:");
+        loadLangPhrase("Try", "Try");
+        loadLangPhrase("PriceNotNumber", "Price must be a number!");
+        loadLangPhrase("PageNotNumber", "Page must be a number!");
+        loadLangPhrase("RateNotNumber", "Rate must be a number!");
+        loadLangPhrase("AmountNotInteger", "Amount must be a integer!");
+        loadLangPhrase("NoChunksOwned", "You do not own any chunks");
+        loadLangPhrase("Doesn'tOwnChunks", "doesn't own any chunks");
+        loadLangPhrase("ClaimExpiryDisabled", "Claim Expiry is disabled!");
+        loadLangPhrase("SpecifyClaimExpiry", "You must specify a new expiry period!");
+        loadLangPhrase("NotInteger", "must be a integer");
+        loadLangPhrase("LessThanOne", "must be greater than 0");
         
         // Permissions
         loadLangPhrase("NoPermsCommand", "You do not have permission to use this command!");

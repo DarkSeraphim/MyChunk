@@ -48,6 +48,7 @@ public class MyChunkChunk {
     }
     
     private void getFromChunk(Chunk chunk) {
+        
         chunkWorld = chunk.getWorld().getName();
         chunkX = chunk.getX();
         chunkZ = chunk.getZ();
@@ -970,22 +971,30 @@ public class MyChunkChunk {
      * @param playerName
      * @return Number of chunks
      */
-    public static List<MyChunkChunk> getOwnedChunks(String playerName) {
+    public static MyChunkChunk[] getOwnedChunks(String playerName) {
         
         HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("world, x, z", "MyChunks", "owner = '"+playerName+"'", "","");
         
-        List<MyChunkChunk> chunkArray = new ArrayList<MyChunkChunk>();
+        MyChunkChunk[] chunks = new MyChunkChunk[results.size()];
         
-        for (int i = 0; i < results.size(); i++) {
-            HashMap<String, Object> result = results.get(i);
-            String world = result.get("world").toString();
-            int x = Integer.parseInt(result.get("x").toString());
-            int z = Integer.parseInt(result.get("z").toString());
-            MyChunkChunk chunk = new MyChunkChunk(world, x, z);
-            chunkArray.add(chunk);
+        List<String[]> toChunk = new ArrayList<String[]>();
+        
+        for (HashMap<String, Object> result : results.values()) {
+            String[] chunk = new String[3];
+            chunk[0] = result.get("world").toString();
+            chunk[1] = result.get("x").toString();
+            chunk[2] = result.get("z").toString();
+            toChunk.add(chunk);
         }
         
-        return chunkArray;
+        int i = 0;
+        for (String[] thisChunk : toChunk) {
+            MyChunkChunk chunk = new MyChunkChunk(thisChunk[0], Integer.parseInt(thisChunk[1]), Integer.parseInt(thisChunk[2]));
+            chunks[i] = chunk;
+            i++;
+        }
+        
+        return chunks;
         
     }
     
