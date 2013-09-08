@@ -1,28 +1,32 @@
 package me.ellbristow.mychunk.listeners;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import me.ellbristow.mychunk.*;
 import me.ellbristow.mychunk.lang.Lang;
 import me.ellbristow.mychunk.utils.SQLiteBridge;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.Attachable;
+import org.bukkit.material.MaterialData;
 
 public class SignListener implements Listener {
 
-    private static HashMap<String, Block> pendingAreas = new HashMap<String, Block>();
-    private static HashMap<String, Block> pendingUnclaims = new HashMap<String, Block>();
+    public static HashMap<String, Block> pendingAreas = new HashMap<String, Block>();
+    public static HashMap<String, Block> pendingUnclaims = new HashMap<String, Block>();
 
     public SignListener() {
     }
@@ -90,6 +94,12 @@ public class SignListener implements Listener {
             } else if (FactionsHook.isClaimed(block.getLocation())) {
                 
                 player.sendMessage(ChatColor.RED + Lang.get("FactionsClash"));
+                breakSign(block);
+                return;
+                
+            } else if (TownyHook.isClaimed(block.getLocation())) {
+                
+                player.sendMessage(ChatColor.RED + Lang.get("TownyClash"));
                 breakSign(block);
                 return;
                 
@@ -440,7 +450,7 @@ public class SignListener implements Listener {
 
                             MyChunkChunk myChunk = new MyChunkChunk(block.getWorld().getName(), x, z);
 
-                            if ((myChunk.isClaimed() && !myChunk.getOwner().equalsIgnoreCase(correctName) && !myChunk.isForSale()) || FactionsHook.isClaimed(block.getLocation())) {
+                            if ((myChunk.isClaimed() && !myChunk.getOwner().equalsIgnoreCase(correctName) && !myChunk.isForSale()) || FactionsHook.isClaimed(block.getLocation()) || TownyHook.isClaimed(block.getLocation())) {
 
                                 foundClaimed = true;
                                 break xloop;
@@ -620,7 +630,7 @@ public class SignListener implements Listener {
 
             }
 
-            if (MyChunk.getToggle("unclaimRefund") && !player.hasPermission("mychunk.free")) {
+            if (!owner.equalsIgnoreCase("Server") && !owner.equalsIgnoreCase("Public") && MyChunk.getToggle("unclaimRefund") && !player.hasPermission("mychunk.free")) {
                 
                 if (!(MyChunk.getToggle("firstChunkFree") && MyChunkChunk.getOwnedChunkCount(player.getName()) == 0)) {
                     double price = MyChunk.getDoubleSetting("chunkPrice");
@@ -700,7 +710,7 @@ public class SignListener implements Listener {
 
             if (event.getLine(2).equalsIgnoreCase("cancel")) {
 
-                pendingAreas.remove(correctName);
+                pendingUnclaims.remove(correctName);
                 player.sendMessage(ChatColor.RED + Lang.get("UnclaimAreaCancelled"));
                 breakSign(block);
                 return;
@@ -876,7 +886,7 @@ public class SignListener implements Listener {
                 String targetName = "*";
 
                 if (!"*".equalsIgnoreCase(line1)) {
-
+                    
                     OfflinePlayer target = Bukkit.getServer().getOfflinePlayer(line1);
 
                     if (!target.hasPlayedBefore()) {
@@ -914,30 +924,26 @@ public class SignListener implements Listener {
                     }
 
                     player.sendMessage(ChatColor.GOLD + Lang.get("PermissionsUpdated"));
-                    // TODO: Lang
+                    
                     if (!"".equals(errors)) {
-                        player.sendMessage(ChatColor.RED + "Flags not found: " + errors);
+                        player.sendMessage(ChatColor.RED + Lang.get("FlagsNotFound") + ": " + errors);
                     }
 
-                    player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " has had the following flags added: " + ChatColor.GREEN + line2.replaceAll(" ", ""));
+                    player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " " + Lang.get("ReceivedFlags") + ": " + ChatColor.GREEN + line2.replaceAll(" ", ""));
 
                     if (!"*".equals(targetName)) {
-                        player.sendMessage(ChatColor.GREEN + "Allowed: " + chunk.getAllowedFlags(targetName));
+                        player.sendMessage(ChatColor.GREEN + Lang.get("Allowed") + ": " + chunk.getAllowedFlags(targetName));
                     }
-
-                    player.sendMessage(ChatColor.GOLD + "Use an [owner] sign to see all permission flags");
 
                 } else {
 
                     chunk.allow(targetName, line2.replaceAll(" ", ""));
                     player.sendMessage(ChatColor.GOLD + Lang.get("PermissionsUpdated"));
-                    player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " has had the following flags added: " + ChatColor.GREEN + line2.replaceAll(" ", ""));
+                    player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " " + Lang.get("ReceivedFlags") + ": " + ChatColor.GREEN + line2.replaceAll(" ", ""));
 
                     if (!"*".equals(line2)) {
-                        player.sendMessage(ChatColor.GREEN + "New Flags: " + chunk.getAllowedFlags(targetName));
+                        player.sendMessage(ChatColor.GREEN + Lang.get("NewFlags") +": " + chunk.getAllowedFlags(targetName));
                     }
-
-                    player.sendMessage(ChatColor.GOLD + "Use an [owner] sign to see all permission flags");
 
                 }
 
@@ -1013,7 +1019,7 @@ public class SignListener implements Listener {
                 }
 
                 if (!"".equals(errors)) {
-                    player.sendMessage(ChatColor.RED + "Flags not found: " + errors);
+                    player.sendMessage(ChatColor.RED + Lang.get("FlagsNotFound") + ": " + errors);
                 }
 
                 for (HashMap<String, Object> result : ((HashMap<Integer, HashMap<String, Object>>) results.clone()).values()) {
@@ -1041,8 +1047,7 @@ public class SignListener implements Listener {
                 }
 
                 player.sendMessage(ChatColor.GOLD + Lang.get("PermissionsUpdated"));
-                player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " has had the following flags added to all your chunks: " + ChatColor.GREEN + line2.replaceAll(" ", ""));
-                player.sendMessage(ChatColor.GOLD + "Use an [owner] sign to see all permission flags");
+                player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " " + Lang.get("ReceivedFlagsAll") +": " + ChatColor.GREEN + line2);
 
             }
 
@@ -1124,28 +1129,24 @@ public class SignListener implements Listener {
                     player.sendMessage(ChatColor.GOLD + Lang.get("PermissionsUpdated"));
 
                     if (!"".equals(errors)) {
-                        player.sendMessage(ChatColor.RED + "Flags not found: " + errors);
+                        player.sendMessage(ChatColor.RED + Lang.get("FlagsNotFound") + ": " + errors);
                     }
 
-                    player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " has had the following flags removed: " + ChatColor.GREEN + line2.replaceAll(" ", ""));
+                    player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " " + Lang.get("LostFlags") +": " + ChatColor.GREEN + line2.replaceAll(" ", ""));
 
                     if (!"*".equals(targetName)) {
-                        player.sendMessage(ChatColor.GREEN + "New Flags: " + chunk.getAllowedFlags(targetName));
+                        player.sendMessage(ChatColor.GREEN + Lang.get("NewFlags") + ": " + chunk.getAllowedFlags(targetName));
                     }
-
-                    player.sendMessage(ChatColor.GOLD + "Use an [owner] sign to see all permission flags");
 
                 } else {
 
                     chunk.disallow(targetName, line2.replaceAll(" ", ""));
                     player.sendMessage(ChatColor.GOLD + Lang.get("PermissionsUpdated"));
-                    player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " has had the following flags removed: " + ChatColor.GREEN + line2.replaceAll(" ", ""));
+                    player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " " + Lang.get("LostFlags") +": " + ChatColor.GREEN + line2.replaceAll(" ", ""));
 
                     if (!"*".equals(line2)) {
-                        player.sendMessage(ChatColor.GREEN + "New Flags: " + chunk.getAllowedFlags(targetName));
+                        player.sendMessage(ChatColor.GREEN + Lang.get("NewFlags") + ": " + chunk.getAllowedFlags(targetName));
                     }
-
-                    player.sendMessage(ChatColor.GOLD + "Use an [owner] sign to see all permission flags");
 
                 }
 
@@ -1167,7 +1168,7 @@ public class SignListener implements Listener {
             if ("".equals(line1) || line1.contains(" ")) {
                 player.sendMessage(ChatColor.RED + Lang.get("Line2Player"));
             } else if (line1.equalsIgnoreCase(player.getName())) {
-                player.sendMessage(ChatColor.RED + "You cannot disallow yourself!");
+                player.sendMessage(ChatColor.RED + Lang.get("DisallowSelf"));
             } else {
 
                 if ("".equals(line2)) {
@@ -1249,8 +1250,7 @@ public class SignListener implements Listener {
                 }
 
                 player.sendMessage(ChatColor.GOLD + Lang.get("PermissionsUpdated"));
-                player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " has had the following flags removed from all your chunks: " + ChatColor.GREEN + line2.replaceAll(" ", ""));
-                player.sendMessage(ChatColor.GOLD + "Use an [owner] sign to see all permission flags");
+                player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " " + Lang.get("LostFlagsAll") + ": " + ChatColor.GREEN + line2.replaceAll(" ", ""));
 
             }
 
@@ -1266,19 +1266,19 @@ public class SignListener implements Listener {
 
             if (!player.hasPermission("mychunk.sell")) {
 
-                player.sendMessage(ChatColor.RED + "You do not have permission to use [For Sale] signs!");
+                player.sendMessage(ChatColor.RED + Lang.get("NoPermsSell"));
                 breakSign(block);
                 return;
 
             } else if (player.hasPermission("mychunk.free")) {
 
-                player.sendMessage(ChatColor.RED + "You can claim chunks for free! You're not allowed to sell them!");
+                player.sendMessage(ChatColor.RED + Lang.get("NoPermsSellFree"));
                 breakSign(block);
                 return;
 
             } else if (!player.hasPermission("mychunk.override") && !chunk.getOwner().equalsIgnoreCase(player.getName()) && !(chunk.getOwner().equalsIgnoreCase("server") && player.hasPermission("mychunk.server.signs")) && !(chunk.getOwner().equalsIgnoreCase("public") && player.hasPermission("mychunk.public.signs"))) {
 
-                player.sendMessage(ChatColor.RED + "You can't sell this chunk, you don't own it!");
+                player.sendMessage(ChatColor.RED + Lang.get("DoNotOwn"));
                 breakSign(block);
                 return;
 
@@ -1286,7 +1286,7 @@ public class SignListener implements Listener {
 
                 if (line1.isEmpty() || line1.equals("")) {
 
-                    player.sendMessage(ChatColor.RED + "Line 2 must contain your sale price!");
+                    player.sendMessage(ChatColor.RED + Lang.get("Line2SellPrice"));
                     breakSign(block);
                     return;
 
@@ -1296,7 +1296,7 @@ public class SignListener implements Listener {
                         price = Double.parseDouble(line1);
                     } catch (NumberFormatException nfe) {
 
-                        player.sendMessage(ChatColor.RED + "Line 2 must contain your sale price (in #.## format)!");
+                        player.sendMessage(ChatColor.RED + Lang.get("SellPriceNumber"));
                         breakSign(block);
                         return;
 
@@ -1304,7 +1304,7 @@ public class SignListener implements Listener {
 
                     if (price == 0) {
 
-                        player.sendMessage(ChatColor.RED + "Sale price cannot be 0!");
+                        player.sendMessage(ChatColor.RED + Lang.get("SellPriceZero"));
                         breakSign(block);
                         return;
 
@@ -1343,13 +1343,13 @@ public class SignListener implements Listener {
 
             } else if (!chunk.isForSale()) {
 
-                player.sendMessage(ChatColor.RED + "This chunk is not for sale!");
+                player.sendMessage(ChatColor.RED + Lang.get("ChunkNotForSale"));
                 breakSign(block);
                 return;
 
             }
 
-            player.sendMessage(ChatColor.GOLD + "Chunk taken off sale!");
+            player.sendMessage(ChatColor.GOLD + Lang.get("ChunkOffSale"));
             chunk.setNotForSale();
             breakSign(block);
 
@@ -1378,7 +1378,7 @@ public class SignListener implements Listener {
 
             if (!player.hasPermission("mychunk.allowmobs")) {
 
-                player.sendMessage(ChatColor.RED + "You do not have permission to use [AllowMobs] signs!");
+                player.sendMessage(ChatColor.RED + Lang.get("NoPermsMobSign"));
                 breakSign(block);
                 return;
 
@@ -1386,7 +1386,7 @@ public class SignListener implements Listener {
 
             if (!line1.equalsIgnoreCase("on") && !line1.equalsIgnoreCase("off")) {
 
-                player.sendMessage(ChatColor.RED + "Line 2 must say either 'on' or 'off'!");
+                player.sendMessage(ChatColor.RED + Lang.get("SpecifyOnOff"));
                 breakSign(block);
                 return;
 
@@ -1395,12 +1395,12 @@ public class SignListener implements Listener {
             if (line1.equalsIgnoreCase("on")) {
 
                 chunk.setAllowMobs(true);
-                player.sendMessage(ChatColor.GOLD + "Mobs now CAN spawn in this chunk!");
+                player.sendMessage(ChatColor.GOLD + Lang.get("MobsCanSpawn"));
 
             } else {
 
                 chunk.setAllowMobs(false);
-                player.sendMessage(ChatColor.GOLD + "Mobs now CAN NOT spawn in this chunk!");
+                player.sendMessage(ChatColor.GOLD + Lang.get("MobsCannotSpawn"));
 
             }
 
@@ -1431,7 +1431,7 @@ public class SignListener implements Listener {
 
             if (!player.hasPermission("mychunk.allowpvp")) {
 
-                player.sendMessage(ChatColor.RED + "You do not have permission to use [AllowPVP] signs!");
+                player.sendMessage(ChatColor.RED + Lang.get("NoPermsPVPSign"));
                 breakSign(block);
                 return;
 
@@ -1439,7 +1439,7 @@ public class SignListener implements Listener {
 
             if (!line1.equalsIgnoreCase("on") && !line1.equalsIgnoreCase("off")) {
 
-                player.sendMessage(ChatColor.RED + "Line 2 must say either 'on' or 'off'!");
+                player.sendMessage(ChatColor.RED + Lang.get("SpecifyOnOff"));
                 breakSign(block);
                 return;
 
@@ -1448,24 +1448,111 @@ public class SignListener implements Listener {
             if (line1.equalsIgnoreCase("on")) {
 
                 chunk.setAllowPVP(true);
-                player.sendMessage(ChatColor.GOLD + "PVP is now ALLOWED in this chunk!");
+                player.sendMessage(ChatColor.GOLD + Lang.get("PVPAllowed"));
 
             } else {
 
                 chunk.setAllowPVP(false);
-                player.sendMessage(ChatColor.GOLD + "PVP is now NOT ALLOWED in this chunk!");
+                player.sendMessage(ChatColor.GOLD + Lang.get("PVPDisallowed"));
 
             }
 
             breakSign(event.getBlock());
+        
+        } else if (line0.equalsIgnoreCase("[Lease]")) {
+            
+            Player player = event.getPlayer();
+            Block block = event.getBlock();
+            
+            if (!MyChunk.getToggle("foundEconomy")) {
+                
+                player.sendMessage(ChatColor.RED + Lang.get("LeaseRequiresEco"));
+                breakSign(block);
+                return;
+                
+            }
+            
+            MyChunkChunk chunk = new MyChunkChunk(block);
+            
+            if (!player.hasPermission("mychunk.lease")) {
+                
+                player.sendMessage(ChatColor.RED + Lang.get("NoPermsLease"));
+                breakSign(block);
+                return;
+                
+            }
+            
+            if (!chunk.getOwner().equalsIgnoreCase(player.getName()) && !(chunk.getOwner().equalsIgnoreCase("server") && player.hasPermission("mychunk.server.signs")) && !(chunk.getOwner().equalsIgnoreCase("public") && player.hasPermission("mychunk.public.signs"))) {
 
+                player.sendMessage(ChatColor.RED + Lang.get("DoNotOwn"));
+                breakSign(block);
+                return;
+
+            }
+            
+            if (chunk.getOwner().equalsIgnoreCase("public")) {
+                
+                player.sendMessage(ChatColor.RED + Lang.get("NotPublicSign"));
+                breakSign(block);
+                return;
+                
+            }
+            
+            if (!block.getType().equals(Material.WALL_SIGN)) {
+                
+                player.sendMessage(ChatColor.RED + Lang.get("LeaseOnWall"));
+                breakSign(block);
+                return;
+                
+            }
+            
+            Block attached = getAttachedBlock(block);
+            Block door = attached.getRelative(BlockFace.DOWN);
+            
+            if ( door.getTypeId() != 64 && door.getTypeId() != 96 && door.getTypeId() != 107) {
+                
+                player.sendMessage(ChatColor.RED + Lang.get("LeaseAboveDoor"));
+                breakSign(block);
+                return;
+                
+            }
+            
+            if (alreadyLeased(attached, block)) {
+                
+                player.sendMessage(ChatColor.RED + Lang.get("DoorAlreadyLeased"));
+                breakSign(block);
+                return;
+                
+            }
+            
+            double price;
+            
+            try {
+                price = Double.parseDouble(event.getLine(1));
+            } catch(NumberFormatException nfe) {
+                player.sendMessage(ChatColor.RED + Lang.get("Line2LeasePrice"));
+                breakSign(block);
+                return;
+            }
+            
+            if (price < 0) {
+                price = 0;
+                event.setLine(1, price+"");
+            }
+            
+            event.setLine(0, "[Lease]");
+            event.setLine(2, "");
+            event.setLine(3, new SimpleDateFormat("dd-MM-yyyy").format(new Date()));
+
+            player.sendMessage(ChatColor.GOLD + Lang.get("LeaseCreated"));
+            
         } else {
-
+            
             Block block = event.getBlock();
             MyChunkChunk chunk = new MyChunkChunk(block);
             Player player = event.getPlayer();
             
-            if(!WorldGuardHook.isRegion(block.getLocation()) && !FactionsHook.isClaimed(block.getLocation())){
+            if(!WorldGuardHook.isRegion(block.getLocation()) && !FactionsHook.isClaimed(block.getLocation()) && !TownyHook.isClaimed(block.getLocation())){
 
                 if (chunk.isClaimed()) {
     
@@ -1480,7 +1567,7 @@ public class SignListener implements Listener {
                     event.setCancelled(true);
                     breakSign(block);
     
-                    if (!WorldGuardHook.isRegion(block.getLocation()) && !FactionsHook.isClaimed(block.getLocation())) {
+                    if (!WorldGuardHook.isRegion(block.getLocation()) && !FactionsHook.isClaimed(block.getLocation()) && !TownyHook.isClaimed(block.getLocation())) {
                         if (chunk.isClaimed()) {
                             String owner = chunk.getOwner();
                             if (!owner.equalsIgnoreCase(player.getName()) && !chunk.isAllowed(player.getName(), "B") && !player.hasPermission("mychunk.override")) {
@@ -1509,4 +1596,36 @@ public class SignListener implements Listener {
         }
 
     }
+    
+    private static Block getAttachedBlock(Block b) {
+        MaterialData m = b.getState().getData();
+        BlockFace face = BlockFace.DOWN;
+        if (m instanceof Attachable) {
+            face = ((Attachable) m).getAttachedFace();
+        }
+        return b.getRelative(face);
+    }
+    
+    private static boolean alreadyLeased(Block attached, Block sign) {
+        
+        BlockFace[] faces = new BlockFace[]{BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
+        
+        for (BlockFace face: faces) {
+            
+            Block block = attached.getRelative(face);
+            
+            if (block != sign) {
+                BlockState state = block.getState();
+
+                if (state instanceof Sign) {
+                    if (((Sign)state).getLine(0).equalsIgnoreCase("[Lease]"))
+                        return true;
+                }
+            }
+            
+        }
+        
+        return false;
+    }
+    
 }
