@@ -46,6 +46,7 @@ public class Lang {
         loadLangPhrase("Public", "Public");
         loadLangPhrase("Price", "Price");
         loadLangPhrase("Player", "Player");
+        loadLangPhrase("Flags", "Flags");
         loadLangPhrase("Page", "Page");
         loadLangPhrase("Limit", "Limit");
         loadLangPhrase("Rate", "Rate");
@@ -59,6 +60,7 @@ public class Lang {
         loadLangPhrase("By", "by");
         loadLangPhrase("Disabled", "Disabled");
         loadLangPhrase("All", "ALL");
+        loadLangPhrase("Animals", "Animals");
         loadLangPhrase("Build", "Build");
         loadLangPhrase("Destroy", "Destroy");
         loadLangPhrase("AccessChests", "Access Chests");
@@ -68,6 +70,10 @@ public class Lang {
         loadLangPhrase("DropWater", "Drop Water");
         loadLangPhrase("OpenWoodenDoors", "Open Wooden Doors");
         loadLangPhrase("UseButtonsLevers", "Use Buttons/Levers etc");
+        loadLangPhrase("PVP", "PVP");
+        loadLangPhrase("NoPVP", "NoPVP");
+        loadLangPhrase("Mobs", "Mobs");
+        loadLangPhrase("NoMobs", "NoMobs");
         
         // Info
         loadLangPhrase("ChunkForSale", "Chunk For Sale");
@@ -81,6 +87,7 @@ public class Lang {
         loadLangPhrase("ChunkUnclaimedFor", "Chunk unclaimed for");
         loadLangPhrase("YouOwn", "You own this chunk!");
         loadLangPhrase("OwnedBy", "This Chunk is owned by");
+        loadLangPhrase("Allowed", "Allowed");
         loadLangPhrase("AllowedPlayers", "Allowed Players");
         loadLangPhrase("PermissionsUpdated", "Permissions updated!");
         loadLangPhrase("ChunkIs", "This chunk is");
@@ -160,12 +167,23 @@ public class Lang {
         loadLangPhrase("CommandMessageStats", "Show stats and plugin settings");
         loadLangPhrase("CommandMessageHelp", "Command Help");
         loadLangPhrase("CommandMessageInfo", "Claimed chunk info");
+        loadLangPhrase("CommandMessageAllow", "Allow players access to your chunk");
+        loadLangPhrase("CommandMessageDisallow", "Disallow chunk access for players");
+        loadLangPhrase("CommandMessageAllowAll", "Allow players access to all your chunks");
+        loadLangPhrase("CommandMessageDisallowAll", "Disallow access for players in all your chunks");
+        loadLangPhrase("CommandMessageClaim", "Claim the chunk you're standing in");
+        loadLangPhrase("CommandMessageClaimArea", "Claim an area of chunks");
+        loadLangPhrase("CommandMessageUnclaim", "Unclaim the chunk you're standing in");
+        loadLangPhrase("CommandMessageUnclaimArea", "Claim an area of chunks");
         loadLangPhrase("CommandMessageFlags", "List all available chunk flags");
+        loadLangPhrase("CommandMessageForsale", "Put your chunk up for sale");
         loadLangPhrase("CommandMessageAllowmobs", "Allow mobs to spawn in the current chunk");
         loadLangPhrase("CommandMessageAllowmobs", "Set if mobs can spawn in the current chunk");
         loadLangPhrase("CommandMessageAllowpvp", "Set if PVP is allowed in the current chunk");
         loadLangPhrase("CommandMessageMax", "Set new maximum chunk claim limit");
+        loadLangPhrase("CommandMessageNotforsale", "Take your chunk off sale");
         loadLangPhrase("CommandMessageObprice", "Set new overbuy price");
+        loadLangPhrase("CommandMessageOwner", "See who owns the chunk you're in");
         loadLangPhrase("CommandMessagePrice", "Set new chunk price");
         loadLangPhrase("CommandMessageRamprate", "Set new price ramping rate");
         loadLangPhrase("CommandMessageExpirydays", "Set new chunk expiry cutoff");
@@ -197,6 +215,7 @@ public class Lang {
         loadLangPhrase("NoChunksOwned", "You do not own any chunks!");
         loadLangPhrase("Line2Player", "Line 2 must contain a player name (or * for all)!");
         loadLangPhrase("AllowSelf", "You dont need to allow yourself!");
+        loadLangPhrase("DisallowSelf", "You cannot disallow yourself!");
         loadLangPhrase("CannotDestroyClaim", "You cannot destroy another player's Claim sign!");
         loadLangPhrase("ClaimAreaWorldError", "[ClaimArea] signs must both be in the same world!");
         loadLangPhrase("UnclaimAreaWorldError", "[UnclaimArea] signs must both be in the same world!");
@@ -223,8 +242,10 @@ public class Lang {
         loadLangPhrase("NoUnclaimed", "Unclaimed chunk protection is not enabled! Command aborted.");
         loadLangPhrase("NotFound", "not found");
         loadLangPhrase("FactionsClash", "You cannot claim land owned by a faction!");
+        loadLangPhrase("TownyClash", "You cannot claim land owned by a town!");
         loadLangPhrase("MyChunkClash", "That land is already owned!");
-        loadLangPhrase("NotPublicSign", "You can't use htat sign in public chunks!");
+        loadLangPhrase("NotPublicSign", "You can't use that sign in public chunks!");
+        loadLangPhrase("NotPublicCommand", "You can't use that command in public chunks!");
         loadLangPhrase("SpecifyRefund", "You must specify a new refund percentage!");
         loadLangPhrase("SpecifyRampRate", "You must specify a new price ramp rate!");
         loadLangPhrase("RefundNotNumber", "Refund percentage must be a number!");
@@ -245,9 +266,37 @@ public class Lang {
         loadLangPhrase("SpecifyClaimExpiry", "You must specify a new expiry period!");
         loadLangPhrase("NotInteger", "must be a integer");
         loadLangPhrase("LessThanOne", "must be greater than 0");
+        loadLangPhrase("SpecifyPlayer", "You must specify a player name!");
+        loadLangPhrase("FlagsNotFound", "Flags Not Found");
+        loadLangPhrase("ReceivedFlags", "received the following flags");
+        loadLangPhrase("LostFlags", "lost the following flags");
+        loadLangPhrase("ReceivedFlagsAll", "received the following flags on all our chunks");
+        loadLangPhrase("LostFlagsAll", "lost the following flags on all our chunks");
+        loadLangPhrase("NewFlags", "New Flags");
+        loadLangPhrase("DisallowEveryone", "You cannot disallow flags allowed to EVERYONE!");
+        loadLangPhrase("DenyPublicEntry", "You cannot deny entry access (E) on public chunks!");
+        loadLangPhrase("Line2SellPrice", "Line 2 must contain your sale price!");
+        loadLangPhrase("SpecifySellPrice", "You must specify your sale price!");
+        loadLangPhrase("SellPriceNumber", "Sell price must be a number!");
+        loadLangPhrase("SellPriceZero", "Sale price cannot be 0!");
+        loadLangPhrase("ChunkOnSale", "Chunk For Sale");
+        loadLangPhrase("ChunkOffSale", "Chunk taken off sale!");
+        loadLangPhrase("ChunkNotForSale", "This chunk is not for sale!");
+        loadLangPhrase("SpecifyOnOff", "You must specify 'on' or 'off'!");
+        loadLangPhrase("MobsCanSpawn", "Mobs now CAN spawn in this chunk!");
+        loadLangPhrase("MobsCannotSpawn", "Mobs now CANNOT spawn in this chunk!");
+        loadLangPhrase("PVPAllowed", "PVP is now ALLOWED in this chunk!");
+        loadLangPhrase("PVPDisallowed", "PVP is now DISALLOWED in this chunk!");
+        loadLangPhrase("LeaseRequiresEco", "[Lease] signs require an economy plugin!");
+        loadLangPhrase("LeaseOnWall", "[Lease] signs must be attached to a wall!");
+        loadLangPhrase("LeaseAboveDoor", "[Lease] signs must be above a Wooden Door, Gate or Hatch!");
+        loadLangPhrase("DoorAlreadyLeased", "This door already has a [Lease]!");
+        loadLangPhrase("Line2LeasePrice", "Line 2 must contain the lease price (or 0)!");
+        loadLangPhrase("LeaseCreated", "Lease created!");
         
         // Permissions
         loadLangPhrase("NoPermsCommand", "You do not have permission to use this command!");
+        loadLangPhrase("NoPermsAnimals", "You do not have permission to interact with animals here!");
         loadLangPhrase("NoPermsBuild", "You do not have permission to build here!");
         loadLangPhrase("NoPermsBreak", "You do not have permission to break blocks here!");
         loadLangPhrase("NoPermsFire", "FIRE! Oh phew... you're not allowed!");
@@ -275,6 +324,11 @@ public class Lang {
         loadLangPhrase("NoPermsUnclaimOther", "You do not have permission to unclaim chunks for other players!");
         loadLangPhrase("NoPermsNether", "You do not have permission to claim chunks in Nether worlds!");
         loadLangPhrase("NoPermsEnd", "You do not have permission to claim chunks in End worlds!");
+        loadLangPhrase("NoPermsSell", "You do not have permission to sell chunks!");
+        loadLangPhrase("NoPermsSellFree", "You can claim chunks for free! You're not allowed to sell them!");
+        loadLangPhrase("NoPermsMobSign", "You do not have permission to use [AllowMobs] signs!");
+        loadLangPhrase("NoPermsPVPSign", "You do not have permission to use [AllowPVP] signs!");
+        loadLangPhrase("NoPermsLease", "You do not have permission to use [Lease] signs!");
         
         try {
             langStore.save(langFile);
