@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import me.ellbristow.mychunk.commands.MyChunkCommand;
 import me.ellbristow.mychunk.lang.Lang;
 import me.ellbristow.mychunk.listeners.*;
 import me.ellbristow.mychunk.utils.Metrics;
@@ -61,7 +62,7 @@ public class MyChunk extends JavaPlugin {
         initSQLite();
         
         // Register Commands
-        getCommand("mychunk").setExecutor(new MyChunkCommands(this));
+        getCommand("mychunk").setExecutor(new MyChunkCommand(this));
         
         // Register Events
         getServer().getPluginManager().registerEvents(new AmbientListener(), this);
@@ -73,6 +74,12 @@ public class MyChunk extends JavaPlugin {
         if (FactionsHook.foundFactions()) {
             getServer().getPluginManager().registerEvents(new FactionsHook(), this);
             getLogger().info("Hooked into [Factions]");
+        }
+        
+        if (TownyHook.foundTowny()) {
+            getServer().getPluginManager().registerEvents(new TownyHook(), this);
+            getLogger().info("Hooked into [Towny]");
+            getServer().getPluginManager().registerEvents(new CommandListener(), this);
         }
         
         try {
@@ -532,7 +539,7 @@ public class MyChunk extends JavaPlugin {
         
     }
     
-    protected void reload() {
+    public void reload() {
         reloadConfig();
         loadConfig(true);
         Lang.reload();
