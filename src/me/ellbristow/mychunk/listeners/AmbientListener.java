@@ -199,7 +199,7 @@ public class AmbientListener implements Listener {
         
         if (event.getEntityType().equals(EntityType.ZOMBIE)) {
             
-            if ((MyChunkChunk.isClaimed(event.getBlock().getChunk()) && !MyChunkChunk.getOwner(event.getBlock().getChunk()).equalsIgnoreCase("Public")) || MyChunk.getToggle("protectUnclaimed") || MyChunk.getToggle("allowMobGrief")) {
+            if (!MyChunkChunk.getAllowMobs(event.getBlock().getChunk()) && (MyChunkChunk.isClaimed(event.getBlock().getChunk()) && !MyChunkChunk.getOwner(event.getBlock().getChunk()).equalsIgnoreCase("Public")) || MyChunk.getToggle("protectUnclaimed") || MyChunk.getToggle("allowMobGrief")) {
                 event.setCancelled(true);
             }
             
