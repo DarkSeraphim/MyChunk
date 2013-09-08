@@ -1,11 +1,11 @@
 package me.ellbristow.mychunk.listeners;
 
-import me.ellbristow.mychunk.FactionsHook;
 import me.ellbristow.mychunk.MyChunk;
 import me.ellbristow.mychunk.MyChunkChunk;
-import me.ellbristow.mychunk.TownyHook;
-import me.ellbristow.mychunk.WorldGuardHook;
 import me.ellbristow.mychunk.lang.Lang;
+import me.ellbristow.mychunk.utils.FactionsHook;
+import me.ellbristow.mychunk.utils.TownyHook;
+import me.ellbristow.mychunk.utils.WorldGuardHook;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
