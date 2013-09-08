@@ -1,9 +1,10 @@
 package me.ellbristow.mychunk;
 
-import com.massivecraft.factions.Board;
-import com.massivecraft.factions.Faction;
-import com.massivecraft.factions.Factions;
-import com.massivecraft.factions.event.LandClaimEvent;
+import com.massivecraft.factions.entity.Board;
+import com.massivecraft.factions.entity.Faction;
+import com.massivecraft.factions.event.FactionsEventChunkChange;
+import com.massivecraft.factions.event.FactionsEventChunkChangeType;
+import com.massivecraft.mcore.ps.PS;
 import me.ellbristow.mychunk.lang.Lang;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -21,7 +22,7 @@ public class FactionsHook implements Listener {
             return false;
         }
 
-        Faction f = Board.getFactionAt(location);
+        Faction f = new Board().getFactionAt(PS.valueOf(location));
         
         if (f.isNone()) {
             return false;
@@ -41,17 +42,19 @@ public class FactionsHook implements Listener {
     }
     
     @EventHandler (priority = EventPriority.NORMAL)
-    public void onFactionClaim(LandClaimEvent event) {
+    public void onFactionClaim(FactionsEventChunkChange event) {
         
         if (event.isCancelled()) return;
         
-        int x = (int)event.getLocation().getX();
-        int z = (int)event.getLocation().getZ();
-        Chunk chunk = event.getLocation().getWorld().getChunkAt(x, z);
+        if (event.getType() != FactionsEventChunkChangeType.BUY) return;
+        
+        int x = (int)event.getChunk().getChunkX();
+        int z = (int)event.getChunk().getChunkX();
+        Chunk chunk = event.getChunk().asBukkitWorld().getChunkAt(event.getChunk().asBukkitLocation());
         
         if (MyChunkChunk.isClaimed(chunk)) {
             event.setCancelled(true);
-            event.getPlayer().sendMessage(ChatColor.RED + Lang.get("MyChunkClash"));
+            event.getUSender().getPlayer().sendMessage(ChatColor.RED + Lang.get("MyChunkClash"));
         }
         
     }
