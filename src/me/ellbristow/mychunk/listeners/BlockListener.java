@@ -3,6 +3,7 @@ package me.ellbristow.mychunk.listeners;
 import me.ellbristow.mychunk.FactionsHook;
 import me.ellbristow.mychunk.MyChunk;
 import me.ellbristow.mychunk.MyChunkChunk;
+import me.ellbristow.mychunk.TownyHook;
 import me.ellbristow.mychunk.WorldGuardHook;
 import me.ellbristow.mychunk.lang.Lang;
 import org.bukkit.ChatColor;
@@ -40,7 +41,7 @@ public class BlockListener implements Listener {
         
         if (!(block.getState() instanceof Sign)) {
             
-            if (!MyChunkChunk.isAllowed(chunk, player, "B") && !WorldGuardHook.isRegion(block.getLocation())  && !FactionsHook.isClaimed(block.getLocation())) {
+            if (!MyChunkChunk.isAllowed(chunk, player, "B") && !WorldGuardHook.isRegion(block.getLocation())  && !FactionsHook.isClaimed(block.getLocation()) && !TownyHook.isClaimed(block.getLocation())) {
                 
                 player.sendMessage(ChatColor.RED + Lang.get("NoPermsBuild"));
                 event.setCancelled(true);
@@ -61,7 +62,7 @@ public class BlockListener implements Listener {
         Block block = event.getBlock();
         Chunk chunk = event.getBlock().getChunk();
         
-        if (!MyChunkChunk.isAllowed(chunk, player, "D") && !WorldGuardHook.isRegion(block.getLocation()) && !FactionsHook.isClaimed(block.getLocation())) {
+        if (!MyChunkChunk.isAllowed(chunk, player, "D") && !WorldGuardHook.isRegion(block.getLocation()) && !FactionsHook.isClaimed(block.getLocation()) && !TownyHook.isClaimed(block.getLocation())) {
             
             player.sendMessage(ChatColor.RED + Lang.get("NoPermsBreak"));
             event.setCancelled(true);
@@ -90,7 +91,7 @@ public class BlockListener implements Listener {
             Block block = event.getBlock();
             Chunk chunk = event.getBlock().getChunk();
 
-            if (!MyChunkChunk.isAllowed(chunk, player, "I") && !WorldGuardHook.isRegion(block.getLocation()) && !FactionsHook.isClaimed(block.getLocation())) {
+            if (!MyChunkChunk.isAllowed(chunk, player, "I") && !WorldGuardHook.isRegion(block.getLocation()) && !FactionsHook.isClaimed(block.getLocation()) && !TownyHook.isClaimed(block.getLocation())) {
                 
                 player.sendMessage(ChatColor.RED + Lang.get("NoPermsFire"));
                 event.setCancelled(true);
@@ -176,7 +177,7 @@ public class BlockListener implements Listener {
         
         if (remover instanceof Player) {
             
-            if (!MyChunkChunk.isAllowed(chunk, (Player)remover, "D") && !WorldGuardHook.isRegion(event.getEntity().getLocation()) && !FactionsHook.isClaimed(event.getEntity().getLocation())) {
+            if (!MyChunkChunk.isAllowed(chunk, (Player)remover, "D") && !WorldGuardHook.isRegion(event.getEntity().getLocation()) && !FactionsHook.isClaimed(event.getEntity().getLocation()) && !TownyHook.isClaimed(event.getEntity().getLocation())) {
                 
                 ((Player)remover).sendMessage(ChatColor.RED + Lang.get("NoPermsBreak"));
                 event.setCancelled(true);
@@ -202,7 +203,7 @@ public class BlockListener implements Listener {
         Player player = event.getPlayer();
         Chunk chunk = event.getBlock().getChunk();
         
-        if (!MyChunkChunk.isAllowed(chunk, player, "B") && !WorldGuardHook.isRegion(event.getEntity().getLocation()) && !FactionsHook.isClaimed(event.getEntity().getLocation())) {
+        if (!MyChunkChunk.isAllowed(chunk, player, "B") && !WorldGuardHook.isRegion(event.getEntity().getLocation()) && !FactionsHook.isClaimed(event.getEntity().getLocation()) && !TownyHook.isClaimed(event.getEntity().getLocation())) {
             
             player.sendMessage(ChatColor.RED + Lang.get("NoPermsBuild"));
             event.setCancelled(true);
