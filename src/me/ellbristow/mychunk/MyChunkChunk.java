@@ -27,7 +27,7 @@ public class MyChunkChunk {
     private Block chunkNW;
     private boolean forSale;
     private double claimPrice;
-    private static String[] availableFlags = {"*","B","C","E","D","I","L","O","S","U","W"};
+    private static String[] availableFlags = {"*", "A", "B","C","E","D","I","L","O","S","U","W"};
     private boolean allowMobs;
     private boolean allowPVP;
     private long lastActive;
@@ -897,6 +897,7 @@ public class MyChunkChunk {
     
     private static boolean serverCheck(Player player, String flag) {
         
+        if (flag.equals("A") && player.hasPermission("mychunk.server.animals")) return true;
         if (flag.equals("B") && player.hasPermission("mychunk.server.build")) return true;
         if (flag.equals("C") && player.hasPermission("mychunk.server.chests")) return true;
         if (flag.equals("D") && player.hasPermission("mychunk.server.destroy")) return true;
@@ -915,6 +916,7 @@ public class MyChunkChunk {
     
     private static boolean publicCheck(Player player, String flag) {
         
+        if (flag.equals("A")) return true;
         if (flag.equals("B") && player.hasPermission("mychunk.public.build")) return true;
         if (flag.equals("C") && player.hasPermission("mychunk.public.chests")) return true;
         if (flag.equals("D") && player.hasPermission("mychunk.public.destroy")) return true;
@@ -952,14 +954,21 @@ public class MyChunkChunk {
      */
     public static Set<LiteChunk> getChunks(World w) {
         Set<LiteChunk> worldChunks = new HashSet<LiteChunk>();
-        HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("owner, x, z, salePrice", "MyChunks", "world = '"+w.getName()+"'", "", "");
+        HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("owner, x, z, salePrice, lastActive", "MyChunks", "world = '"+w.getName()+"'", "", "");
         if (!results.isEmpty()) {
             for (HashMap<String, Object> result : results.values()) {
                 String owner = result.get("owner").toString();
                 int x = Integer.parseInt(result.get("x").toString());
                 int z = Integer.parseInt(result.get("z").toString());
                 double price = Double.parseDouble(result.get("salePrice").toString());
-                worldChunks.add(new LiteChunk(w.getName(), x, z, owner, price != 0));
+                boolean forSale = price != 0;
+                long lastActive = Long.parseLong(result.get("lastActive")+"");
+                if (!forSale && !owner.equalsIgnoreCase("Server") && !owner.equalsIgnoreCase("Public") && MyChunk.getToggle("useClaimExpiry")){
+                    if (lastActive < new Date().getTime() / 1000 - (MyChunk.getIntSetting("claimExpiryDays") * 60 * 60 * 24)) {
+                        forSale = true;
+                    }
+                }
+                worldChunks.add(new LiteChunk(w.getName(), x, z, owner, forSale));
             }
         }
         return worldChunks;
