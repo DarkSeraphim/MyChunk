@@ -109,6 +109,11 @@ public class SignListener implements Listener {
                 return;
                 
             }
+            
+            if (!MyChunk.isWorldEnabled(player.getWorld().getName()) && !MyChunk.isWorldDisabled(player.getWorld().getName())) {
+                player.sendMessage(ChatColor.RED + Lang.get("ClaimWorldDisabled"));
+                return;
+            }
 
             int playerMax = MyChunk.getMaxChunks(player);
             int playerClaimed = MyChunkChunk.getOwnedChunkCount(player.getName());
