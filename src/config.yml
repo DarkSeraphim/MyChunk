@@ -42,3 +42,9 @@ useClaimExpiry: false
 claimExpiresAfter: 7
 worlds: []
 preventPVP: false
+databaseType: sqlite
+mysqlHost: localhost
+mysqlPort: 3306
+mysqlDatabase: database
+mysqlUser: username
+mysqlPass: password
