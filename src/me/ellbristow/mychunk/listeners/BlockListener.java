@@ -33,7 +33,7 @@ public class BlockListener implements Listener {
     public void onBlockPlace (BlockPlaceEvent event) {
         
         if (event.isCancelled()) return;
-        if (!MyChunk.isWorldEnabled(event.getBlock().getLocation().getWorld().getName())) return;
+        if (!MyChunk.isWorldEnabled(event.getBlock().getLocation().getWorld().getName()) && !MyChunkChunk.getOwner(event.getBlock().getChunk()).equalsIgnoreCase("Server")) return;
         
         Player player = event.getPlayer();
         Block block = event.getBlock();
@@ -56,7 +56,7 @@ public class BlockListener implements Listener {
     public void onBlockBreak (BlockBreakEvent event) {
         
         if (event.isCancelled()) return;
-        if (!MyChunk.isWorldEnabled(event.getBlock().getLocation().getWorld().getName())) return;
+        if (!MyChunk.isWorldEnabled(event.getBlock().getLocation().getWorld().getName()) && !MyChunkChunk.getOwner(event.getBlock().getChunk()).equalsIgnoreCase("Server")) return;
         
         Player player = event.getPlayer();
         Block block = event.getBlock();
@@ -83,7 +83,7 @@ public class BlockListener implements Listener {
     public void onBlockIgnite (BlockIgniteEvent event) {
         
         if (event.isCancelled()) return;
-        if (!MyChunk.isWorldEnabled(event.getBlock().getLocation().getWorld().getName())) return;
+        if (!MyChunk.isWorldEnabled(event.getBlock().getLocation().getWorld().getName()) && !MyChunkChunk.getOwner(event.getBlock().getChunk()).equalsIgnoreCase("Server")) return;
         
         if (event.getCause().equals(BlockIgniteEvent.IgniteCause.FLINT_AND_STEEL)) {
             
@@ -112,20 +112,16 @@ public class BlockListener implements Listener {
     public void onBlockFromTo (BlockFromToEvent event) {
         
         if (event.isCancelled()) return;
-        if (!MyChunk.isWorldEnabled(event.getBlock().getLocation().getWorld().getName())) return;
         
-        Block block = event.getBlock();
-        Block toBlock = event.getToBlock();
+        Chunk chunk1 = event.getBlock().getChunk();
+        Chunk chunk2 = event.getToBlock().getChunk();
         
-        if (block.getChunk() != toBlock.getChunk()) {
+        if (chunk1.equals(chunk2)) return;
             
-            String toOwner = MyChunkChunk.getOwner(toBlock.getChunk());
-            String fromOwner = MyChunkChunk.getOwner(block.getChunk());
-            
-            if (!toOwner.equalsIgnoreCase(fromOwner)) {
-                event.setCancelled(true);
-            }
-            
+        if (!MyChunk.isWorldEnabled(event.getBlock().getLocation().getWorld().getName()) && !MyChunkChunk.getOwner(event.getBlock().getChunk()).equalsIgnoreCase("Server")) return;
+
+        if (!MyChunkChunk.isSameOwner(chunk1, chunk2)) {
+            event.setCancelled(true);
         }
         
     }
@@ -134,7 +130,7 @@ public class BlockListener implements Listener {
     public void onBlockBurn (BlockBurnEvent event) {
         
         if (event.isCancelled()) return;
-        if (!MyChunk.isWorldEnabled(event.getBlock().getLocation().getWorld().getName())) return;
+        if (!MyChunk.isWorldEnabled(event.getBlock().getLocation().getWorld().getName()) && !MyChunkChunk.getOwner(event.getBlock().getChunk()).equalsIgnoreCase("Server")) return;
         
         Block block = event.getBlock();
         
@@ -154,7 +150,7 @@ public class BlockListener implements Listener {
     public void onBlockSpread (BlockSpreadEvent event) {
         
         if (event.isCancelled()) return;
-        if (!MyChunk.isWorldEnabled(event.getBlock().getLocation().getWorld().getName())) return;
+        if (!MyChunk.isWorldEnabled(event.getBlock().getLocation().getWorld().getName()) && !MyChunkChunk.getOwner(event.getBlock().getChunk()).equalsIgnoreCase("Server")) return;
         
         if (event.getSource().getType().equals(Material.WATER) || event.getSource().getType().equals(Material.LAVA)) {
             
@@ -170,7 +166,7 @@ public class BlockListener implements Listener {
     public void onHangingBreak(HangingBreakByEntityEvent event) {
         
         if (event.isCancelled()) return;
-        if (!MyChunk.isWorldEnabled(event.getEntity().getWorld().getName())) return;
+        if (!MyChunk.isWorldEnabled(event.getEntity().getWorld().getName()) && !MyChunkChunk.getOwner(event.getEntity().getLocation().getChunk()).equalsIgnoreCase("Server")) return;
         
         Entity remover = event.getRemover();
         Chunk chunk = event.getEntity().getLocation().getChunk();
@@ -198,7 +194,7 @@ public class BlockListener implements Listener {
     public void onHangingPlace(HangingPlaceEvent event) {
         
         if (event.isCancelled()) return;
-        if (!MyChunk.isWorldEnabled(event.getEntity().getWorld().getName())) return;
+        if (!MyChunk.isWorldEnabled(event.getEntity().getWorld().getName()) && !MyChunkChunk.getOwner(event.getBlock().getChunk()).equalsIgnoreCase("Server")) return;
         
         Player player = event.getPlayer();
         Chunk chunk = event.getBlock().getChunk();
