@@ -214,6 +214,7 @@ public class Lang {
         loadLangPhrase("AlreadyOwn", "You already own");
         loadLangPhrase("ChunkNotOwned", "This chunk is not owned!");
         loadLangPhrase("Chunks", "chunks");
+        loadLangPhrase("ClaimWorldDisabled", "You cannot claim chunks in this world!");
         loadLangPhrase("NoNeighbours", "You cannot claim a chunk next to someone else's chunk!");
         loadLangPhrase("CantAfford", "You cannot afford to claim that chunk!");
         loadLangPhrase("GangCantAfford", "Your Gang cannot afford to claim this chunk!");
