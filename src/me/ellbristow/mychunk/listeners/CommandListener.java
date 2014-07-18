@@ -20,11 +20,11 @@ public class CommandListener implements Listener {
         
         String message[] = event.getMessage().split(" ");
         
+        Player player = event.getPlayer();
+        
         if (message[0].equalsIgnoreCase("/town") || message[0].equalsIgnoreCase("/t")) {
             
             if(message.length > 1 && (message[1].equalsIgnoreCase("new") || message[1].equalsIgnoreCase("claim"))) {
-            
-                Player player = event.getPlayer();
 
                 Chunk loc = player.getLocation().getChunk();
 
