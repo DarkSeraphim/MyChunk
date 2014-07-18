@@ -4,12 +4,10 @@ import java.util.*;
 import me.ellbristow.mychunk.events.MyChunkClaimEvent;
 import me.ellbristow.mychunk.events.MyChunkForSaleEvent;
 import me.ellbristow.mychunk.events.MyChunkUnclaimEvent;
+import me.ellbristow.mychunk.ganglands.GangLands;
 import me.ellbristow.mychunk.lang.Lang;
-import me.ellbristow.mychunk.utils.SQLiteBridge;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
-import org.bukkit.World;
+import me.ellbristow.mychunk.utils.db.SQLBridge;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
@@ -30,6 +28,8 @@ public class MyChunkChunk {
     private static String[] availableFlags = {"*", "A", "B","C","E","D","I","L","O","S","U","W"};
     private boolean allowMobs;
     private boolean allowPVP;
+    private boolean isGangland = false;
+    private String gang = "";
     private long lastActive;
     
     public MyChunkChunk (Block block) {
@@ -52,8 +52,10 @@ public class MyChunkChunk {
         chunkWorld = chunk.getWorld().getName();
         chunkX = chunk.getX();
         chunkZ = chunk.getZ();
-        HashMap<Integer, HashMap<String, Object>> chunkData = SQLiteBridge.select("", "MyChunks", "world = '"+chunkWorld+"' AND x = "+chunkX+" AND z = " + chunkZ, "", "");
-        if (chunkData.isEmpty()) {
+        
+        HashMap<Integer, HashMap<String, String>> chunkData = SQLBridge.select("*", "MyChunks", "world = '"+chunkWorld+"' AND x = "+chunkX+" AND z = " + chunkZ, "", "");
+        
+        if (chunkData == null || chunkData.isEmpty()) {
             owner = "Unowned";
             claimPrice = MyChunk.getDoubleSetting("chunkPrice");
             forSale = false;
@@ -65,9 +67,15 @@ public class MyChunkChunk {
             chunkSW = findCorner("SW");
             chunkNW = findCorner("NW");
         } else {
-            owner = (String)chunkData.get(0).get("owner");
+
+                gang = chunkData.get(0).get("gang");
+                if (!gang.equals("")) {
+                    isGangland = true;
+                }
+
+            owner = chunkData.get(0).get("owner");
             if (owner.equals("")) owner = "Unowned";
-            Double price = Double.parseDouble(chunkData.get(0).get("salePrice")+"");
+            Double price = Double.parseDouble(chunkData.get(0).get("salePrice"));
             if (price == 0) {
                 claimPrice = MyChunk.getDoubleSetting("chunkPrice");
                 forSale = false;
@@ -75,7 +83,7 @@ public class MyChunkChunk {
                 claimPrice = price;
                 forSale = true;
             }
-            String allowedString = (String)chunkData.get(0).get("allowed");
+            String allowedString = chunkData.get(0).get("allowed");
             if (!allowedString.equals("")) {
                 for (String allowedPlayer : allowedString.split(";")) {
                     String[] splitPlayer = allowedPlayer.split(":");
@@ -88,23 +96,23 @@ public class MyChunkChunk {
             chunkNW = findCorner("NW");
             if (owner.equalsIgnoreCase("Public")) {
                 allowMobs = true;
-            } else if (chunkData.get(0).get("allowMobs").toString().equals("1")) {
+            } else if (Integer.parseInt(chunkData.get(0).get("allowMobs")) == 1) {
                 allowMobs = true;
             } else {
                 allowMobs = false;
             }
-            if (chunkData.get(0).get("allowPVP").toString().equals("1")) {
+            if (Integer.parseInt(chunkData.get(0).get("allowPVP")) == 1) {
                 allowPVP = true;
             } else {
                 allowPVP = false;
             }
-            
+
             // Claim expiry check
-            lastActive = Long.parseLong(chunkData.get(0).get("lastActive")+"");
-            if (!owner.equalsIgnoreCase("Server") && !owner.equalsIgnoreCase("Public")){
+            lastActive = Long.parseLong(chunkData.get(0).get("lastActive"));
+            if (!isGangland && !owner.equalsIgnoreCase("Server") && !owner.equalsIgnoreCase("Public")){
                 if (lastActive == 0) {
                     lastActive = new Date().getTime() / 1000;
-                    SQLiteBridge.query("UPDATE MyChunks SET lastActive = " + lastActive + " WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
+                    SQLBridge.query("UPDATE MyChunks SET lastActive = " + lastActive + " WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
                 }
                 if (MyChunk.getToggle("useClaimExpiry")) {
                     if (lastActive < new Date().getTime() / 1000 - (MyChunk.getIntSetting("claimExpiryDays") * 60 * 60 * 24)) {
@@ -113,6 +121,7 @@ public class MyChunkChunk {
                 }
             }
         }
+        
     }
     
     /**
@@ -122,34 +131,40 @@ public class MyChunkChunk {
      * 
      * @param playerName Name of the player claiming the chunk
      */
-    public void claim(String playerName) {
-        MyChunkClaimEvent event = new MyChunkClaimEvent(chunkWorld, chunkX, chunkZ, owner, playerName, forSale);
+    public void claim(String playerName, String gangName) {
+        MyChunkClaimEvent event = new MyChunkClaimEvent(chunkWorld, chunkX, chunkZ, owner, playerName, forSale, gangName);
         this.owner = playerName;
-        SQLiteBridge.query("INSERT OR REPLACE INTO MyChunks (world, x, z, owner, salePrice, allowMobs, allowPVP, allowed, lastActive) VALUES ('"+chunkWorld+"', "+chunkX+", "+chunkZ+", '"+playerName+"', 0, 0, 0, '', "+lastActive+")");
+        this.gang = gangName;
+        if (!gangName.equals("")) {
+            this.isGangland = true;
+        }
+        
+        SQLBridge.query("REPLACE INTO MyChunks (world, x, z, owner, salePrice, allowMobs, allowPVP, allowed, lastActive, gang) VALUES ('"+chunkWorld+"', "+chunkX+", "+chunkZ+", '"+playerName+"', 0, 0, 0, '', "+lastActive+", '"+gangName+"')");
         forSale = false;
         if (!playerName.equalsIgnoreCase("Public")) {
-            if (chunkNE.isLiquid() || chunkNE.getTypeId() == 79) {
-                chunkNE.setTypeId(4);
+            if (chunkNE.isLiquid() || chunkNE.getType().equals(Material.ICE)) {
+                chunkNE.setType(Material.COBBLESTONE);
             }
             Block above = chunkNE.getWorld().getBlockAt(chunkNE.getX(), chunkNE.getY()+1, chunkNE.getZ());
-            above.setTypeId(50);
-            if (chunkSE.isLiquid() || chunkSE.getTypeId() == 79) {
-                chunkSE.setTypeId(4);
+            above.setType(Material.TORCH);
+            if (chunkSE.isLiquid() || chunkSE.getType().equals(Material.ICE)) {
+                chunkSE.setType(Material.COBBLESTONE);
             }
             above = chunkSE.getWorld().getBlockAt(chunkSE.getX(), chunkSE.getY()+1, chunkSE.getZ());
-            above.setTypeId(50);
-            if (chunkSW.isLiquid() || chunkSW.getTypeId() == 79) {
-                chunkSW.setTypeId(4);
+            above.setType(Material.TORCH);
+            if (chunkSW.isLiquid() || chunkSW.getType().equals(Material.ICE)) {
+                chunkSW.setType(Material.COBBLESTONE);
             }
             above = chunkSW.getWorld().getBlockAt(chunkSW.getX(), chunkSW.getY()+1, chunkSW.getZ());
-            above.setTypeId(50);
-            if (chunkNW.isLiquid() || chunkNW.getTypeId() == 79) {
-                chunkNW.setTypeId(4);
+            above.setType(Material.TORCH);
+            if (chunkNW.isLiquid() || chunkNW.getType().equals(Material.ICE)) {
+                chunkNW.setType(Material.COBBLESTONE);
             }
             above = chunkNW.getWorld().getBlockAt(chunkNW.getX(), chunkNW.getY()+1, chunkNW.getZ());
-            above.setTypeId(50);
+            above.setType(Material.TORCH);
         }
         Bukkit.getServer().getPluginManager().callEvent(event);
+        
     }
     
     /**
@@ -158,24 +173,26 @@ public class MyChunkChunk {
     public void unclaim() {
         MyChunkUnclaimEvent event = new MyChunkUnclaimEvent(chunkWorld, chunkX, chunkZ, owner);
         owner = "Unowned";
-        SQLiteBridge.query("DELETE FROM MyChunks WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
+        
+        SQLBridge.query("DELETE FROM MyChunks WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
         Block above = chunkNE.getWorld().getBlockAt(chunkNE.getX(), chunkNE.getY()+1, chunkNE.getZ());
-        if (above.getTypeId()==50) {
-            above.setTypeId(0);
+        if (above.getType().equals(Material.TORCH)) {
+            above.setType(Material.AIR);
         }
         above = chunkSE.getWorld().getBlockAt(chunkSE.getX(), chunkSE.getY()+1, chunkSE.getZ());
-        if (above.getTypeId()==50) {
-            above.setTypeId(0);
+        if (above.getType().equals(Material.TORCH)) {
+            above.setType(Material.AIR);
         }
         above = chunkSW.getWorld().getBlockAt(chunkSW.getX(), chunkSW.getY()+1, chunkSW.getZ());
-        if (above.getTypeId()==50) {
-            above.setTypeId(0);
+        if (above.getType().equals(Material.TORCH)) {
+            above.setType(Material.AIR);
         }
         above = chunkNW.getWorld().getBlockAt(chunkNW.getX(), chunkNW.getY()+1, chunkNW.getZ());
-        if (above.getTypeId()==50) {
-            above.setTypeId(0);
+        if (above.getType().equals(Material.TORCH)) {
+            above.setType(Material.AIR);
         }
         Bukkit.getServer().getPluginManager().callEvent(event);
+        
     }
     
     /**
@@ -343,7 +360,9 @@ public class MyChunkChunk {
      */
     public void setAllowMobs(Boolean allow) {
         allowMobs = allow;
-        SQLiteBridge.query("UPDATE MyChunks SET allowMobs = " + (allow?"1":"0") + " WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
+        
+        SQLBridge.query("UPDATE MyChunks SET allowMobs = " + (allow?"1":"0") + " WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
+        
     }
     
     /**
@@ -362,7 +381,9 @@ public class MyChunkChunk {
      */
     public void setAllowPVP(Boolean allow) {
         allowPVP = allow;
-        SQLiteBridge.query("UPDATE MyChunks SET allowPVP = " + (allow?"1":"0") + " WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
+        
+        SQLBridge.query("UPDATE MyChunks SET allowPVP = " + (allow?"1":"0") + " WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
+        
     }
     
     /**
@@ -419,6 +440,11 @@ public class MyChunkChunk {
      * @return 
      */
     public String getOwner() {
+        
+        if (isGangland) {
+            return gang;
+        }
+        
         return owner;
     }
     
@@ -449,21 +475,35 @@ public class MyChunkChunk {
     }
     
     /**
+     * Get the name of the gang that owns this chunk
+     * 
+     * @return name of gang or empty string if not Gangland
+     */
+    public String getGangName() {
+        return gang;
+    }
+    
+    /**
      * Check if this chunk has neighbours
      * 
      * @return 
      */
     public boolean hasNeighbours() {
-        HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("owner", "MyChunks", "world = '"+chunkWorld+"' AND ("
-                                                          + "(x = "+(chunkX + 1)+" AND z = "+chunkZ+") OR "
-                                                          + "(x = "+(chunkX - 1)+" AND z = "+chunkZ+") OR "
-                                                          + "(x = "+chunkX+" AND z = "+(chunkZ + 1)+") OR "
-                                                          + "(x = "+chunkX+" AND z = "+(chunkZ - 1)+")"
-                                                          + ")", "", "");
-        if (results.isEmpty()) {
+
+        HashMap<Integer, HashMap<String, String>> results = SQLBridge.select("owner", "MyChunks",
+                "world = '"+chunkWorld+"' AND ("
+                + "(x = "+(chunkX + 1)+" AND z = "+chunkZ+") OR "
+                + "(x = "+(chunkX - 1)+" AND z = "+chunkZ+") OR "
+                + "(x = "+chunkX+" AND z = "+(chunkZ + 1)+") OR "
+                + "(x = "+chunkX+" AND z = "+(chunkZ - 1)+")"
+                + ")", "", "");
+        
+        if (results == null || results.isEmpty()) {
             return false;
         }
+        
         return true;
+        
     }
     
     /**
@@ -474,6 +514,14 @@ public class MyChunkChunk {
      * @return 
      */
     public boolean isAllowed(String playerName, String flag) {
+        
+        if (isGangland) {
+            if (GangLands.isGangMemberOf(playerName, gang) || GangLands.isAllyOf(playerName, gang)) {
+                return true;
+            }
+            return false;
+        }
+        
         String allowedFlags = allowed.get(playerName.toLowerCase());
         if (allowedFlags != null) {
             char[] flags = allowedFlags.toUpperCase().toCharArray();
@@ -502,7 +550,7 @@ public class MyChunkChunk {
     /**
      * Check if this chunk is claimed
      * 
-     * @return 
+     * @return boolean
      */
     public boolean isClaimed() {
         if (owner.equalsIgnoreCase("Unowned")) {
@@ -514,10 +562,19 @@ public class MyChunkChunk {
     /**
      * Check if this chunk is for sale
      * 
-     * @return 
+     * @return boolean
      */
     public boolean isForSale() {
         return forSale;
+    }
+    
+    /**
+     * Check if this chunk is owned by a gang
+     * 
+     * @return boolean
+     */
+    public boolean isGangland() {
+        return isGangland;
     }
     
     /**
@@ -528,8 +585,10 @@ public class MyChunkChunk {
     public void setForSale(Double price) {
         forSale = true;
         claimPrice = price;
-        MyChunkForSaleEvent event = new MyChunkForSaleEvent(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), getOwner(chunk), true);
-        SQLiteBridge.query("UPDATE MyChunks SET salePrice = " + claimPrice + " WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
+        MyChunkForSaleEvent event = new MyChunkForSaleEvent(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), getOwner(chunk), true, isGangland);
+        
+        SQLBridge.query("UPDATE MyChunks SET salePrice = " + claimPrice + " WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
+        
         Bukkit.getServer().getPluginManager().callEvent(event);
     }
     
@@ -538,8 +597,12 @@ public class MyChunkChunk {
      */
     public void setNotForSale() {
         forSale = false;
-        MyChunkForSaleEvent event = new MyChunkForSaleEvent(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), getOwner(chunk), false);
-        SQLiteBridge.query("UPDATE MyChunks SET salePrice = 0 WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
+        claimPrice = 0;
+        
+        MyChunkForSaleEvent event = new MyChunkForSaleEvent(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), getOwner(chunk), false, isGangland);
+        
+        SQLBridge.query("UPDATE MyChunks SET salePrice = 0 WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
+        
         Bukkit.getServer().getPluginManager().callEvent(event);
     }
     
@@ -550,9 +613,11 @@ public class MyChunkChunk {
      */
     public void setOwner (String newOwner) {
         if (isClaimed()) {
-            SQLiteBridge.query("UPDATE MyChunks SET owner = '"+newOwner+"' WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
+            
+            SQLBridge.query("UPDATE MyChunks SET owner = '"+newOwner+"' WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
+            
         } else {
-            claim(newOwner);
+            claim(newOwner, this.gang);
         }
     }
     
@@ -615,7 +680,9 @@ public class MyChunkChunk {
     
     private void savePerms() {
         if (allowed.isEmpty()) {
-            SQLiteBridge.query("UPDATE MyChunks SET allowed = '' WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
+            
+            SQLBridge.query("UPDATE MyChunks SET allowed = '' WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
+            
         } else {
             String newAllowed = "";
             Object[] allowedPlayers = allowed.keySet().toArray();
@@ -630,11 +697,13 @@ public class MyChunkChunk {
                     allowed.remove((String)allowedPlayers[i]);
                 }
             }
+            
             if ("".equals(newAllowed)) {
-                SQLiteBridge.query("UPDATE MyChunks SET allowed = '' WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
+                SQLBridge.query("UPDATE MyChunks SET allowed = '' WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
             } else {
-                SQLiteBridge.query("UPDATE MyChunks SET allowed = '"+newAllowed+"' WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
+                SQLBridge.query("UPDATE MyChunks SET allowed = '"+newAllowed+"' WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
             }
+            
         }
     }
     
@@ -662,56 +731,61 @@ public class MyChunkChunk {
      * @param flag Flag for the action being performed
      * @return True if allowed, otherwise false
      */
+    
     public static boolean isAllowed(Chunk chunk, Player player, String flag) {
         
         flag = flag.toUpperCase();
-        HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("owner, allowed", "MyChunks", "world = '"+chunk.getWorld().getName() +"' AND x = " + chunk.getX() + " AND z = " + chunk.getZ(), "", "");
         
-        if (results.isEmpty()) {
-            
+        HashMap<Integer, HashMap<String, String>> results = SQLBridge.select("owner, allowed", "MyChunks", "world = '"+chunk.getWorld().getName() +"' AND x = " + chunk.getX() + " AND z = " + chunk.getZ(), "", "");
+        
+        if (results == null || results.isEmpty()) {
+
             if (MyChunk.getToggle("protectUnclaimed") && !player.hasPermission("mychunk.override")) {
                 return false;
             }
-            
+
             return true;
-            
+
         } else {
-            
-            String owner = results.get(0).get("owner").toString();
-            
+
+            String owner = results.get(0).get("owner");
+
             if (player.hasPermission("mychunk.override") && !owner.equalsIgnoreCase("Server") && !owner.equalsIgnoreCase("Public")) {
+
                 return true;
             }
-            
+
             if (player.getName().equalsIgnoreCase(owner)) {
+
                 return true;
             } else {
-                
-                String allAllowed = results.get(0).get("allowed").toString();
-                
-                for (String players : allAllowed.split(";")) {
-                    
-                    String[] split = players.split(":");
-                    
-                    if (split[0].equalsIgnoreCase(player.getName()) || split[0].equals("*")) {
-                        
-                        if (split[1].contains(flag) || split[1].equals("*")) {
-                            return true;
+
+                String allAllowed = results.get(0).get("allowed");
+                if (allAllowed != null) {
+                    for (String players : allAllowed.split(";")) {
+
+                        String[] split = players.split(":");
+
+                        if (split[0].equalsIgnoreCase(player.getName()) || split[0].equals("*")) {
+
+                            if (split[1].contains(flag) || split[1].equals("*")) {
+                                return true;
+                            }
                         }
+
                     }
-                    
                 }
-                
-                if (owner.equalsIgnoreCase("Server")) {
+
+                if ("Server".equalsIgnoreCase(owner)) {
                     return serverCheck(player, flag);
-                } else if (owner.equalsIgnoreCase("Public")) {
+                } else if ("Public".equalsIgnoreCase(owner)) {
                     return publicCheck(player, flag);
                 }
-                
+
                 return false;
-                
+
             }
-            
+
         }
         
     }
@@ -724,7 +798,7 @@ public class MyChunkChunk {
      */
     public static boolean isClaimed(Chunk chunk) {
         
-        if (getOwner(chunk).equalsIgnoreCase("")) {
+        if ("".equalsIgnoreCase(getOwner(chunk)) ) {
             return false;
         }
         
@@ -752,12 +826,45 @@ public class MyChunkChunk {
         
     }
     
+    /**
+     * Checks if two chunks have the same owner
+     * 
+     * @param chunk1 First chunk to be checked
+     * * @param chunk2 Chunk to compare to
+     * @return true if both chunks have the same owner
+     */
+    public static boolean isSameOwner(Chunk chunk1, Chunk chunk2) {
+        
+        if (chunk1.equals(chunk2)) return true;
+        
+        HashMap<Integer, HashMap<String, String>> results = SQLBridge.select("owner AS owner1, (SELECT owner FROM MyChunks WHERE world = '"+chunk2.getWorld().getName()+"' AND x = "+chunk2.getX()+" AND z = " + chunk2.getZ()+") AS owner2", "MyChunks", "world = '"+chunk1.getWorld().getName()+"' AND x = "+chunk1.getX()+" AND z = " + chunk1.getZ(), "", "");
+        
+        if (results != null && !results.isEmpty()) {
+            String owner1 = results.get(0).get("owner1");
+            String owner2 = results.get(0).get("owner2");
+
+            if (owner1 != null) {
+                if (owner1.equals(owner2))
+                    return true;
+            } else if (owner2 != null) {
+                if (owner2.equals(owner2))
+                    return true;
+            } else {
+                return true;
+            }
+
+        }
+        
+        return false;
+        
+    }
+    
     public static boolean getAllowMobs(Chunk chunk) {
         
-        HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("allowMobs", "MyChunks", "owner != 'Public' AND world = '"+chunk.getWorld().getName()+"' AND x = "+chunk.getX()+" AND z = " + chunk.getZ(), "", "");
+        HashMap<Integer, HashMap<String, String>> results = SQLBridge.select("allowMobs", "MyChunks", "owner != 'Public' AND world = '"+chunk.getWorld().getName()+"' AND x = "+chunk.getX()+" AND z = " + chunk.getZ(), "", "");
         
-        if (!results.isEmpty()) {
-            if (results.get(0).get("allowMobs").toString().equalsIgnoreCase("0")) {
+        if (results != null && !results.isEmpty()) {
+            if (Integer.parseInt(results.get(0).get("allowMobs")) == 0) {
                 return false;
             }
         }
@@ -774,13 +881,13 @@ public class MyChunkChunk {
      */
     public static String getOwner(Chunk chunk) {
         
-        HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("owner", "MyChunks", "world = '"+chunk.getWorld().getName()+"' AND x = "+chunk.getX()+" AND z = " + chunk.getZ(), "", "");
+        HashMap<Integer, HashMap<String, String>> results = SQLBridge.select("owner", "MyChunks", "world = '"+chunk.getWorld().getName()+"' AND x = "+chunk.getX()+" AND z = " + chunk.getZ(), "", "");
         
-        if (!results.isEmpty()) {
-            
-            HashMap<String, Object> result = results.get(0);
-            return result.get("owner").toString();
-            
+        if (results != null && !results.isEmpty()) {
+            String owner = results.get(0).get("owner");
+
+            return owner;
+
         }
         
         return "";
@@ -795,19 +902,19 @@ public class MyChunkChunk {
      * @return Claim price of 0 if not claimable
      */
     public static double getClaimPrice(Chunk chunk, Player player) {
+        //ResultSet results = SQLBridge.select("SELECT owner, salePrice, (SELECT COUNT(*) FROM MyChunks WHERE owner = '"+player.getName()+"') AS alreadyOwned FROM MyChunks WHERE world = '"+chunk.getWorld().getName()+"' AND x = "+chunk.getX()+" AND z = " + chunk.getZ() );
+        HashMap<Integer, HashMap<String, String>> results = SQLBridge.select("owner, salePrice, (SELECT COUNT(*) FROM MyChunks WHERE owner = '"+player.getName()+"') AS alreadyOwned", "MyChunks", "world = '"+chunk.getWorld().getName()+"' AND x = "+chunk.getX()+" AND z = " + chunk.getZ(), "", "");
         
-        HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("owner, salePrice, (SELECT COUNT(*) FROM MyChunks WHERE owner = '"+player.getName()+"') AS alreadyOwned", "MyChunks", "world = '"+chunk.getWorld().getName()+"' AND x = "+chunk.getX()+" AND z = " + chunk.getZ(), "", "");
-        
-        if (!results.isEmpty()) {
-            
-            int alreadyOwned = Integer.parseInt(results.get(0).get("alreadyOwned").toString());
-            String owner = results.get(0).get("owner").toString();
-            double salePrice = Double.parseDouble(results.get(0).get("salePrice").toString());
-            
+        if (results != null && !results.isEmpty()) {
+
+            int alreadyOwned = Integer.parseInt(results.get(0).get("alreadyOwned"));
+            String owner = results.get(0).get("owner");
+            double salePrice = Double.parseDouble(results.get(0).get("salePrice"));
+
             int maxChunks = MyChunk.getMaxChunks(player);
-            
+
             if (!owner.equalsIgnoreCase(player.getName())) {
-                
+
                 if (maxChunks == 0 || alreadyOwned < maxChunks) {
                     return salePrice;
                 } else {
@@ -815,25 +922,25 @@ public class MyChunkChunk {
                     // Overbuy
 
                     if (MyChunk.getToggle("allowOverbuy")) {
-                        
+
                         if (!player.hasPermission("mychunk.claim.unlimited") && MyChunk.getToggle("overbuyP2P")) {
                             return salePrice + MyChunk.getDoubleSetting("overbuyPrice");
                         } else {
                             return salePrice;
                         }
-                        
+
                     } else {
                         return 0;
                     }
 
                 }
-                
+
             }
-            
+
             return 0;
-            
+
         }
-        
+
         return 0;
         
     }
@@ -880,9 +987,17 @@ public class MyChunkChunk {
      */
     public static int getOwnedChunkCount(String playerName) {
         
-        HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("COUNT(*) as counter", "MyChunks", "owner = '"+playerName+"'", "","");
+        HashMap<Integer, HashMap<String, String>> results = SQLBridge.select("COUNT(*) as counter",  "MyChunks", "owner = '"+playerName+"'", "", "");
         
-        return Integer.parseInt(results.get(0).get("counter")+"");
+        if (results != null && !results.isEmpty()) {
+        
+            int count = Integer.parseInt(results.get(0).get("counter"));
+            
+            return count;
+            
+        }
+        
+        return 0;
         
     }
     
@@ -892,7 +1007,9 @@ public class MyChunkChunk {
      * @param playerName Name of the player to update
      */
     public static void refreshOwnership(String playerName) {
-        SQLiteBridge.query("UPDATE MyChunks SET lastActive = " + (new Date().getTime() / 1000) + " WHERE owner = '"+playerName+"'");
+        
+        SQLBridge.query("UPDATE MyChunks SET lastActive = " + (new Date().getTime() / 1000) + " WHERE owner = '"+playerName+"'");
+        
     }
     
     private static boolean serverCheck(Player player, String flag) {
@@ -943,7 +1060,9 @@ public class MyChunkChunk {
      */
     public static void unclaim(Chunk chunk) {
         MyChunkUnclaimEvent event = new MyChunkUnclaimEvent(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), getOwner(chunk));
-        SQLiteBridge.query("DELETE FROM MyChunks WHERE world = '"+chunk.getWorld().getName()+"' AND x = "+chunk.getX()+" AND z = " + chunk.getZ());
+        
+        SQLBridge.query("DELETE FROM MyChunks WHERE world = '"+chunk.getWorld().getName()+"' AND x = "+chunk.getX()+" AND z = " + chunk.getZ());
+        
         Bukkit.getServer().getPluginManager().callEvent(event);
     }
     
@@ -953,24 +1072,35 @@ public class MyChunkChunk {
      * @param w World to fetch chunks from
      */
     public static Set<LiteChunk> getChunks(World w) {
+        
         Set<LiteChunk> worldChunks = new HashSet<LiteChunk>();
-        HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("owner, x, z, salePrice, lastActive", "MyChunks", "world = '"+w.getName()+"'", "", "");
-        if (!results.isEmpty()) {
-            for (HashMap<String, Object> result : results.values()) {
-                String owner = result.get("owner").toString();
-                int x = Integer.parseInt(result.get("x").toString());
-                int z = Integer.parseInt(result.get("z").toString());
-                double price = Double.parseDouble(result.get("salePrice").toString());
+
+        HashMap<Integer, HashMap<String, String>> results = SQLBridge.select("owner, x, z, salePrice, lastActive, gang", "MyChunks", "world = '"+w.getName()+"'", "", "");
+        
+        if (results != null && !results.isEmpty()) {
+            
+            for (int i : results.keySet()) {
+                boolean isGang = false;
+                String owner = results.get(i).get("owner");
+                if (!results.get(i).get("gang").equals("")) {
+                    owner = results.get(i).get("gang");
+                    isGang = true;
+                }
+                int x = Integer.parseInt(results.get(i).get("x"));
+                int z = Integer.parseInt(results.get(i).get("z"));
+                double price = Double.parseDouble(results.get(i).get("salePrice"));
                 boolean forSale = price != 0;
-                long lastActive = Long.parseLong(result.get("lastActive")+"");
+                long lastActive = Long.parseLong(results.get(i).get("lastActive"));
                 if (!forSale && !owner.equalsIgnoreCase("Server") && !owner.equalsIgnoreCase("Public") && MyChunk.getToggle("useClaimExpiry")){
                     if (lastActive < new Date().getTime() / 1000 - (MyChunk.getIntSetting("claimExpiryDays") * 60 * 60 * 24)) {
                         forSale = true;
                     }
                 }
-                worldChunks.add(new LiteChunk(w.getName(), x, z, owner, forSale));
+                worldChunks.add(new LiteChunk(w.getName(), x, z, owner, forSale, isGang));
             }
+
         }
+        
         return worldChunks;
     }
     
@@ -982,19 +1112,23 @@ public class MyChunkChunk {
      */
     public static MyChunkChunk[] getOwnedChunks(String playerName) {
         
-        HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("world, x, z", "MyChunks", "owner = '"+playerName+"'", "","");
-        
-        MyChunkChunk[] chunks = new MyChunkChunk[results.size()];
-        
+        HashMap<Integer, HashMap<String, String>> results = SQLBridge.select("world, x, z", "MyChunks", "owner = '"+playerName+"'", "", "");
+
         List<String[]> toChunk = new ArrayList<String[]>();
         
-        for (HashMap<String, Object> result : results.values()) {
-            String[] chunk = new String[3];
-            chunk[0] = result.get("world").toString();
-            chunk[1] = result.get("x").toString();
-            chunk[2] = result.get("z").toString();
-            toChunk.add(chunk);
+        if (results != null && !results.isEmpty()) {
+            
+            for (int i : results.keySet()) {
+                String[] chunk = new String[3];
+                chunk[0] = results.get(i).get("world");
+                chunk[1] = results.get(i).get("x");
+                chunk[2] = results.get(i).get("z");
+                toChunk.add(chunk);
+            }
+                
         }
+        
+        MyChunkChunk[] chunks = new MyChunkChunk[toChunk.size()];
         
         int i = 0;
         for (String[] thisChunk : toChunk) {
