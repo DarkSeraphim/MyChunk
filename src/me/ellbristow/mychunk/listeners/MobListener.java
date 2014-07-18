@@ -26,7 +26,7 @@ public class MobListener implements Listener {
     public void onEntityInteract(EntityInteractEvent event) {
         
         if (event.isCancelled()) return;
-        if (!MyChunk.isWorldEnabled(event.getEntity().getWorld().getName())) return;
+        if (!MyChunk.isWorldEnabled(event.getEntity().getWorld().getName()) && !MyChunkChunk.getOwner(event.getBlock().getChunk()).equalsIgnoreCase("Server")) return;
         
         Block block = event.getBlock();
         
@@ -40,7 +40,7 @@ public class MobListener implements Listener {
     public void onMonsterSpawn (CreatureSpawnEvent event) {
         
         if (event.isCancelled()) return;
-        if (!MyChunk.isWorldEnabled(event.getEntity().getWorld().getName())) return;
+        if (!MyChunk.isWorldEnabled(event.getEntity().getWorld().getName()) && !MyChunkChunk.getOwner(event.getLocation().getChunk()).equalsIgnoreCase("Server")) return;
         
         if (!event.getSpawnReason().equals(SpawnReason.EGG)) {
             LivingEntity mob = event.getEntity();
@@ -60,6 +60,7 @@ public class MobListener implements Listener {
     public void onEndermanPickupEvent (EntityChangeBlockEvent event) {
         
         if (event.isCancelled()) return;
+        if (!MyChunk.isWorldEnabled(event.getEntity().getWorld().getName()) && !MyChunkChunk.getOwner(event.getBlock().getChunk()).equalsIgnoreCase("Server")) return;
         
         if (event.getEntityType().equals(EntityType.ENDERMAN)) {
             
