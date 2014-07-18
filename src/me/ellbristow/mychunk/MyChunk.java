@@ -1,21 +1,24 @@
 package me.ellbristow.mychunk;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import me.ellbristow.mychunk.commands.GangCommand;
 import me.ellbristow.mychunk.commands.MyChunkCommand;
+import me.ellbristow.mychunk.ganglands.GangLands;
 import me.ellbristow.mychunk.lang.Lang;
 import me.ellbristow.mychunk.listeners.*;
+import me.ellbristow.mychunk.utils.FactionsHook;
 import me.ellbristow.mychunk.utils.Metrics;
-import me.ellbristow.mychunk.utils.SQLiteBridge;
+import me.ellbristow.mychunk.utils.MyChunkVaultLink;
+import me.ellbristow.mychunk.utils.TownyHook;
+import me.ellbristow.mychunk.utils.db.SQLBridge;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -43,14 +46,31 @@ public class MyChunk extends JavaPlugin {
     private static double overbuyPrice = 0.00;
     private static boolean firstChunkFree = false;
     private static boolean rampChunkPrice = false;
+    private static boolean useChatFormat = false;
     private static double priceRampRate = 25.00;
     private static int maxChunks = 8;
     private static boolean notify = true;
-    private static Set<String> enabledWorlds = new HashSet<String>();
-    private static Set<String> disabledWorlds = new HashSet<String>();
-    private MyChunkVaultLink vault;
-    private String[] tableColumns = {"world","x","z","owner","allowed","salePrice","allowMobs","allowPVP","lastActive", "PRIMARY KEY"};
-    private String[] tableDims = {"TEXT NOT NULL", "INTEGER NOT NULL", "INTEGER NOT NULL", "TEXT NOT NULL", "TEXT NOT NULL", "INTEGER NOT NULL", "INTEGER(1) NOT NULL", "INTEGER(1) NOT NULL", "LONG NOT NULL", "(world, x, z)"};
+    private static List<String> enabledWorlds = new ArrayList<String>();
+    private static List<String> disabledWorlds = new ArrayList<String>();
+    private static List<String> prefixes = new ArrayList<String>();
+    private static int gangNameLength = 8;
+    private static String groupTag = "[%PREFIX%&f] ";
+    private static ChatColor gangTagColor = ChatColor.GRAY;
+    private static String gangTag = "[%TAGCOLOR%%GANG%&f] ";
+    private static String playerTag = "%RANKCOLOR%%DISPNAME%";
+    private static String chatFormat = "%GROUPTAG%%PLAYERTAG%&7:&f %MSG%";
+    private static String gangChatFormat = "%GROUPTAG%%GANGTAG%%PLAYERTAG%&7:&f %MSG%";
+    private final String[] tableColumns = {"world","x","z","owner","allowed","salePrice","allowMobs","allowPVP","lastActive", "gang", "PRIMARY KEY"};
+    private final String[] tableDims = {"VARCHAR(32) NOT NULL", "INTEGER NOT NULL", "INTEGER NOT NULL", "TEXT NOT NULL", "TEXT NOT NULL", "INTEGER NOT NULL", "INTEGER(1) NOT NULL", "INTEGER(1) NOT NULL", "LONG NOT NULL", "TEXT", "(`world`, `x`, `z`)"};
+    private final String[] gangColumns = {"gangName","boss","assistants","members","invites","allys","enemies","damage","PRIMARY KEY"};
+    private final String[] gangDims = {"VARCHAR(16) NOT NULL","TEXT NOT NULL","TEXT NOT NULL","TEXT NOT NULL","TEXT NOT NULL","TEXT NOT NULL","TEXT NOT NULL","INTEGER NOT NULL DEFAULT 0","(`gangName`)"};    
+    private static int gangMultiplier = 12;
+    private boolean useMySQL = false;
+    private String mysqlHost = "localhost";
+    private String mysqlPort = "port";
+    private String mysqlDatabase = "database";
+    private String mysqlUser = "username";
+    private String mysqlPass = "password";
     
     @Override
     public void onEnable() {
@@ -59,14 +79,16 @@ public class MyChunk extends JavaPlugin {
         loadConfig(false);
         
         // init SQLite
-        initSQLite();
+        initSQL();
         
         // Register Commands
         getCommand("mychunk").setExecutor(new MyChunkCommand(this));
+        getCommand("gang").setExecutor(new GangCommand(this));
         
         // Register Events
         getServer().getPluginManager().registerEvents(new AmbientListener(), this);
         getServer().getPluginManager().registerEvents(new BlockListener(), this);
+        getServer().getPluginManager().registerEvents(new ChatListener(), this);
         getServer().getPluginManager().registerEvents(new MobListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
         getServer().getPluginManager().registerEvents(new SignListener(), this);
@@ -93,7 +115,7 @@ public class MyChunk extends JavaPlugin {
     
     @Override
     public void onDisable() {
-        SQLiteBridge.close();
+        
     }
 
 /*
@@ -111,7 +133,7 @@ public class MyChunk extends JavaPlugin {
     /**
      * Get the maximum number of chunks a player can claim
      * 
-     * @param playerName Player to check
+     * @param player Player to check
      * @return Number of chunks player can claim
      */
     public static int getMaxChunks(CommandSender player) {
@@ -152,6 +174,18 @@ public class MyChunk extends JavaPlugin {
     public void setExpiryDays(int newDays) {
         config.set("claimExpiresAfter", newDays);
         claimExpiryDays = newDays;
+        saveConfig();
+    }
+    
+    public void setGangnamelength(int newMax) {
+        gangNameLength = newMax;
+        config.set("gangNameLength", gangNameLength);
+        saveConfig();
+    }
+    
+    public void setGangMultiplier(int newMax) {
+        gangMultiplier = newMax;
+        config.set("gangChunkMultiplier", gangMultiplier);
         saveConfig();
     }
     
@@ -197,47 +231,40 @@ public class MyChunk extends JavaPlugin {
      * @return Number of chunks player owns
      */
     public int ownedChunkCount(String playerName) {
-        HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("COUNT(*) as counter", "MyChunks", "owner = '"+playerName+"'", "","");
-        return Integer.parseInt(results.get(0).get("counter")+"");
+        
+        HashMap<Integer, HashMap<String, String>> results = SQLBridge.select("COUNT(*) as counter", "MyChunks", "owner = '"+playerName+"'", "", "");
+        if (results != null && !results.isEmpty()) {
+            int counter = Integer.parseInt(results.get(0).get("counter"));
+            return counter;
+        }
+        return 0;
+        
     }
     
-    private void initSQLite() {
-        if (!SQLiteBridge.checkTable("MyChunks")) {
+    private void initSQL() {
+        
+        if (useMySQL) {
+            SQLBridge.initMySQL(mysqlHost, mysqlPort, mysqlDatabase, mysqlUser, mysqlPass);
+        } else {
+            SQLBridge.initSQLite();
+        }
+        
+        if (!SQLBridge.checkTable("MyChunks")) {
             // Create empty table
-            SQLiteBridge.createTable("MyChunks", tableColumns, tableDims);
+            SQLBridge.createTable("MyChunks", tableColumns, tableDims);
+        }
+        if (!SQLBridge.checkTable("MyChunkGangs")) {
+            // Create empty table
+            SQLBridge.createTable("MyChunkGangs", gangColumns, gangDims);
         }
         // Check Missing Columns
-        if (!SQLiteBridge.tableContainsColumn("MyChunks", "allowPVP")) {
-            SQLiteBridge.addColumn("MyChunks", "allowPVP INT(1) NOT NULL DEFAULT 0");
+        if (!SQLBridge.tableContainsColumn("MyChunks", "allowPVP")) {
+            SQLBridge.query("ALTER TABLE MyChunks ADD COLUMN allowPVP INT(1) NOT NULL DEFAULT 0");
         }
-        File chunkFile = new File(getDataFolder(),"chunks.yml");
-        if (chunkFile.exists()) {
-            // Transfer old data
-            getLogger().info("Converting old YML data to SQLite");
-            FileConfiguration chunkStore = YamlConfiguration.loadConfiguration(chunkFile);
-            Set<String> keys = chunkStore.getKeys(false);
-            String values = "";
-            for (String key : keys) {
-                if (!key.equalsIgnoreCase("TotalOwned")) {
-                    int split = key.lastIndexOf("_", key.lastIndexOf("_") - 1);
-                    String world = key.substring(0, split);
-                    String[] elements = key.substring(split + 1).split("_");
-                    int x = Integer.parseInt(elements[0]);
-                    int z = Integer.parseInt(elements[1]);
-                    String owner = chunkStore.getString(key+".owner");
-                    String allowed = chunkStore.getString(key+".allowed","");
-                    double salePrice = chunkStore.getDouble(key+".forsale",0);
-                    boolean allowMobs = chunkStore.getBoolean(key+".allowmobs",false);
-                    long lastActive = chunkStore.getLong(key+".lastActive",0);
-                    if (!values.equals("")) {
-                        values += ",";
-                    }
-                    SQLiteBridge.query("INSERT OR REPLACE INTO MyChunks (world,x,z,owner,allowed,salePrice,allowMobs,allowPVP,lastActive) VALUES ('"+world+"',"+x+","+z+",'"+owner+"','"+allowed+"',"+salePrice+","+(allowMobs?"1":"0")+",0,"+lastActive+")");
-                }
-            }
-            getLogger().info("YML > SQLite Conversion Complete!");
+        if (!SQLBridge.tableContainsColumn("MyChunks", "gang")) {
+            SQLBridge.query("ALTER TABLE MyChunks ADD COLUMN gang TEXT");
         }
-        chunkFile.delete();
+
     }
     
     private void loadConfig(boolean reload) {
@@ -245,6 +272,24 @@ public class MyChunk extends JavaPlugin {
             reloadConfig();
         }
         config = getConfig();
+        
+        String databaseType = config.getString("databaseType", "sqlite");
+        if (databaseType.equalsIgnoreCase("mysql")) {
+            useMySQL = true;
+        }
+        config.set("databaseType", useMySQL ? "mysql" : "sqlite");
+        
+        mysqlHost = config.getString("mysqlHost", "localhost");
+        config.set("mysqlHost", mysqlHost);
+        mysqlPort = config.getString("mysqlPort", "3306");
+        config.set("mysqlPort", mysqlPort);
+        mysqlDatabase = config.getString("mysqlDatabase", "database");
+        config.set("mysqlDatabase", mysqlDatabase);
+        mysqlUser = config.getString("mysqlUser", "username");
+        config.set("mysqlUser", mysqlUser);
+        mysqlPass = config.getString("mysqlPass", "password");
+        config.set("mysqlPass", mysqlPass);
+        
         maxChunks = config.getInt("max_chunks", 8);
         config.set("max_chunks", maxChunks);
         allowNeighbours = config.getBoolean("allow_neighbours", false);
@@ -266,9 +311,9 @@ public class MyChunk extends JavaPlugin {
         refundPercent = config.getDouble("refund_percent", 100);
         config.set("refund_percent", refundPercent);
         List<String> worldsList = config.getStringList("worlds");
-        enabledWorlds = new HashSet<String>(worldsList);
+        enabledWorlds = new ArrayList<String>(worldsList);
         List<String> disabledWorldsList = config.getStringList("disabledworlds");
-        disabledWorlds = new HashSet<String>(disabledWorldsList);
+        disabledWorlds = new ArrayList<String>(disabledWorldsList);
         if (enabledWorlds.isEmpty() && disabledWorlds.isEmpty()) {
             // Enable all worlds by default
             for (World world : getServer().getWorlds()) {
@@ -290,12 +335,39 @@ public class MyChunk extends JavaPlugin {
         config.set("prevent_chunk_entry", preventEntry);
         preventPVP = config.getBoolean("preventPVP", false);
         config.set("preventPVP", preventPVP);
+        useChatFormat = config.getBoolean("useChatFormat", false);
+        config.set("useChatFormat", useChatFormat);
+        gangNameLength = config.getInt("gangNameLength", 8);
+        config.set("gangNameLength", gangNameLength);
+        List<String> defaultPrefixes = new ArrayList<String>();
+        defaultPrefixes.add("&9Member");
+        defaultPrefixes.add("&6VIP");
+        prefixes = config.getStringList("prefixes");
+
+        groupTag = config.getString("groupTag", "[%PREFIX%&f] ");
+        config.set("groupTag", groupTag);
+        gangTagColor = ChatColor.valueOf(config.getString("gangTagColor", "GRAY"));
+        config.set("gangTagColor", gangTagColor.name());
+        gangTag = config.getString("gangTag", "[%TAGCOLOR%%GANG%&f] ");
+        config.set("gangTag", gangTag);
+        playerTag = config.getString("playerTag", "%RANKCOLOR%%DISPNAME%");
+        config.set("playerTag", playerTag);
+        chatFormat = config.getString("noGangChatFormat", "%GROUPTAG%%PLAYERTAG%&7:&f %MSG%");
+        config.set("noGangChatFormat", chatFormat);
+        gangChatFormat = config.getString("gangChatFormat", "%GROUPTAG%%GANGTAG%%PLAYERTAG%&7:&f %MSG%");
+        config.set("gangChatFormat", gangChatFormat);
+        gangMultiplier = config.getInt("gangChunkMultiplier", 12);
+        config.set("gangChunkMultiplier", gangMultiplier);
+        
+        if (prefixes.isEmpty())
+            prefixes = defaultPrefixes;
+        config.set("prefixes", prefixes);
         if (getServer().getPluginManager().isPluginEnabled("Vault")) {
-            vault = new MyChunkVaultLink(this);
+            MyChunkVaultLink.initEconomy();
             getLogger().info("[Vault] found and hooked!");
-            if (vault.foundEconomy) {
+            if (MyChunkVaultLink.foundEconomy) {
                 foundEconomy = true;
-                String message = "[" + vault.economyName + "] found and hooked!";
+                String message = "[" + MyChunkVaultLink.economyName + "] found and hooked!";
                 getLogger().info(message);
                 chunkPrice = config.getDouble("chunk_price", 0.00);
                 config.set("chunk_price", chunkPrice);
@@ -328,6 +400,8 @@ public class MyChunk extends JavaPlugin {
      * Checkable settings: (not case sensitive)<br>
      * claimExpiryDays - Returns the number of days before a chunk claim expires<br>
      * maxChunks - Returns the maximum number of chunks a player can own<br>
+     * gangNameLength - Returns the maximum length of a gang name<br>
+     * gangMultiplier - Returns the maximum number of chunks a gang can own per member<br>
      * 
      * @param setting
      * @return Setting value or 0 if not found
@@ -335,6 +409,8 @@ public class MyChunk extends JavaPlugin {
     public static int getIntSetting(String setting) {
         if (setting.equalsIgnoreCase("claimExpiryDays")) return claimExpiryDays;
         if (setting.equalsIgnoreCase("max_chunks")) return maxChunks;
+        if (setting.equalsIgnoreCase("gangNameLength")) return gangNameLength;
+        if (setting.equalsIgnoreCase("gangMultiplier")) return gangMultiplier;
         return 0;
     }
     
@@ -396,7 +472,121 @@ public class MyChunk extends JavaPlugin {
         if (setting.equalsIgnoreCase("preventPVP")) return preventPVP;
         if (setting.equalsIgnoreCase("allowMobGrief")) return allowMobGrief;
         if (setting.equalsIgnoreCase("rampChunkPrice")) return rampChunkPrice;
+        if (setting.equalsIgnoreCase("useChatFormat")) return useChatFormat;
         return false;
+    }
+    
+    public static String formatChat(String msg, Player player) {
+        
+        String grTag = MyChunk.groupTag;
+        String gTag = MyChunk.gangTag;
+        String plTag = MyChunk.playerTag;
+        
+        String prefixList = "";
+        for (String prefix : prefixes) {
+            if (player.hasPermission("mychunk.prefix."+stripColor(prefix).toLowerCase())) {
+                if (!prefixList.equals("")) {
+                    prefixList += "&f,";
+                }
+                prefixList += prefix;
+            }
+        }
+        if (prefixList.equals("")) {
+            grTag = "";
+        } else {
+            grTag = grTag.replace("%PREFIX%", prefixList);
+        }
+        
+        ChatColor rankColor = ChatColor.WHITE;
+        if (GangLands.isGangMember(player)) {
+            rankColor = ChatColor.BLUE;
+            if (GangLands.isGangBoss(player)) {
+                rankColor = ChatColor.GOLD;
+            } else if (GangLands.isGangAssistant(player)) {
+                rankColor = ChatColor.YELLOW;
+            }
+        }
+        
+        plTag = plTag.replace("%RANKCOLOR%", rankColor + "").replace("%DISPNAME%", player.getDisplayName());
+        
+        if (GangLands.isGangMember(player)) {
+            
+            ChatColor gangColor = gangTagColor;
+            
+            gTag = gTag.replace("%TAGCOLOR%", gangColor + "").replace("%GANG%",GangLands.getGang(player));
+            
+            msg = fixColors(gangChatFormat.replace("%GROUPTAG%", grTag).replace("%GANGTAG%", gTag).replace("%PLAYERTAG%", plTag).replace("%MSG%", msg));
+            
+            return msg.replace("%", "%%");
+            
+        } else {
+            
+            msg = fixColors(chatFormat.replace("%GANGTAG%", "").replace("%GROUPTAG%", grTag).replace("%PLAYERTAG%", plTag).replace("%MSG%", msg));
+            
+            return msg.replace("%", "%%");
+            
+        }
+
+    }
+    
+    private static String stripColor(String format) {
+        
+        format = format.replace("&0", "");
+        format = format.replace("&1", "");
+        format = format.replace("&2", "");
+        format = format.replace("&3", "");
+        format = format.replace("&4", "");
+        format = format.replace("&5", "");
+        format = format.replace("&6", "");
+        format = format.replace("&7", "");
+        format = format.replace("&8", "");
+        format = format.replace("&9", "");
+        format = format.replace("&a", "");
+        format = format.replace("&b", "");
+        format = format.replace("&c", "");
+        format = format.replace("&d", "");
+        format = format.replace("&e", "");
+        format = format.replace("&f", "");
+        
+        format = format.replace("&k", "");
+        format = format.replace("&l", "");
+        format = format.replace("&m", "");
+        format = format.replace("&n", "");
+        format = format.replace("&o", "");
+        format = format.replace("&r", "");
+        
+        return format;
+        
+    }
+    
+    private static String fixColors(String format) {
+        
+        format = format.replace("&0", ChatColor.BLACK + "");
+        format = format.replace("&1", ChatColor.DARK_BLUE + "");
+        format = format.replace("&2", ChatColor.DARK_GREEN + "");
+        format = format.replace("&3", ChatColor.DARK_AQUA + "");
+        format = format.replace("&4", ChatColor.DARK_RED + "");
+        format = format.replace("&5", ChatColor.DARK_PURPLE + "");
+        format = format.replace("&6", ChatColor.GOLD + "");
+        format = format.replace("&7", ChatColor.GRAY + "");
+        format = format.replace("&8", ChatColor.DARK_GRAY + "");
+        format = format.replace("&9", ChatColor.BLUE + "");
+        format = format.replace("&a", ChatColor.GREEN + "");
+        format = format.replace("&b", ChatColor.AQUA + "");
+        format = format.replace("&c", ChatColor.RED + "");
+        format = format.replace("&d", ChatColor.LIGHT_PURPLE + "");
+        format = format.replace("&e", ChatColor.YELLOW + "");
+        format = format.replace("&f", ChatColor.WHITE + "");
+        
+        format = format.replace("&k", ChatColor.MAGIC + "");
+        format = format.replace("&l", ChatColor.BOLD + "");
+        format = format.replace("&m", ChatColor.STRIKETHROUGH + "");
+        format = format.replace("&n", ChatColor.UNDERLINE + "");
+        format = format.replace("&o", ChatColor.ITALIC + "");
+        format = format.replace("&r", ChatColor.RESET + "");
+        
+        return format;
+        
     }
     
     /**
@@ -423,63 +613,67 @@ public class MyChunk extends JavaPlugin {
      */
     public void toggleSetting(String setting) {
         if (setting.equalsIgnoreCase("allowEnd")) {
-            if (allowEnd) allowEnd = false; else allowEnd = true;
-            config.set("allowEnd", allowEnd);
+            allowEnd = !allowEnd;
+            config.set("allowEnd", !allowEnd);
         }
         if (setting.equalsIgnoreCase("allowMobGrief")) {
-            if (allowMobGrief) allowMobGrief = false; else allowMobGrief = true;
+            allowMobGrief = !allowMobGrief;
             config.set("allow_mob_greifing", allowMobGrief);
         }
         if (setting.equalsIgnoreCase("allowNeighbours")) {
-            if (allowNeighbours) allowNeighbours = false; else allowNeighbours = true;
+            allowNeighbours = !allowNeighbours;
             config.set("allow_neighbours", allowNeighbours);
         }
         if (setting.equalsIgnoreCase("allowNether")) {
-            if (allowNether) allowNether = false; else allowNether = true;
+            allowNether = !allowNether;
             config.set("allowNether", allowNether);
         }
         if (setting.equalsIgnoreCase("allowOverbuy")) {
-            if (allowOverbuy) allowOverbuy = false; else allowOverbuy = true;
+            allowOverbuy = !allowOverbuy;
             config.set("allow_overbuy", allowOverbuy);
         }
         if (setting.equalsIgnoreCase("firstChunkFree")) {
-            if (firstChunkFree) firstChunkFree = false; else firstChunkFree = true;
+            firstChunkFree = !firstChunkFree;
             config.set("first_chunk_free", firstChunkFree);
         }
         if (setting.equalsIgnoreCase("overbuyP2P")) {
-            if (overbuyP2P) overbuyP2P = false; else overbuyP2P = true;
+            overbuyP2P = !overbuyP2P;
             config.set("charge_overbuy_on_resales", overbuyP2P);
         }
         if (setting.equalsIgnoreCase("ownerNotifications")) {
-            if (notify) notify = false; else notify = true;
+            notify = !notify;
             config.set("owner_notifications", notify);
         }
         if (setting.equalsIgnoreCase("preventEntry")) {
-            if (preventEntry) preventEntry = false; else preventEntry = true;
+            preventEntry = !preventEntry;
             config.set("prevent_chunk_entry", preventEntry);
         }
         if (setting.equalsIgnoreCase("preventPVP")) {
-            if (preventPVP) preventPVP = false; else preventPVP = true;
+            preventPVP = !preventPVP;
             config.set("preventPVP", preventPVP);
         }
         if (setting.equalsIgnoreCase("protectUnclaimed")) {
-            if (protectUnclaimed) protectUnclaimed = false; else protectUnclaimed = true;
+            protectUnclaimed = !protectUnclaimed;
             config.set("protect_unclaimed", protectUnclaimed);
         }
         if (setting.equalsIgnoreCase("rampChunkPrice")) {
-            if (rampChunkPrice) rampChunkPrice = false; else rampChunkPrice = true;
+            rampChunkPrice = !rampChunkPrice;
             config.set("ramp_chunk_price", rampChunkPrice);
         }
         if (setting.equalsIgnoreCase("unclaimedTNT")) {
-            if (unclaimedTNT) unclaimedTNT = false; else unclaimedTNT = true;
+            unclaimedTNT = !unclaimedTNT;
             config.set("prevent_tnt_in_unclaimed", unclaimedTNT);
         }
         if (setting.equalsIgnoreCase("unclaimRefund")) {
-            if (unclaimRefund) unclaimRefund = false; else unclaimRefund = true;
+            unclaimRefund = !unclaimRefund;
             config.set("unclaim_refund", unclaimRefund);
         }
+        if (setting.equalsIgnoreCase("useChatFormat")) {
+            useChatFormat = !useChatFormat;
+            config.set("useChatFormat", useChatFormat);
+        }
         if (setting.equalsIgnoreCase("useClaimExpiry")) {
-            if (useClaimExpiry) useClaimExpiry = false; else useClaimExpiry = true;
+            useClaimExpiry = !useClaimExpiry;
             config.set("useClaimExpiry", useClaimExpiry);
         }
         saveConfig();
@@ -543,6 +737,10 @@ public class MyChunk extends JavaPlugin {
         reloadConfig();
         loadConfig(true);
         Lang.reload();
+    }
+    
+    public static List<String> getPrefixes() {
+       return prefixes; 
     }
     
 }
