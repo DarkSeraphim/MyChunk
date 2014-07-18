@@ -8,7 +8,11 @@ import java.util.List;
 import me.ellbristow.mychunk.MyChunk;
 import me.ellbristow.mychunk.MyChunkChunk;
 import me.ellbristow.mychunk.lang.Lang;
-import me.ellbristow.mychunk.utils.*;
+import me.ellbristow.mychunk.utils.FactionsHook;
+import me.ellbristow.mychunk.utils.MyChunkVaultLink;
+import me.ellbristow.mychunk.utils.TownyHook;
+import me.ellbristow.mychunk.utils.WorldGuardHook;
+import me.ellbristow.mychunk.utils.db.SQLBridge;
 import org.bukkit.*;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
@@ -38,7 +42,7 @@ public class SignListener implements Listener {
         if (event.isCancelled()) {
             return;
         }
-        if (!MyChunk.isWorldEnabled(event.getBlock().getWorld().getName())) return;
+        if (!MyChunk.isWorldEnabled(event.getBlock().getWorld().getName()) && !MyChunkChunk.getOwner(event.getBlock().getChunk()).equalsIgnoreCase("Server")) return;
 
         String line0 = event.getLine(0);
         String line1 = event.getLine(1);
@@ -150,9 +154,9 @@ public class SignListener implements Listener {
                 }
             }
             
-            if (claimPrice != 0 && MyChunkVaultLink.getEconomy().getBalance(player.getName()) < claimPrice) {
+            if (claimPrice != 0 && MyChunkVaultLink.economy.getBalance(player.getName()) < claimPrice) {
 
-                player.sendMessage(ChatColor.RED + Lang.get("CantAfford") + " (" + Lang.get("Price") + ": " + ChatColor.WHITE + MyChunkVaultLink.getEconomy().format(claimPrice) + ChatColor.RED + ")!");
+                player.sendMessage(ChatColor.RED + Lang.get("CantAfford") + " (" + Lang.get("Price") + ": " + ChatColor.WHITE + MyChunkVaultLink.economy.format(claimPrice) + ChatColor.RED + ")!");
                 breakSign(block);
                 return;
 
@@ -161,27 +165,33 @@ public class SignListener implements Listener {
             if (line1.equals("") || line1.equalsIgnoreCase(player.getName())) {
 
                 if (!MyChunk.getToggle("allowNeighbours") && chunk.hasNeighbours() && !chunk.isForSale()) {
-
-                    HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("owner", "MyChunks", "world = '" + chunk.getWorldName() + "' AND ((x = " + chunk.getX() + "+1 AND z = " + chunk.getZ() + ") OR (x = " + chunk.getX() + "-1 AND z = " + chunk.getZ() + ") OR (x = " + chunk.getX() + " AND z = " + chunk.getZ() + "+1) OR (x = " + chunk.getX() + " AND z = " + chunk.getZ() + "-1))", "", "");
                     
-                    if (!results.isEmpty()) {
-                        for (HashMap<String, Object> result : results.values()) {
-                            if (result.get("owner").toString().equalsIgnoreCase(player.getName()) || result.get("owner").toString().equalsIgnoreCase("Server") || result.get("owner").toString().equalsIgnoreCase("Public")) {
+                    HashMap<Integer, HashMap<String, String>> results = SQLBridge.select("owner", "MyChunks", "world = '" + chunk.getWorldName() + "' AND ((x = " + chunk.getX() + "+1 AND z = " + chunk.getZ() + ") OR (x = " + chunk.getX() + "-1 AND z = " + chunk.getZ() + ") OR (x = " + chunk.getX() + " AND z = " + chunk.getZ() + "+1) OR (x = " + chunk.getX() + " AND z = " + chunk.getZ() + "-1))", "", "");
+                    
+                    if (results != null && !results.isEmpty()) {
+                        
+                        for (int i : results.keySet()) {
+                            
+                            if (results.get(i).get("owner").equalsIgnoreCase(player.getName()) || results.get(i).get("owner").equalsIgnoreCase("Server") || results.get(i).get("owner").equalsIgnoreCase("Public")) {
                                 continue;
                             }
+                            
                             player.sendMessage(ChatColor.RED + Lang.get("NoNeighbours"));
                             breakSign(block);
-                            return;
-                        }
-                    }
 
+                            return;
+                            
+                        }
+                            
+                    }
+                    
                 }
 
                 if (claimPrice != 0 && !isFreeChunk) {
 
                     if (!(MyChunk.getToggle("firstChunkFree") && playerClaimed == 0) || chunk.isForSale()) {
-                        MyChunkVaultLink.getEconomy().withdrawPlayer(player.getName(), claimPrice);
-                        player.sendMessage(MyChunkVaultLink.getEconomy().format(claimPrice) + ChatColor.GOLD + " " + Lang.get("AmountDeducted"));
+                        MyChunkVaultLink.economy.withdrawPlayer(player.getName(), claimPrice);
+                        player.sendMessage(MyChunkVaultLink.economy.format(claimPrice) + ChatColor.GOLD + " " + Lang.get("AmountDeducted"));
                     }
 
                 } else if (isFreeChunk) {
@@ -191,13 +201,13 @@ public class SignListener implements Listener {
                 if (chunk.isForSale()) {
                     
                     if (claimPrice != 0) {
-                        MyChunkVaultLink.getEconomy().depositPlayer(chunk.getOwner(), claimPrice);
+                        MyChunkVaultLink.economy.depositPlayer(chunk.getOwner(), claimPrice);
                     }
                     OfflinePlayer oldOwner = Bukkit.getServer().getOfflinePlayer(chunk.getOwner());
 
                     if (oldOwner.isOnline()) {
                         if (claimPrice != 0) {
-                            oldOwner.getPlayer().sendMessage(player.getName() + ChatColor.GOLD + " " + Lang.get("BoughtFor") + " " + ChatColor.WHITE + MyChunkVaultLink.getEconomy().format(claimPrice) + ChatColor.GOLD + "!");
+                            oldOwner.getPlayer().sendMessage(player.getName() + ChatColor.GOLD + " " + Lang.get("BoughtFor") + " " + ChatColor.WHITE + MyChunkVaultLink.economy.format(claimPrice) + ChatColor.GOLD + "!");
                         } else {
                             oldOwner.getPlayer().sendMessage(player.getName() + ChatColor.GOLD + " " + Lang.get("ClaimedYourChunk") + "!");
                         }
@@ -205,7 +215,7 @@ public class SignListener implements Listener {
 
                 }
 
-                chunk.claim(player.getName());
+                chunk.claim(player.getName(), "");
                 player.sendMessage(ChatColor.GOLD + Lang.get("ChunkClaimed"));
 
 
@@ -275,14 +285,14 @@ public class SignListener implements Listener {
 
                 }
 
-                chunk.claim(correctName);
+                chunk.claim(correctName, "");
                 player.sendMessage(ChatColor.GOLD + Lang.get("ChunkClaimedFor") + " " + ChatColor.WHITE + correctName + ChatColor.GOLD + "!");
 
                 if (claimPrice != 0 && !correctName.equalsIgnoreCase("server") && !correctName.equalsIgnoreCase("public")) {
                     
                     if (!isFreeChunk) {
-                        MyChunkVaultLink.getEconomy().withdrawPlayer(player.getName(), claimPrice);
-                        player.sendMessage(MyChunkVaultLink.getEconomy().format(claimPrice) + ChatColor.GOLD + " " + Lang.get("AmountDeducted"));
+                        MyChunkVaultLink.economy.withdrawPlayer(player.getName(), claimPrice);
+                        player.sendMessage(MyChunkVaultLink.economy.format(claimPrice) + ChatColor.GOLD + " " + Lang.get("AmountDeducted"));
                     } else {
                         player.sendMessage(ChatColor.GOLD + " " + Lang.get("FirstChunkFree"));
                     }
@@ -553,22 +563,22 @@ public class SignListener implements Listener {
 
                     }
 
-                    if (MyChunkVaultLink.getEconomy().getBalance(player.getName()) < areaPrice) {
+                    if (MyChunkVaultLink.economy.getBalance(player.getName()) < areaPrice) {
 
                         player.sendMessage(ChatColor.RED + Lang.get("CantAffordClaimArea"));
-                        player.sendMessage(ChatColor.RED + Lang.get("Price") + ": " + ChatColor.WHITE + MyChunkVaultLink.getEconomy().format(areaPrice));
+                        player.sendMessage(ChatColor.RED + Lang.get("Price") + ": " + ChatColor.WHITE + MyChunkVaultLink.economy.format(areaPrice));
                         breakSign(block);
                         return;
 
                     }
 
-                    MyChunkVaultLink.getEconomy().withdrawPlayer(player.getName(), areaPrice);
-                    player.sendMessage(ChatColor.GOLD + Lang.get("YouWereCharged") + " " + ChatColor.WHITE + MyChunkVaultLink.getEconomy().format(areaPrice));
+                    MyChunkVaultLink.economy.withdrawPlayer(player.getName(), areaPrice);
+                    player.sendMessage(ChatColor.GOLD + Lang.get("YouWereCharged") + " " + ChatColor.WHITE + MyChunkVaultLink.economy.format(areaPrice));
 
                 }
 
                 for (MyChunkChunk myChunk : foundChunks) {
-                    myChunk.claim(correctName);
+                    myChunk.claim(correctName, "");
                 }
 
                 player.sendMessage(ChatColor.GOLD + Lang.get("ChunksClaimed") + ": " + ChatColor.WHITE + foundChunks.size());
@@ -639,7 +649,7 @@ public class SignListener implements Listener {
                         int claimed = MyChunkChunk.getOwnedChunkCount(player.getName());
                         price += MyChunk.getDoubleSetting("priceRampRate") * claimed;
                     }
-                    MyChunkVaultLink.getEconomy().depositPlayer(player.getName(), price / 100 * MyChunk.getDoubleSetting("refundPercent"));
+                    MyChunkVaultLink.economy.depositPlayer(player.getName(), price / 100 * MyChunk.getDoubleSetting("refundPercent"));
                 }
 
             }
@@ -813,7 +823,7 @@ public class SignListener implements Listener {
                             price += MyChunk.getDoubleSetting("priceRampRate");
                         }
                     }
-                    MyChunkVaultLink.getEconomy().depositPlayer(player.getName(), price / 100 * MyChunk.getDoubleSetting("refundPrecent"));
+                    MyChunkVaultLink.economy.depositPlayer(player.getName(), price / 100 * MyChunk.getDoubleSetting("refundPrecent"));
 
                 }
 
@@ -996,10 +1006,10 @@ public class SignListener implements Listener {
                 if (displayName.equals("*")) {
                     displayName = Lang.get("Everyone");
                 }
+                
+                HashMap<Integer, HashMap<String, String>> results = SQLBridge.select("world,x,z", "MyChunks", "owner = '" + player.getName() + "'", "", "");
 
-                HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("world,x,z", "MyChunks", "owner = '" + player.getName() + "'", "", "");
-
-                if (results.isEmpty()) {
+                if (results == null || results.isEmpty()) {
 
                     player.sendMessage(ChatColor.RED + Lang.get("NoChunksOwned"));
                     breakSign(block);
@@ -1022,16 +1032,18 @@ public class SignListener implements Listener {
                 if (!"".equals(errors)) {
                     player.sendMessage(ChatColor.RED + Lang.get("FlagsNotFound") + ": " + errors);
                 }
+                
+                int counter = 0;
+                
+                for (int i : results.keySet()) {
 
-                for (HashMap<String, Object> result : ((HashMap<Integer, HashMap<String, Object>>) results.clone()).values()) {
-
-                    MyChunkChunk myChunk = new MyChunkChunk(result.get("world").toString(), Integer.parseInt(result.get("x").toString()), Integer.parseInt(result.get("z").toString()));
+                    MyChunkChunk myChunk = new MyChunkChunk(results.get(i).get("world"), Integer.parseInt(results.get(i).get("x")), Integer.parseInt(results.get(i).get("z")));
 
                     if (!"*".equalsIgnoreCase(line2)) {
 
-                        for (int i = 0; i < line2.length(); i++) {
+                        for (int j = 0; j < line2.length(); j++) {
 
-                            String thisChar = line2.substring(i, i + 1).replaceAll(" ", "");
+                            String thisChar = line2.substring(j, j + 1).replaceAll(" ", "");
 
                             if (MyChunkChunk.isFlag(thisChar.toUpperCase())) {
                                 myChunk.allow(targetName, thisChar);
@@ -1045,10 +1057,16 @@ public class SignListener implements Listener {
 
                     }
 
-                }
+                    counter ++;
 
-                player.sendMessage(ChatColor.GOLD + Lang.get("PermissionsUpdated"));
-                player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " " + Lang.get("ReceivedFlagsAll") +": " + ChatColor.GREEN + line2);
+                }
+                
+                if (counter != 0) {
+                    player.sendMessage(ChatColor.GOLD + Lang.get("PermissionsUpdated"));
+                    player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " " + Lang.get("ReceivedFlagsAll") +": " + ChatColor.GREEN + line2);
+                } else {
+                    player.sendMessage(ChatColor.RED + Lang.get("NoChunksOwned"));
+                }
 
             }
 
@@ -1199,10 +1217,10 @@ public class SignListener implements Listener {
                 if (displayName.equals("*")) {
                     displayName = Lang.get("Everyone");
                 }
+                
+                HashMap<Integer, HashMap<String, String>> results = SQLBridge.select("world,x,z", "MyChunks", "owner = '" + player.getName() + "'", "", "");
 
-                HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("world,x,z", "MyChunks", "owner = '" + player.getName() + "'", "", "");
-
-                if (results.isEmpty()) {
+                if (results == null || results.isEmpty()) {
 
                     player.sendMessage(ChatColor.RED + Lang.get("NoChunksOwned"));
                     breakSign(block);
@@ -1225,16 +1243,18 @@ public class SignListener implements Listener {
                 if (!"".equals(errors)) {
                     player.sendMessage(ChatColor.RED + "Flags not found: " + errors);
                 }
+                
+                int counter = 0;
+                
+                for (int i : results.keySet()) {
 
-                for (HashMap<String, Object> result : ((HashMap<Integer, HashMap<String, Object>>) results.clone()).values()) {
-
-                    MyChunkChunk chunk = new MyChunkChunk(result.get("world").toString(), Integer.parseInt(result.get("x").toString()), Integer.parseInt(result.get("z").toString()));
+                    MyChunkChunk chunk = new MyChunkChunk(results.get(i).get("world"), Integer.parseInt(results.get(i).get("x")), Integer.parseInt(results.get(i).get("z")));
 
                     if (!"*".equalsIgnoreCase(line2)) {
 
-                        for (int i = 0; i < line2.length(); i++) {
+                        for (int j = 0; j < line2.length(); j++) {
 
-                            String thisChar = line2.substring(i, i + 1).replaceAll(" ", "");
+                            String thisChar = line2.substring(j, j + 1).replaceAll(" ", "");
 
                             if (MyChunkChunk.isFlag(thisChar.toUpperCase())) {
                                 chunk.disallow(targetName, thisChar);
@@ -1248,10 +1268,16 @@ public class SignListener implements Listener {
 
                     }
 
-                }
+                    counter++;
 
-                player.sendMessage(ChatColor.GOLD + Lang.get("PermissionsUpdated"));
-                player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " " + Lang.get("LostFlagsAll") + ": " + ChatColor.GREEN + line2.replaceAll(" ", ""));
+                }
+                
+                if (counter != 0) {
+                    player.sendMessage(ChatColor.GOLD + Lang.get("PermissionsUpdated"));
+                    player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " " + Lang.get("LostFlagsAll") + ": " + ChatColor.GREEN + line2.replaceAll(" ", ""));
+                } else {
+                    player.sendMessage(ChatColor.RED + Lang.get("NoChunksOwned"));
+                }
 
             }
 
@@ -1317,7 +1343,7 @@ public class SignListener implements Listener {
 
             if (MyChunk.getToggle("foundEconomy")) {
 
-                player.sendMessage(ChatColor.GOLD + "Chunk on sale for " + MyChunkVaultLink.getEconomy().format(price) + "!");
+                player.sendMessage(ChatColor.GOLD + "Chunk on sale for " + MyChunkVaultLink.economy.format(price) + "!");
                 chunk.setForSale(price);
 
             } else {
