@@ -1,6 +1,6 @@
 name: MyChunk
 main: me.ellbristow.mychunk.MyChunk
-version: 2.4.2
+version: 2.5.1a
 author: ellbristow
 description: >
              Buy/Sell chunks for currency, get protection, make profit.
@@ -10,6 +10,9 @@ commands:
   mychunk:
     description: Use /mychunk ? for command help
     aliases: [mc,chunk]
+  gang:
+    description: Use /gang ? for command help
+    aliases: [g]
 
 permissions:
 
@@ -32,6 +35,14 @@ permissions:
       mychunk.unclaim.*: true
       mychunk.allowmobs: true
       mychunk.allowpvp: true
+      mychunk.gang.*: true
+      
+# ALL Gang Permissions #
+
+  mychunk.gang.*:
+    description: Admin access to all Gang permissions
+    children:
+      mychunk.commands.gang.*: true
       
 # ALL Commands #
   mychunk.commands.*:
@@ -51,6 +62,15 @@ permissions:
       mychunk.commands.unclaimarea: true
       mychunk.commands.user: true
       mychunk.commands.world.*: true
+      mychunk.commands.gang.*: true
+      mychunk.commands.gangmultiplier: true
+      mychunk.commands.gangnamelength: true
+      
+# ALL Gang Commands #
+  mychunk.commands.gang.*:
+    desciption: Admin access to all gang commands
+    children:
+      mychunk.commands.gang.user: true
       
 # ALL Admin Claim Permissions #
   mychunk.claim.*:
@@ -118,6 +138,13 @@ permissions:
       mychunk.allowpvp: true
       mychunk.lease: true
       mychunk.commands.user: true
+      mychunk.gang.user: true
+
+# Gang User Permission #
+  mychunk.gang.user:
+    description: Access to all default gang user permissions
+    children:
+      mychunk.commands.gang.user: true
 
 # Default User Commands #
   mychunk.commands.user:
@@ -136,6 +163,21 @@ permissions:
       mychunk.commands.owner: true
       mychunk.commands.stats: true
       mychunk.commands.unclaim: true
+      mychunk.commands.gang.user: true
+      
+# Default Gang User Commands #
+  mychunk.commands.gang.user:
+    description: Acecss to all gang commands a normal user would need
+    children:
+      mychunk.commands.gang.claim: true
+      mychunk.commands.gang.create: true
+      mychunk.commands.gang.disband: true
+      mychunk.commands.gang.join: true
+      mychunk.commands.gang.leave: true
+      mychunk.commands.gang.status: true
+      mychunk.commands.gang.toggle.*: true
+      mychunk.commands.gang.unclaim: true
+      mychunk.commands.gang.help: true
 
 ##########################
 # Individual Permissions #
@@ -222,6 +264,9 @@ permissions:
     
   mychunk.commands.expirydays:
     description: Access to command /mychunk expirydays
+    
+  mychunk.commands.gangnamelength:
+    description: Access to command /mychunk gangnamelength
 
   mychunk.commands.refund:
     description: Access to command /mychunk refund
@@ -259,6 +304,7 @@ permissions:
       mychunk.commands.toggle.preventPVP: true
       mychunk.commands.toggle.mobGrief: true
       mychunk.commands.toggle.rampchunkprice: true
+      mychunk.commands.toggle.usechatformat: true
     
   mychunk.commands.toggle.refund:
     description: Access to command /mychunk toggle refund
@@ -304,6 +350,9 @@ permissions:
     
   mychunk.commands.toggle.rampchunkprice:
     description: Access to command /mychunk toggle rampchunkprice
+  
+  mychunk.commands.toggle.usechatformat:
+    description: Access to command /mychunk toggle usechatformat
       
   mychunk.commands.world.*:
     description: Access to /mychunk world ...
@@ -435,3 +484,32 @@ permissions:
     
   mychunk.public.water:
     description: Can empty water buckets in public chunks
+
+#########################
+# GANGLANDS PERMISSIONS #
+#########################
+
+# GANGLANDS COMMANDS #
+
+mychunk.commands.gang.create:
+  description: Access to /gang create
+  
+mychunk.commands.gang.disband:
+  description: Access to /gang disband
+  
+mychunk.commands.gang.join:
+  description: Access to /gang join
+  
+mychunk.commands.gang.leave:
+  description: Access to /gang leave
+  
+mychunk.commands.gang.status:
+  description: Access to /gang
+
+mychunk.commands.gang.toggle.*:
+  description: Access to all /gang toggle commands
+  children:
+    mychunk.commands.gang.toggle.public: true
+  
+mychunk.commands.gang.toggle.public:
+  desciption: Access to /gang toggle public
