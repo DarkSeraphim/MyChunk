@@ -13,7 +13,7 @@ public class WorldListener implements Listener {
     }
     
     @EventHandler (priority = EventPriority.HIGH)
-    public void onExplosion (WorldLoadEvent event) {
+    public void onWorldLoad (WorldLoadEvent event) {
         
         if (!MyChunk.isWorldEnabled(event.getWorld().getName()) && !MyChunk.isWorldDisabled(event.getWorld().getName())) {
             MyChunk.enableWorld(event.getWorld().getName());
