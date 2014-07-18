@@ -33,6 +33,7 @@ public class Lang {
         lang.clear();
         
         // General
+        loadLangPhrase("MyChunkCommands", "MyChunk Commands");
         loadLangPhrase("Yes", "Yes");
         loadLangPhrase("No", "No");
         loadLangPhrase("On", "On");
@@ -150,6 +151,8 @@ public class Lang {
         loadLangPhrase("TogglePVPOff", "PVP protection disabled");
         loadLangPhrase("ToggleMobGriefOn", "Mob Griefing IS now Allowed");
         loadLangPhrase("ToggleMobGriefOff", "Mob Griefing is NO LONGER Allowed");
+        loadLangPhrase("ToggleChatFormatOn", "Now using Chat Formatting");
+        loadLangPhrase("ToggleChatFormatOff", "No longer using Chat Formatting");
         loadLangPhrase("ToggleFirstChunkFreeOn", "Players can now claim 1 chunk for free");
         loadLangPhrase("ToggleFirstChunkFreeOff", "Players now DO NOT get their first chunk free!");
         loadLangPhrase("RefundSet", "Refund Percentage set to ");
@@ -177,6 +180,9 @@ public class Lang {
         loadLangPhrase("CommandMessageUnclaimArea", "Claim an area of chunks");
         loadLangPhrase("CommandMessageFlags", "List all available chunk flags");
         loadLangPhrase("CommandMessageForsale", "Put your chunk up for sale");
+        loadLangPhrase("CommandMessageNewGangMultiplier", "New maximum chunks per gang member set to");
+        loadLangPhrase("CommandMessageGangMultiplier", "Set maximum chunks per gang member");
+        loadLangPhrase("CommandMessageGangnamelength", "Set maximum length of a Gang name");
         loadLangPhrase("CommandMessageAllowmobs", "Allow mobs to spawn in the current chunk");
         loadLangPhrase("CommandMessageAllowmobs", "Set if mobs can spawn in the current chunk");
         loadLangPhrase("CommandMessageAllowpvp", "Set if PVP is allowed in the current chunk");
@@ -210,8 +216,10 @@ public class Lang {
         loadLangPhrase("Chunks", "chunks");
         loadLangPhrase("NoNeighbours", "You cannot claim a chunk next to someone else's chunk!");
         loadLangPhrase("CantAfford", "You cannot afford to claim that chunk!");
+        loadLangPhrase("GangCantAfford", "Your Gang cannot afford to claim this chunk!");
         loadLangPhrase("MaxChunksReached", "Claiming that would put you over your maximum chunk limit!");
         loadLangPhrase("DoNotOwn", "You do not own this chunk!");
+        loadLangPhrase("GangDoesNotOwn", "Your Gang does not own this chunk!");
         loadLangPhrase("NoChunksOwned", "You do not own any chunks!");
         loadLangPhrase("Line2Player", "Line 2 must contain a player name (or * for all)!");
         loadLangPhrase("AllowSelf", "You dont need to allow yourself!");
@@ -227,6 +235,7 @@ public class Lang {
         loadLangPhrase("ClaimAreaTooLarge", "cannot claim that many chunks!");
         loadLangPhrase("ChunksInArea", "Chunks In Area");
         loadLangPhrase("CantAffordClaimArea", "You cannot afford to buy that many chunks!");
+        loadLangPhrase("SpecifyNewGangMultiplier", "You must specify a new maximum chunk limit!");
         loadLangPhrase("SpecifyNewMaxChunks", "You must specify a new maximum chunk limit!");
         loadLangPhrase("NewLimit", "new limit");
         loadLangPhrase("SpecifyNewChunkPrice", "You must specify a new chunk price!");
@@ -252,7 +261,7 @@ public class Lang {
         loadLangPhrase("CommandMustBeRunByPlayer", "This command must be run by a player!");
         loadLangPhrase("ServerNoChunks", "The console doesn't own any chunks!");
         loadLangPhrase("NoEntry", "has denied you access to this chunk!");
-        loadLangPhrase("NoPVP", "PVP is not allowed here!");
+        loadLangPhrase("PVPNotAllowed", "PVP is not allowed here!");
         loadLangPhrase("CannotFindWorld", "Cannot find a world called");
         loadLangPhrase("CommandNotRecognised", "Command not recognised:");
         loadLangPhrase("Try", "Try");
@@ -329,6 +338,61 @@ public class Lang {
         loadLangPhrase("NoPermsMobSign", "You do not have permission to use [AllowMobs] signs!");
         loadLangPhrase("NoPermsPVPSign", "You do not have permission to use [AllowPVP] signs!");
         loadLangPhrase("NoPermsLease", "You do not have permission to use [Lease] signs!");
+        loadLangPhrase("NoPermsDisbandOther", "You do not have permission to disband other gangs!");
+        
+        /* GANG MESSAGES */
+        
+        // Gang Help Messages
+        loadLangPhrase("GangCommands", "Gang Commands");
+        loadLangPhrase("CommandMessageGangClaim", "Claim chunk for your gang");
+        loadLangPhrase("CommandMessageGangCreate", "Create new gang");
+        loadLangPhrase("CommandMessageGangDisband", "Disband your gang");
+        loadLangPhrase("CommandMessageGangDetails", "Gang information");
+        loadLangPhrase("CommandMessageGangHelp", "Gang command help");
+        loadLangPhrase("CommandMessageGangInvite", "Invite player to your gang");
+        loadLangPhrase("CommandMessageGangInviteCancel", "Cancel player invite to your gang");
+        loadLangPhrase("CommandMessageGangUnclaim", "Unclaim chunk for your gang");
+        loadLangPhrase("CommandMessageGangJoin", "Join a gang");
+        loadLangPhrase("CommandMessageGangLeave", "Leave your gang");
+        
+        // General Gang Phrases
+        loadLangPhrase("None", "None");
+        loadLangPhrase("GangName", "Gang Name");
+        loadLangPhrase("Boss", "Boss");
+        loadLangPhrase("Assistants", "Assistants");
+        loadLangPhrase("Members", "Members");
+        loadLangPhrase("Influence", "Influence");
+        loadLangPhrase("Invites", "Invites");
+        loadLangPhrase("Allys", "Allys");
+        loadLangPhrase("Enemies", "Enemies");
+        
+        // Gang Command Responses
+        loadLangPhrase("NotInGang", "You are not in a Gang!");
+        loadLangPhrase("GangCreated", "started a new Gang");
+        loadLangPhrase("AlreadyInGang", "You are already in a Gang! Leave your Gang first!");
+        loadLangPhrase("GangExists", "That Gang already exists!");
+        loadLangPhrase("SpecifyGangName", "You must specify a Gang name!");
+        loadLangPhrase("GangNameTooLong", "That Gang name is too long!");
+        loadLangPhrase("SpecifyNewGangnamelength", "You musy specify a new Gang name length!");
+        loadLangPhrase("CommandMessageGangnamelength", "New Gang name length set to");
+        loadLangPhrase("NotGangBoss", "Only the Gang boss can do that!");
+        loadLangPhrase("NotGangBossOrAssistant", "Only the Gang boss or an assistant can do that!");
+        loadLangPhrase("GangFundsWithdrawn", "withdrawn from Gang account.");
+        loadLangPhrase("GangDisbanded", "Gang has been disbanded!");
+        loadLangPhrase("NotGang", "Gang name not found!");
+        loadLangPhrase("SpecifyPlayerToInvite", "You musy specify a player to invite!");
+        loadLangPhrase("NoInvitationFoundFor", "No invitation found for");
+        loadLangPhrase("InvitationCancelledFor", "Gang invitation cancelled for");
+        loadLangPhrase("NoLongerInvitedTo", "You are no longer invited to");
+        loadLangPhrase("InvitationAddedFor", "Gang invitation added for");
+        loadLangPhrase("InvitedToGang", "You received a gang invitation from");
+        loadLangPhrase("SpecifyGangToJoin", "You musy specify a gang to join!");
+        loadLangPhrase("NotInvitedToGang", "You are not invited to join this gang!");
+        loadLangPhrase("JoinedGang", "joined the gang");
+        loadLangPhrase("AlreadyGangMember", "is already a gang member!");
+        loadLangPhrase("BossCantLeave", "The Gang Boss can't leave!");
+        loadLangPhrase("LeftGang", "left the gang");
+        loadLangPhrase("AlreadyInGang", "You are already in a gang!");
         
         try {
             langStore.save(langFile);
