@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashMap;
 import me.ellbristow.mychunk.MyChunk;
 import me.ellbristow.mychunk.MyChunkChunk;
+import me.ellbristow.mychunk.ganglands.GangLands;
 import me.ellbristow.mychunk.lang.Lang;
 import me.ellbristow.mychunk.utils.FactionsHook;
 import me.ellbristow.mychunk.utils.MyChunkVaultLink;
@@ -39,7 +40,7 @@ public class PlayerListener implements Listener {
     public void onPlayerDamage (EntityDamageByEntityEvent event) {
         
         if (event.isCancelled()) return;
-        if (!MyChunk.isWorldEnabled(event.getEntity().getWorld().getName())) return;
+        if (!MyChunk.isWorldEnabled(event.getEntity().getWorld().getName()) && !MyChunkChunk.getOwner(event.getEntity().getLocation().getChunk()).equalsIgnoreCase("Server")) return;
 
         Entity entity = event.getEntity();
         
@@ -104,7 +105,7 @@ public class PlayerListener implements Listener {
                 
                 Entity damager = event.getDamager();
                 
-                if (damager instanceof Player && !chunk.getOwner().equalsIgnoreCase(((Player)damager).getName()) && !chunk.isAllowed(((Player)damager).getName(), "A")) {
+                if (damager instanceof Player && !chunk.getOwner().equalsIgnoreCase(((Player)damager).getName()) && !chunk.isAllowed(((Player)damager).getName(), "A") && !((Player)damager).hasPermission("mychunk.bypass")) {
                     
                     event.setCancelled(true);
                     Player naughty = (Player)damager;
@@ -133,6 +134,28 @@ public class PlayerListener implements Listener {
                     }
                 }
             }
+        } else if (entity instanceof ItemFrame) {
+            
+            Entity damager = event.getDamager();
+            Chunk chunk = entity.getLocation().getChunk();
+            
+            if (damager instanceof Player) {
+
+                if (!MyChunkChunk.isAllowed(chunk, (Player)damager, "D") && !WorldGuardHook.isRegion(event.getEntity().getLocation()) && !FactionsHook.isClaimed(event.getEntity().getLocation()) && !TownyHook.isClaimed(event.getEntity().getLocation())) {
+
+                    ((Player)damager).sendMessage(ChatColor.RED + Lang.get("NoPermsBreak"));
+                    event.setCancelled(true);
+
+                }
+
+            } else {
+                if (MyChunkChunk.isClaimed(chunk)) {
+
+                    event.setCancelled(true);
+
+                }
+            }
+            
         }
         
     }
@@ -141,7 +164,6 @@ public class PlayerListener implements Listener {
     public void onPlayerEmptyBucket (PlayerBucketEmptyEvent event) {
         
         if (event.isCancelled()) return;
-        if (!MyChunk.isWorldEnabled(event.getPlayer().getWorld().getName())) return;
         
         Player player = event.getPlayer();
         int bucket = event.getBucket().getId();
@@ -158,6 +180,8 @@ public class PlayerListener implements Listener {
         }
         
         Chunk chunk = targetBlock.getChunk();
+        
+        if (!MyChunk.isWorldEnabled(event.getPlayer().getWorld().getName()) && !MyChunkChunk.getOwner(targetBlock.getChunk()).equalsIgnoreCase("Server")) return;
         
         if (bucket == 327) {
             flag = "L";
@@ -181,7 +205,7 @@ public class PlayerListener implements Listener {
     public void onPlayerInteract (PlayerInteractEvent event) {
         
         if (event.isCancelled()) return;
-        if (!MyChunk.isWorldEnabled(event.getPlayer().getWorld().getName())) return;
+        if (!MyChunk.isWorldEnabled(event.getPlayer().getWorld().getName()) && (event.getClickedBlock() != null && !MyChunkChunk.getOwner(event.getClickedBlock().getLocation().getChunk()).equalsIgnoreCase("Server"))) return;
         
         if (event.getAction().equals(Action.LEFT_CLICK_BLOCK) || event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
             
@@ -346,13 +370,13 @@ public class PlayerListener implements Listener {
                                 
                                 leaseConfirm.remove(player.getName());
                                 
-                                if (!(MyChunkVaultLink.getEconomy().getBalance(player.getName()) >= price)) {
+                                if (!(MyChunkVaultLink.economy.getBalance(player.getName()) >= price)) {
                                     player.sendMessage(ChatColor.RED + "You cannot afford this Lease!");
                                     event.setCancelled(true);
                                     return;
                                 }
                                 
-                                MyChunkVaultLink.getEconomy().withdrawPlayer(player.getName(), price);
+                                MyChunkVaultLink.economy.withdrawPlayer(player.getName(), price);
                                 
                                 sign.setLine(2, ChatColor.GREEN + player.getName());
                                 Date date = new Date();
@@ -363,13 +387,13 @@ public class PlayerListener implements Listener {
                                 sign.setLine(3, newDate);
                                 sign.update();
                                 
-                                player.sendMessage(ChatColor.GOLD + "You have leased this door for 7 days for "+ChatColor.WHITE + MyChunkVaultLink.getEconomy().format(price) + ChatColor.GOLD+"!");
+                                player.sendMessage(ChatColor.GOLD + "You have leased this door for 7 days for "+ChatColor.WHITE + MyChunkVaultLink.economy.format(price) + ChatColor.GOLD+"!");
 
                             } else {
 
                                 // Unconfirmed, Add
 
-                                player.sendMessage(ChatColor.GOLD + "Right-Click again to confirm Lease Purchase for " + ChatColor.WHITE + MyChunkVaultLink.getEconomy().format(price));
+                                player.sendMessage(ChatColor.GOLD + "Right-Click again to confirm Lease Purchase for " + ChatColor.WHITE + MyChunkVaultLink.economy.format(price));
                                 leaseConfirm.put(player.getName(), block);
 
                             }
@@ -414,7 +438,7 @@ public class PlayerListener implements Listener {
     public void onPlayerMove (PlayerMoveEvent event) {
         
         if (event.isCancelled()) return;
-        if (!MyChunk.isWorldEnabled(event.getPlayer().getWorld().getName())) return;
+        if (!MyChunk.isWorldEnabled(event.getPlayer().getWorld().getName()) && !MyChunkChunk.getOwner(event.getTo().getChunk()).equalsIgnoreCase("Server") && !MyChunkChunk.getOwner(event.getFrom().getChunk()).equalsIgnoreCase("Server")) return;
         
         Location fromLoc = event.getFrom();
         Location toLoc = event.getTo();
@@ -455,11 +479,23 @@ public class PlayerListener implements Listener {
                 if (MyChunk.getToggle("foundEconomy")) {
                     
                     if (toChunk.isForSale()) {
+                        
                         double claimPrice = toChunk.getClaimPrice();
-
+                        int playerClaimed = MyChunkChunk.getOwnedChunkCount(player.getName());
+                        
+                        if (MyChunk.getToggle("rampChunkPrice") && MyChunk.getDoubleSetting("priceRampRate") != 0) {
+                            int ramp = playerClaimed;
+                            if (MyChunk.getToggle("firstChunkFree") && playerClaimed > 0) {
+                                ramp--;
+                            }
+                            claimPrice += MyChunk.getDoubleSetting("priceRampRate") * ramp;
+                        }
+                        
+                        claimPrice = toChunk.getClaimPrice();
+                        
                         if (claimPrice != 0) {
 
-                            forSale = ChatColor.YELLOW + " ["+Lang.get("ChunkForSale")+ ": " + MyChunkVaultLink.getEconomy().format(claimPrice) + "]";
+                            forSale = ChatColor.YELLOW + " ["+Lang.get("ChunkForSale")+ ": " + MyChunkVaultLink.economy.format(claimPrice) + "]";
 
                         }
                     }
@@ -470,12 +506,25 @@ public class PlayerListener implements Listener {
                 } else if (toChunkOwner.equalsIgnoreCase("public")) {
                     message += ChatColor.GREEN + "~"+Lang.get("Public") + forSale;
                 } else {
-                    message += ChatColor.GOLD + "~" + toChunkOwner + forSale;
+                    
+                    ChatColor color = ChatColor.GOLD;
+                    
+                    if (toChunk.isGangland()) {
+                        
+                        if (GangLands.isGangMemberOf(player, toChunk.getGangName())) {
+                            color = ChatColor.DARK_GREEN;
+                        } else {
+                            color = ChatColor.DARK_RED;
+                        }
+                        
+                    }
+                    
+                    message += color + "~" + toChunkOwner + forSale;
                 }
                 
             } else if (!toChunkOwner.equals("")) {
                 
-                if (MyChunk.getToggle("preventEntry")) {
+                if (!toChunk.isGangland() && MyChunk.getToggle("preventEntry")) {
                     if (toChunk.isClaimed() && !toChunk.getOwner().equalsIgnoreCase("Public") && !toChunk.getOwner().equalsIgnoreCase(player.getName()) && !toChunk.isAllowed(player.getName(), "E") && !toChunk.isForSale() && !player.hasPermission("mychunk.override")) {
                         if (!toChunk.getOwner().equalsIgnoreCase("Server") ^ !player.hasPermission("mychunk.server.entry")) {
                             message += toChunk.getOwner() + " " + ChatColor.RED + Lang.get("NoEntry");
@@ -487,13 +536,23 @@ public class PlayerListener implements Listener {
                 
                 if (MyChunk.getToggle("foundEconomy")) {
                     if (toChunk.isForSale()) {
+                        
                         double claimPrice = toChunk.getClaimPrice();
+                        int playerClaimed = MyChunkChunk.getOwnedChunkCount(player.getName());
+                        
+                        if (MyChunk.getToggle("rampChunkPrice") && MyChunk.getDoubleSetting("priceRampRate") != 0) {
+                            int ramp = playerClaimed;
+                            if (MyChunk.getToggle("firstChunkFree") && playerClaimed > 0) {
+                                ramp--;
+                            }
+                            claimPrice += MyChunk.getDoubleSetting("priceRampRate") * ramp;
+                        }
 
                         if (claimPrice == 0) {
                             return;
                         }
 
-                        String forSale = ChatColor.YELLOW + "["+Lang.get("ChunkForSale") + ": " + MyChunkVaultLink.getEconomy().format(claimPrice) + "]";
+                        String forSale = ChatColor.YELLOW + "["+Lang.get("ChunkForSale") + ": " + MyChunkVaultLink.economy.format(claimPrice) + "]";
 
                         message += forSale;
                     }
@@ -524,7 +583,7 @@ public class PlayerListener implements Listener {
         }
     }
     
-    @EventHandler (priority = EventPriority.HIGH)
+    @EventHandler (priority = EventPriority.NORMAL)
     public void onPlayerQuit(PlayerQuitEvent event) {
         
         if (MyChunk.getToggle("useClaimExpiry")) {
@@ -533,22 +592,22 @@ public class PlayerListener implements Listener {
         
     }
     
-    @EventHandler (priority = EventPriority.HIGH)
+    @EventHandler (priority = EventPriority.NORMAL)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
         
         if (event.isCancelled()) return;
-        if (!MyChunk.isWorldEnabled(event.getPlayer().getWorld().getName())) return;
+        if (!MyChunk.isWorldEnabled(event.getPlayer().getWorld().getName()) && !MyChunkChunk.getOwner(event.getTo().getChunk()).equalsIgnoreCase("Server") && !MyChunkChunk.getOwner(event.getFrom().getChunk()).equalsIgnoreCase("Server")) return;
         
         Location fromLoc = event.getFrom();
         Location toLoc = event.getTo();
         
         if (fromLoc.getChunk() != toLoc.getChunk()) {
             
-            Chunk fromChunk = fromLoc.getChunk();
-            Chunk toChunk = toLoc.getChunk();
+            MyChunkChunk fromChunk = new MyChunkChunk(fromLoc.getChunk());
+            MyChunkChunk toChunk = new MyChunkChunk(toLoc.getChunk());
             Player player = event.getPlayer();
-            String fromChunkOwner = MyChunkChunk.getOwner(fromChunk);
-            String toChunkOwner = MyChunkChunk.getOwner(toChunk);
+            String fromChunkOwner = fromChunk.getOwner();
+            String toChunkOwner = toChunk.getOwner();
             
             if (!fromChunkOwner.equalsIgnoreCase(toChunkOwner)) {
                 
@@ -561,11 +620,11 @@ public class PlayerListener implements Listener {
                 
                 if (MyChunk.getToggle("foundEconomy")) {
                     
-                    double claimPrice = MyChunkChunk.getClaimPrice(toChunk, player);
+                    double claimPrice = MyChunkChunk.getClaimPrice(toLoc.getChunk(), player);
                     
                     if (claimPrice != 0) {
                         
-                        forSale = ChatColor.YELLOW + " ["+Lang.get("ChunkForSale")+ ": " + MyChunkVaultLink.getEconomy().format(claimPrice) + "]";
+                        forSale = ChatColor.YELLOW + " ["+Lang.get("ChunkForSale")+ ": " + MyChunkVaultLink.economy.format(claimPrice) + "]";
 
                     }
                 }
@@ -575,20 +634,31 @@ public class PlayerListener implements Listener {
                 } else if (toChunkOwner.equalsIgnoreCase("public")) {
                     player.sendMessage(ChatColor.GREEN + "~"+Lang.get("Public") + forSale);
                 } else {
-                    player.sendMessage(ChatColor.GOLD + "~" + toChunkOwner + forSale);
+                    
+                    ChatColor color = ChatColor.GOLD;
+                    
+                    if (toChunk.isGangland()) {
+                        if (GangLands.isGangMemberOf(player, toChunk.getGangName())) {
+                            color = ChatColor.DARK_GREEN;
+                        } else {
+                            color = ChatColor.DARK_RED;
+                        }
+                    }
+                    
+                    player.sendMessage(color + "~" + toChunkOwner + forSale);
                 }
                 
             } else if (!toChunkOwner.equals("")) {
                 
                 if (MyChunk.getToggle("foundEconomy")) {
 
-                    double claimPrice = MyChunkChunk.getClaimPrice(toChunk, player);
+                    double claimPrice = MyChunkChunk.getClaimPrice(toLoc.getChunk(), player);
 
                     if (claimPrice == 0) {
                         return;
                     }
 
-                    String forSale = ChatColor.YELLOW + "["+Lang.get("ChunkForSale") + ": " + MyChunkVaultLink.getEconomy().format(claimPrice) + "]";
+                    String forSale = ChatColor.YELLOW + "["+Lang.get("ChunkForSale") + ": " + MyChunkVaultLink.economy.format(claimPrice) + "]";
 
                     player.sendMessage(forSale);
                 }
@@ -600,10 +670,10 @@ public class PlayerListener implements Listener {
     }
     
     @EventHandler (priority = EventPriority.NORMAL)
-    public void onPlayerAnimalInteract(PlayerInteractEntityEvent event) {
+    public void onPlayerEntityInteract(PlayerInteractEntityEvent event) {
         
         if (event.isCancelled()) return;
-        if (!MyChunk.isWorldEnabled(event.getPlayer().getWorld().getName())) return;
+        if (!MyChunk.isWorldEnabled(event.getPlayer().getWorld().getName()) && !MyChunkChunk.getOwner(event.getRightClicked().getLocation().getChunk()).equalsIgnoreCase("Server")) return;
         
         Entity target = event.getRightClicked();
         
@@ -613,8 +683,18 @@ public class PlayerListener implements Listener {
             String chunkOwner = MyChunkChunk.getOwner(chunk);
             if (!player.getName().equalsIgnoreCase(chunkOwner) && !MyChunkChunk.isAllowed(chunk, player, "A")) {
                 player.sendMessage(ChatColor.RED + Lang.get("NoPermsAnimals"));
+                event.setCancelled(true);
             }
             
+        }
+        
+        if (target instanceof ItemFrame) {
+            Player player = event.getPlayer();
+            Chunk chunk = target.getLocation().getChunk();
+            String chunkOwner = MyChunkChunk.getOwner(chunk);
+            if (!player.getName().equalsIgnoreCase(chunkOwner) && !MyChunkChunk.isAllowed(chunk, player, "U")) {
+                event.setCancelled(true);
+            }
         }
         
     }
@@ -623,7 +703,7 @@ public class PlayerListener implements Listener {
     public void onPlayerMount(VehicleEnterEvent event) {
         
         if (event.isCancelled()) return;
-        if (!MyChunk.isWorldEnabled(event.getVehicle().getWorld().getName())) return;
+        if (!MyChunk.isWorldEnabled(event.getVehicle().getWorld().getName()) && !MyChunkChunk.getOwner(event.getVehicle().getLocation().getChunk()).equalsIgnoreCase("Server")) return;
         
         Entity target = event.getVehicle();
 
