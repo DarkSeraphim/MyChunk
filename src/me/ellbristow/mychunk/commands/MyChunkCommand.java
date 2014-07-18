@@ -3,10 +3,14 @@ package me.ellbristow.mychunk.commands;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import me.ellbristow.mychunk.*;
+import me.ellbristow.mychunk.MyChunk;
+import me.ellbristow.mychunk.MyChunkChunk;
 import me.ellbristow.mychunk.lang.Lang;
 import me.ellbristow.mychunk.listeners.SignListener;
-import me.ellbristow.mychunk.utils.SQLiteBridge;
+import me.ellbristow.mychunk.utils.FactionsHook;
+import me.ellbristow.mychunk.utils.MyChunkVaultLink;
+import me.ellbristow.mychunk.utils.TownyHook;
+import me.ellbristow.mychunk.utils.db.SQLBridge;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
@@ -26,131 +30,139 @@ public class MyChunkCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String cmd, String[] args) {
         
-        if (command.getName().equalsIgnoreCase("mychunk")) {
+        if (!command.getName().equalsIgnoreCase("mychunk")) {
             
-            if (args.length == 0) {
-                return commandMyChunk(sender, 0);
-            }
-
-            try {
-                int page = Integer.parseInt(args[0]);
-                return commandMyChunk(sender, page);
-            } catch (NumberFormatException e) {}
-            
-            if (args[0].equalsIgnoreCase("allow")) {
-                return commandAllow(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("allow*") || args[0].equalsIgnoreCase("allowall")) {
-                return commandAllowall(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("allowmobs")) {
-                return commandAllowmobs(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("allowpvp")) {
-                return commandAllowpvp(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("claim")) {
-                return commandClaim(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("claimarea")) {
-                return commandClaimarea(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("disallow")) {
-                return commandDisallow(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("disallow*") || args[0].equalsIgnoreCase("disallowall")) {
-                return commandDisallowall(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("expirydays")) {
-                return commandExpiryDays(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("flags")) {
-                return commandFlags(sender);
-            }
-            
-            if (args[0].equalsIgnoreCase("forsale") || args[0].equalsIgnoreCase("fs")) {
-                return commandForsale(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("?")) {
-                return commandHelp(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("info")) {
-                return commandInfo(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("max")) {
-                return commandMax(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("notforsale") || args[0].equalsIgnoreCase("nfs")) {
-                return commandNotforsale(sender);
-            }
-            
-            if (args[0].equalsIgnoreCase("obprice")) {
-                return commandObprice(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("owner")) {
-                return commandOwner(sender);
-            }
-            
-            if (args[0].equalsIgnoreCase("price")) {
-                return commandPrice(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("purgep")) {
-                return commandPurgep(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("purgew")) {
-                return commandPurgew(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("refund")) {
-                return commandRefund(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("reload")) {
-                return commandReload(sender);
-            }
-            
-            if (args[0].equalsIgnoreCase("toggle")) {
-                return commandToggle(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("unclaim")) {
-                return commandUnclaim(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("unclaimarea")) {
-                return commandUnclaimarea(sender, args);
-            }
-            
-            if (args[0].equalsIgnoreCase("world")) {
-                return commandWorld(sender, args);
-            }
-            
-            // Command Not Found
-            sender.sendMessage(ChatColor.RED + Lang.get("CommandNotRecognised") + " /mychunk " + args[0]);
-            sender.sendMessage(ChatColor.RED + Lang.get("Try") + " /mychunk help");
-            
+            sender.sendMessage(ChatColor.RED + Lang.get("CommandNotRecognised") + " /" + cmd);
+        
             return false;
             
         }
+            
+        if (args.length == 0) {
+            return commandMyChunk(sender, 0);
+        }
+
+        try {
+            int page = Integer.parseInt(args[0]);
+            return commandMyChunk(sender, page);
+        } catch (NumberFormatException e) {}
+
+        if (args[0].equalsIgnoreCase("allow")) {
+            return commandAllow(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("allow*") || args[0].equalsIgnoreCase("allowall")) {
+            return commandAllowall(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("allowmobs")) {
+            return commandAllowmobs(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("allowpvp")) {
+            return commandAllowpvp(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("claim")) {
+            return commandClaim(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("claimarea")) {
+            return commandClaimarea(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("disallow")) {
+            return commandDisallow(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("disallow*") || args[0].equalsIgnoreCase("disallowall")) {
+            return commandDisallowall(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("expirydays")) {
+            return commandExpiryDays(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("flags")) {
+            return commandFlags(sender);
+        }
+
+        if (args[0].equalsIgnoreCase("forsale") || args[0].equalsIgnoreCase("fs")) {
+            return commandForsale(sender, args);
+        }
         
-        sender.sendMessage(ChatColor.RED + Lang.get("CommandNotRecognised") + " /" + cmd);
+        if (args[0].equalsIgnoreCase("gangnamelength")) {
+            return commandGangnamelength(sender, args);
+        }
         
+        if (args[0].equalsIgnoreCase("gangchunkmultiplier")) {
+            return commandGangMultiplier(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("?")) {
+            return commandHelp(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("info")) {
+            return commandInfo(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("max")) {
+            return commandMax(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("notforsale") || args[0].equalsIgnoreCase("nfs")) {
+            return commandNotforsale(sender);
+        }
+
+        if (args[0].equalsIgnoreCase("obprice")) {
+            return commandObprice(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("owner")) {
+            return commandOwner(sender);
+        }
+
+        if (args[0].equalsIgnoreCase("price")) {
+            return commandPrice(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("purgep")) {
+            return commandPurgep(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("purgew")) {
+            return commandPurgew(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("refund")) {
+            return commandRefund(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("reload")) {
+            return commandReload(sender);
+        }
+
+        if (args[0].equalsIgnoreCase("toggle")) {
+            return commandToggle(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("unclaim")) {
+            return commandUnclaim(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("unclaimarea")) {
+            return commandUnclaimarea(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("world")) {
+            return commandWorld(sender, args);
+        }
+
+        // Command Not Found
+        sender.sendMessage(ChatColor.RED + Lang.get("CommandNotRecognised") + " /mychunk " + args[0]);
+        sender.sendMessage(ChatColor.RED + Lang.get("Try") + " /mychunk help");
+
         return false;
         
     }
@@ -181,13 +193,13 @@ public class MyChunkCommand implements CommandExecutor {
         sender.sendMessage(ChatColor.GRAY + "====");
         
         if (page != 2) {
-            
             /*
              * Show First Page (Player Specific Info)
              */
             
-            HashMap<Integer, HashMap<String, Object>> result = SQLiteBridge.select("COUNT(*) AS counter", "MyChunks", "", "", "");
-            Object count = result.get(0).get("counter");
+            HashMap<Integer, HashMap<String, String>> results = SQLBridge.select("COUNT(*) AS counter", "MyChunks", "", "", "");
+            
+            int count = Integer.parseInt(results.get(0).get("counter"));
             
             if (sender instanceof Player) {
                 sender.sendMessage(ChatColor.GOLD + Lang.get("ChunksOwned") + ": " + ChatColor.WHITE + plugin.ownedChunkCount(sender.getName()) + "  " + ChatColor.GOLD + Lang.get("TotalClaimedChunks") + ": " + ChatColor.WHITE + count);
@@ -230,17 +242,21 @@ public class MyChunkCommand implements CommandExecutor {
                 }
                 
                 sender.sendMessage(rampMessage);
-                sender.sendMessage(ChatColor.GOLD + Lang.get("ChunkPrice") + ": " + ChatColor.WHITE + MyChunkVaultLink.getEconomy().format(thisPrice) + " " + ChatColor.GOLD + Lang.get("UnclaimRefunds") + ": " + ChatColor.WHITE + (MyChunk.getToggle("unclaimrefund") && MyChunk.getDoubleSetting("refundPercent") != 0 ? MyChunk.getDoubleSetting("refundPercent") + "%" : "No"));
-                String overFee = "";
                 
+                sender.sendMessage(ChatColor.GOLD + Lang.get("ChunkPrice") + ": " + ChatColor.WHITE + MyChunkVaultLink.economy.format(thisPrice) + " " + 
+                        ChatColor.GOLD + Lang.get("UnclaimRefunds") + ": " + 
+                        ChatColor.WHITE + (MyChunk.getToggle("unclaimrefund") && MyChunk.getDoubleSetting("refundPercent") != 0 ? MyChunk.getDoubleSetting("refundPercent") + "%" : "No"));
+
+                String overFee = "";
+
                 if (MyChunk.getToggle("allowoverbuy")) {
                     String resales = "exc.";
                     if (MyChunk.getToggle("overbuyp2p")) {
                         resales = "inc.";
                     }
-                    overFee = " " + ChatColor.GOLD + Lang.get("OverbuyFee") + ": " + ChatColor.WHITE + MyChunkVaultLink.getEconomy().format(MyChunk.getDoubleSetting("overbuyprice")) + "(" + resales + " " + Lang.get("Resales") + ")";
+                    overFee = " " + ChatColor.GOLD + Lang.get("OverbuyFee") + ": " + ChatColor.WHITE + MyChunkVaultLink.economy.format(MyChunk.getDoubleSetting("overbuyprice")) + "(" + resales + " " + Lang.get("Resales") + ")";
                 }
-                
+
                 sender.sendMessage(ChatColor.GOLD + Lang.get("AllowOverbuy") + ": " + ChatColor.WHITE + Lang.get("" + MyChunk.getToggle("allowoverbuy")) + overFee);
                 
             }
@@ -328,9 +344,9 @@ public class MyChunkCommand implements CommandExecutor {
         
         String owner = chunk.getOwner();
 
-        if (!owner.equalsIgnoreCase(player.getName()) && !(owner.equalsIgnoreCase("server") && player.hasPermission("mychunk.server.signs"))) {
+        if (!owner.equalsIgnoreCase(player.getName()) && !(owner.equalsIgnoreCase("server") && player.hasPermission("mychunk.server.signs")) & !player.hasPermission("mychunk.override")) {
             player.sendMessage(ChatColor.RED + Lang.get("DoNotOwn"));
-        } else if (!owner.equalsIgnoreCase(player.getName()) && !owner.equalsIgnoreCase("server") && !(owner.equalsIgnoreCase("public") && player.hasPermission("mychunk.public.signs"))) {
+        } else if (!owner.equalsIgnoreCase(player.getName()) && !(owner.equalsIgnoreCase("public") && player.hasPermission("mychunk.public.signs"))  & !player.hasPermission("mychunk.override")) {
             player.sendMessage(ChatColor.RED + Lang.get("DoNotOwn"));
         } else if (targetName.equalsIgnoreCase(player.getName()) && !chunk.getOwner().equalsIgnoreCase("Server") && !chunk.getOwner().equalsIgnoreCase("Public")) {
             player.sendMessage(ChatColor.RED + Lang.get("AllowSelf"));
@@ -476,12 +492,13 @@ public class MyChunkCommand implements CommandExecutor {
             if (isEveryone) {
                 displayName = Lang.get("Everyone");
             }
+            
+            HashMap<Integer, HashMap<String, String>> results = SQLBridge.select("world,x,z", "MyChunks", "owner = '" + player.getName() + "'", "", "");
 
-            HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("world,x,z", "MyChunks", "owner = '" + player.getName() + "'", "", "");
-
-            if (results.isEmpty()) {
+            if (results == null || results.isEmpty()) {
 
                 player.sendMessage(ChatColor.RED + Lang.get("NoChunksOwned"));
+                
                 return false;
 
             }
@@ -501,16 +518,18 @@ public class MyChunkCommand implements CommandExecutor {
             if (!"".equals(errors)) {
                 player.sendMessage(ChatColor.RED + Lang.get("FlagsNotFound") + ": " + errors);
             }
+            
+            int counter = 0;
 
-            for (HashMap<String, Object> result : ((HashMap<Integer, HashMap<String, Object>>) results.clone()).values()) {
+            for (int i : results.keySet()) {
 
-                MyChunkChunk myChunk = new MyChunkChunk(result.get("world").toString(), Integer.parseInt(result.get("x").toString()), Integer.parseInt(result.get("z").toString()));
+                MyChunkChunk myChunk = new MyChunkChunk(results.get(i).get("world"), Integer.parseInt(results.get(i).get("x")), Integer.parseInt(results.get(i).get("z")));
 
                 if (!"*".equalsIgnoreCase(flags)) {
 
-                    for (int i = 0; i < flags.length(); i++) {
+                    for (int j = 0; j < flags.length(); j++) {
 
-                        String thisChar = flags.substring(i, i + 1);
+                        String thisChar = flags.substring(j, j + 1);
 
                         if (MyChunkChunk.isFlag(thisChar.toUpperCase())) {
                             myChunk.allow(targetName, thisChar);
@@ -524,10 +543,17 @@ public class MyChunkCommand implements CommandExecutor {
 
                 }
 
-            }
+                counter++;
 
-            player.sendMessage(ChatColor.GOLD + Lang.get("PermissionsUpdated"));
-            player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " " + Lang.get("ReceivedFlagsAll") + ": " + ChatColor.GREEN + flags);
+            }
+            
+            if (counter != 0) {
+                player.sendMessage(ChatColor.GOLD + Lang.get("PermissionsUpdated"));
+                player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " " + Lang.get("ReceivedFlagsAll") + ": " + ChatColor.GREEN + flags);
+            } else {
+                player.sendMessage(ChatColor.RED + Lang.get("NoChunksOwned"));
+                return false;
+            }
             
         }
         
@@ -690,7 +716,12 @@ public class MyChunkCommand implements CommandExecutor {
         Player player = (Player)sender;
         Block block = player.getLocation().getBlock();
         MyChunkChunk chunk = new MyChunkChunk(block);
-
+        
+        if (!MyChunk.isWorldEnabled(player.getWorld().getName()) && !MyChunk.isWorldDisabled(player.getWorld().getName())) {
+            player.sendMessage(ChatColor.RED + Lang.get("ClaimWorldDisabled"));
+            return false;
+        }
+        
         if (!player.hasPermission("mychunk.claim") && !player.hasPermission("mychunk.claim.server") && !player.hasPermission("mychunk.claim.public")) {
 
             player.sendMessage(ChatColor.RED + Lang.get("NoPermsClaim"));
@@ -801,9 +832,9 @@ public class MyChunkCommand implements CommandExecutor {
             }
         }
 
-        if (claimPrice != 0 && MyChunkVaultLink.getEconomy().getBalance(player.getName()) < claimPrice) {
+        if (claimPrice != 0 && MyChunkVaultLink.economy.getBalance(player.getName()) < claimPrice) {
 
-            player.sendMessage(ChatColor.RED + Lang.get("CantAfford") + " (" + Lang.get("Price") + ": " + ChatColor.WHITE + MyChunkVaultLink.getEconomy().format(claimPrice) + ChatColor.RED + ")!");
+            player.sendMessage(ChatColor.RED + Lang.get("CantAfford") + " (" + Lang.get("Price") + ": " + ChatColor.WHITE + MyChunkVaultLink.economy.format(claimPrice) + ChatColor.RED + ")!");
             return false;
 
         }
@@ -811,26 +842,32 @@ public class MyChunkCommand implements CommandExecutor {
         if (!isServer && !isPublic && !isOther) {
 
             if (!MyChunk.getToggle("allowNeighbours") && chunk.hasNeighbours() && !chunk.isForSale()) {
+                
+                HashMap<Integer, HashMap<String, String>> results = SQLBridge.select("owner", "MyChunks", "world = '" + chunk.getWorldName() + "' AND ((x = " + chunk.getX() + "+1 AND z = " + chunk.getZ() + ") OR (x = " + chunk.getX() + "-1 AND z = " + chunk.getZ() + ") OR (x = " + chunk.getX() + " AND z = " + chunk.getZ() + "+1) OR (x = " + chunk.getX() + " AND z = " + chunk.getZ() + "-1))", "", "");
 
-                HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("owner", "MyChunks", "world = '" + chunk.getWorldName() + "' AND ((x = " + chunk.getX() + "+1 AND z = " + chunk.getZ() + ") OR (x = " + chunk.getX() + "-1 AND z = " + chunk.getZ() + ") OR (x = " + chunk.getX() + " AND z = " + chunk.getZ() + "+1) OR (x = " + chunk.getX() + " AND z = " + chunk.getZ() + "-1))", "", "");
-
-                if (!results.isEmpty()) {
-                    for (HashMap<String, Object> result : results.values()) {
-                        if (result.get("owner").toString().equalsIgnoreCase(player.getName()) || result.get("owner").toString().equalsIgnoreCase("Server") || result.get("owner").toString().equalsIgnoreCase("Public")) {
-                            continue;
+                if (results != null && !results.isEmpty()) {
+                    
+                        for (int i : results.keySet()) {
+                            
+                            if (results.get(i).get("owner").equalsIgnoreCase(player.getName()) || results.get(i).get("owner").equalsIgnoreCase("Server") || results.get(i).get("owner").equalsIgnoreCase("Public")) {
+                                continue;
+                            }
+                            player.sendMessage(ChatColor.RED + Lang.get("NoNeighbours"));
+                            
+                            return true;
+                            
                         }
-                        player.sendMessage(ChatColor.RED + Lang.get("NoNeighbours"));
-                        return true;
-                    }
+
                 }
+                
 
             }
 
             if (claimPrice != 0 && !isFreeChunk) {
 
                 if (!(MyChunk.getToggle("firstChunkFree") && playerClaimed == 0) || chunk.isForSale()) {
-                    MyChunkVaultLink.getEconomy().withdrawPlayer(player.getName(), claimPrice);
-                    player.sendMessage(MyChunkVaultLink.getEconomy().format(claimPrice) + ChatColor.GOLD + " " + Lang.get("AmountDeducted"));
+                    MyChunkVaultLink.economy.withdrawPlayer(player.getName(), claimPrice);
+                    player.sendMessage(MyChunkVaultLink.economy.format(claimPrice) + ChatColor.GOLD + " " + Lang.get("AmountDeducted"));
                 }
 
             } else if (isFreeChunk) {
@@ -840,13 +877,13 @@ public class MyChunkCommand implements CommandExecutor {
             if (chunk.isForSale()) {
 
                 if (claimPrice != 0) {
-                    MyChunkVaultLink.getEconomy().depositPlayer(chunk.getOwner(), claimPrice);
+                    MyChunkVaultLink.economy.depositPlayer(chunk.getOwner(), claimPrice);
                 }
                 OfflinePlayer oldOwner = Bukkit.getServer().getOfflinePlayer(chunk.getOwner());
 
                 if (oldOwner.isOnline()) {
                     if (claimPrice != 0) {
-                        oldOwner.getPlayer().sendMessage(player.getName() + ChatColor.GOLD + " " + Lang.get("BoughtFor") + " " + ChatColor.WHITE + MyChunkVaultLink.getEconomy().format(claimPrice) + ChatColor.GOLD + "!");
+                        oldOwner.getPlayer().sendMessage(player.getName() + ChatColor.GOLD + " " + Lang.get("BoughtFor") + " " + ChatColor.WHITE + MyChunkVaultLink.economy.format(claimPrice) + ChatColor.GOLD + "!");
                     } else {
                         oldOwner.getPlayer().sendMessage(player.getName() + ChatColor.GOLD + " " + Lang.get("ClaimedYourChunk") + "!");
                     }
@@ -854,7 +891,7 @@ public class MyChunkCommand implements CommandExecutor {
 
             }
 
-            chunk.claim(player.getName());
+            chunk.claim(player.getName(), "");
             player.sendMessage(ChatColor.GOLD + Lang.get("ChunkClaimed"));
 
         } else {
@@ -916,14 +953,14 @@ public class MyChunkCommand implements CommandExecutor {
 
             }
 
-            chunk.claim(correctName);
+            chunk.claim(correctName, "");
             player.sendMessage(ChatColor.GOLD + Lang.get("ChunkClaimedFor") + " " + ChatColor.WHITE + correctName + ChatColor.GOLD + "!");
 
             if (claimPrice != 0 && !correctName.equalsIgnoreCase("server") && !correctName.equalsIgnoreCase("public")) {
 
                 if (!isFreeChunk) {
-                    MyChunkVaultLink.getEconomy().withdrawPlayer(player.getName(), claimPrice);
-                    player.sendMessage(MyChunkVaultLink.getEconomy().format(claimPrice) + ChatColor.GOLD + " " + Lang.get("AmountDeducted"));
+                    MyChunkVaultLink.economy.withdrawPlayer(player.getName(), claimPrice);
+                    player.sendMessage(MyChunkVaultLink.economy.format(claimPrice) + ChatColor.GOLD + " " + Lang.get("AmountDeducted"));
                 } else {
                     player.sendMessage(ChatColor.GOLD + " " + Lang.get("FirstChunkFree"));
                 }
@@ -1220,21 +1257,21 @@ public class MyChunkCommand implements CommandExecutor {
 
                 }
 
-                if (MyChunkVaultLink.getEconomy().getBalance(player.getName()) < areaPrice) {
+                if (MyChunkVaultLink.economy.getBalance(player.getName()) < areaPrice) {
 
                     player.sendMessage(ChatColor.RED + Lang.get("CantAffordClaimArea"));
-                    player.sendMessage(ChatColor.RED + Lang.get("Price") + ": " + ChatColor.WHITE + MyChunkVaultLink.getEconomy().format(areaPrice));
+                    player.sendMessage(ChatColor.RED + Lang.get("Price") + ": " + ChatColor.WHITE + MyChunkVaultLink.economy.format(areaPrice));
                     return false;
 
                 }
 
-                MyChunkVaultLink.getEconomy().withdrawPlayer(player.getName(), areaPrice);
-                player.sendMessage(ChatColor.GOLD + Lang.get("YouWereCharged") + " " + ChatColor.WHITE + MyChunkVaultLink.getEconomy().format(areaPrice));
+                MyChunkVaultLink.economy.withdrawPlayer(player.getName(), areaPrice);
+                player.sendMessage(ChatColor.GOLD + Lang.get("YouWereCharged") + " " + ChatColor.WHITE + MyChunkVaultLink.economy.format(areaPrice));
 
             }
 
             for (MyChunkChunk myChunk : foundChunks) {
-                myChunk.claim(correctName);
+                myChunk.claim(correctName, "");
             }
 
             player.sendMessage(ChatColor.GOLD + Lang.get("ChunksClaimed") + ": " + ChatColor.WHITE + foundChunks.size());
@@ -1452,12 +1489,13 @@ public class MyChunkCommand implements CommandExecutor {
             if (isEveryone) {
                 displayName = Lang.get("Everyone");
             }
+            
+            HashMap<Integer, HashMap<String, String>> results = SQLBridge.select("world,x,z", "MyChunks", "owner = '" + player.getName() + "'", "", "");
 
-            HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("world,x,z", "MyChunks", "owner = '" + player.getName() + "'", "", "");
-
-            if (results.isEmpty()) {
+            if (results == null || results.isEmpty()) {
 
                 player.sendMessage(ChatColor.RED + Lang.get("NoChunksOwned"));
+                
                 return false;
 
             }
@@ -1477,16 +1515,18 @@ public class MyChunkCommand implements CommandExecutor {
             if (!"".equals(errors)) {
                 player.sendMessage(ChatColor.RED + Lang.get("FlagsNotFound") + ": " + errors);
             }
+            
+            int counter = 0;
+            
+            for (int i : results.keySet()) {
 
-            for (HashMap<String, Object> result : ((HashMap<Integer, HashMap<String, Object>>) results.clone()).values()) {
-
-                MyChunkChunk chunk = new MyChunkChunk(result.get("world").toString(), Integer.parseInt(result.get("x").toString()), Integer.parseInt(result.get("z").toString()));
+                MyChunkChunk chunk = new MyChunkChunk(results.get(i).get("world"), Integer.parseInt(results.get(i).get("x")), Integer.parseInt(results.get(i).get("z")));
 
                 if (!"*".equalsIgnoreCase(flags)) {
 
-                    for (int i = 0; i < flags.length(); i++) {
+                    for (int j = 0; j < flags.length(); j++) {
 
-                        String thisChar = flags.substring(i, i + 1);
+                        String thisChar = flags.substring(j, j + 1);
 
                         if (MyChunkChunk.isFlag(thisChar.toUpperCase())) {
                             chunk.disallow(targetName, thisChar);
@@ -1500,10 +1540,17 @@ public class MyChunkCommand implements CommandExecutor {
 
                 }
 
-            }
+                counter ++;
 
-            player.sendMessage(ChatColor.GOLD + Lang.get("PermissionsUpdated"));
-            player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " " + Lang.get("LostFlagsAll") + ": " + ChatColor.GREEN + flags);
+            }
+            
+            if (counter != 0) {
+                player.sendMessage(ChatColor.GOLD + Lang.get("PermissionsUpdated"));
+                player.sendMessage(ChatColor.WHITE + displayName + ChatColor.GOLD + " " + Lang.get("LostFlagsAll") + ": " + ChatColor.GREEN + flags);
+            } else {
+                player.sendMessage(ChatColor.RED + Lang.get("NoChunksOwned"));
+                return false;
+            }
 
         }
         
@@ -1681,7 +1728,7 @@ public class MyChunkCommand implements CommandExecutor {
 
         if (MyChunk.getToggle("foundEconomy")) {
 
-            player.sendMessage(ChatColor.GOLD + Lang.get("ChunkForSale") + ": " + MyChunkVaultLink.getEconomy().format(price) + "!");
+            player.sendMessage(ChatColor.GOLD + Lang.get("ChunkForSale") + ": " + MyChunkVaultLink.economy.format(price) + "!");
             chunk.setForSale(price);
 
         } else {
@@ -1693,6 +1740,92 @@ public class MyChunkCommand implements CommandExecutor {
         
         return true;
         
+    }
+    
+/*
+                                         _ _   _       _ _           
+                                        | | | (_)     | (_)          
+  __ _  __ _ _ __   __ _ _ __ ___  _   _| | |_ _ _ __ | |_  ___ _ __ 
+ / _` |/ _` | '_ \ / _` | '_ ` _ \| | | | | __| | '_ \| | |/ _ \ '__|
+| (_| | (_| | | | | (_| | | | | | | |_| | | |_| | |_) | | |  __/ |   
+ \__, |\__,_|_| |_|\__, |_| |_| |_|\__,_|_|\__|_| .__/|_|_|\___|_|   
+  __/ |             __/ |                       | |                  
+ |___/             |___/                        |_|                  
+
+*/
+    
+    private boolean commandGangMultiplier(CommandSender sender, String[] args) {
+        
+        if (!sender.hasPermission("mychunk.commands.gangmultiplier")) {
+            sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
+            return false;
+        }
+        
+        if (args.length == 1) {
+            sender.sendMessage(ChatColor.RED + Lang.get("SpecifyNewGangMultiplier"));
+            sender.sendMessage(ChatColor.RED + "/mychunk gangmultiplier ["+Lang.get("NewLimit")+"]");
+            return false;
+        } else if (args.length == 2) {
+            
+            int newMax;
+            try {
+                newMax = Integer.parseInt(args[1]);
+            } catch (NumberFormatException e) {
+                sender.sendMessage(ChatColor.RED + Lang.get("AmountNotInteger") + " (e.g. 5)");
+                sender.sendMessage(ChatColor.RED + "/mychunk gangmultiplier ["+Lang.get("NewLimit")+"]");
+                return false;
+            }
+
+            plugin.setGangMultiplier(newMax);
+
+            sender.sendMessage(ChatColor.GOLD + Lang.get("CommandMessageNewGangMultiplier") + " " + newMax);
+            return true;
+            
+        }
+        return true;
+    }
+    
+/*
+                                                    _                  _   _     
+                                                   | |                | | | |    
+  __ _  __ _ _ __   __ _ _ __   __ _ _ __ ___   ___| | ___ _ __   __ _| |_| |__  
+ / _` |/ _` | '_ \ / _` | '_ \ / _` | '_ ` _ \ / _ \ |/ _ \ '_ \ / _` | __| '_ \ 
+| (_| | (_| | | | | (_| | | | | (_| | | | | | |  __/ |  __/ | | | (_| | |_| | | |
+ \__, |\__,_|_| |_|\__, |_| |_|\__,_|_| |_| |_|\___|_|\___|_| |_|\__, |\__|_| |_|
+  __/ |             __/ |                                         __/ |          
+ |___/             |___/                                         |___/           
+
+*/
+    
+    private boolean commandGangnamelength(CommandSender sender, String[] args) {
+        
+        if (!sender.hasPermission("mychunk.commands.gangnamelength")) {
+            sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
+            return false;
+        }
+        
+        if (args.length == 1) {
+            sender.sendMessage(ChatColor.RED + Lang.get("SpecifyNewGangnamelength"));
+            sender.sendMessage(ChatColor.RED + "/mychunk gangNameLength ["+Lang.get("NewLimit")+"]");
+            return false;
+        } else if (args.length == 2) {
+            
+            int newMax;
+            try {
+                newMax = Integer.parseInt(args[1]);
+            } catch (NumberFormatException e) {
+                sender.sendMessage(ChatColor.RED + Lang.get("AmountNotInteger") + " (e.g. 5)");
+                sender.sendMessage(ChatColor.RED + "/mychunk gangNameLength ["+Lang.get("NewLimit")+"]");
+                return false;
+            }
+
+            plugin.setGangnamelength(newMax);
+
+            sender.sendMessage(ChatColor.GOLD + Lang.get("CommandMessageGangnamelength") + " " + newMax);
+            return true;
+            
+        }
+        return true;
     }
 
 /*
@@ -1726,6 +1859,9 @@ public class MyChunkCommand implements CommandExecutor {
         }
         
         List<String> helpLines = new ArrayList<String>();
+        
+        if (sender.hasPermission("mychunk.commands.gang.help"))
+            helpLines.add(ChatColor.GOLD + "["+Lang.get("GangCommands")+"] /gang help {"+Lang.get("Page")+"}");
         
         if (sender.hasPermission("mychunk.commands.stats"))
             helpLines.add(ChatColor.GOLD + "/mychunk {"+Lang.get("Page")+"}: " + ChatColor.GRAY + Lang.get("CommandMessageStats"));
@@ -1771,6 +1907,12 @@ public class MyChunkCommand implements CommandExecutor {
         
         if (sender.hasPermission("mychunk.commands.forsale"))
             helpLines.add(ChatColor.GOLD + "/mychunk forsale ["+Lang.get("Price")+"]: " + ChatColor.GRAY + Lang.get("CommandMessageForsale"));
+        
+        if (sender.hasPermission("mychunk.commands.gangmultiplier"))
+            helpLines.add(ChatColor.GOLD + "/mychunk gangmultiplier: " + ChatColor.GRAY + Lang.get("CommandMessageGangMultiplier"));
+        
+        if (sender.hasPermission("mychunk.commands.gangnamelength"))
+            helpLines.add(ChatColor.GOLD + "/mychunk gangnamelength: " + ChatColor.GRAY + Lang.get("CommandMessageGangnamelength"));
         
         if (sender.hasPermission("mychunk.commands.reload"))
             helpLines.add(ChatColor.GOLD + "/mychunk reload: " + ChatColor.GRAY + Lang.get("CommandMessageReload"));
@@ -1819,9 +1961,10 @@ public class MyChunkCommand implements CommandExecutor {
                 || sender.hasPermission("mychunk.commands.toggle.preventEntry")
                 || sender.hasPermission("mychunk.commands.toggle.preventPVP")
                 || sender.hasPermission("mychunk.commands.toggle.mobGrief")
-                || sender.hasPermission("mychunk.commands.toggle.rampchunkprice"))
+                || sender.hasPermission("mychunk.commands.toggle.rampchunkprice")
+                || sender.hasPermission("mychunk.commands.toggle.usechatformat"))
             helpLines.add(ChatColor.GOLD + "/mychunk toggle ["+Lang.get("Setting")+"]: " + ChatColor.GRAY + Lang.get("CommandMessageToggle") + "\n" + ChatColor.GRAY + "  "
-                    + Lang.get("CommandMessageAvailable") + ":\n   refund overbuy resales neighbours unclaimed tnt expiry\n   allownether allowend notify firstChunkFree preventEntry\n   preventPVP mobGrief rampChunkPrice");
+                    + Lang.get("CommandMessageAvailable") + ":\n   refund overbuy resales neighbours unclaimed tnt expiry\n   allownether allowend notify firstChunkFree preventEntry\n   preventPVP mobGrief rampChunkPrice useChatFormat");
         
         int lines = 0;
         List<Integer> pageLines = new ArrayList<Integer>();
@@ -2067,8 +2210,8 @@ public class MyChunkCommand implements CommandExecutor {
 
         }
 
-        player.sendMessage(ChatColor.GOLD + Lang.get("ChunkOffSale"));
         chunk.setNotForSale();
+        player.sendMessage(ChatColor.GOLD + Lang.get("ChunkOffSale"));
         
         return true;
         
@@ -2115,7 +2258,7 @@ public class MyChunkCommand implements CommandExecutor {
 
             plugin.setOverbuyPrice(newPrice);
 
-            sender.sendMessage(ChatColor.GOLD + Lang.get("CommandMessageOverbuyPrice") + " " + MyChunkVaultLink.getEconomy().format(newPrice));
+            sender.sendMessage(ChatColor.GOLD + Lang.get("CommandMessageOverbuyPrice") + " " + MyChunkVaultLink.economy.format(newPrice));
             return true;
             
         }
@@ -2213,7 +2356,7 @@ public class MyChunkCommand implements CommandExecutor {
 
             plugin.setChunkPrice(newPrice);
 
-            sender.sendMessage(ChatColor.GOLD + Lang.get("CommandMessageChunkPrice")+ " " + MyChunkVaultLink.getEconomy().format(newPrice));
+            sender.sendMessage(ChatColor.GOLD + Lang.get("CommandMessageChunkPrice")+ " " + MyChunkVaultLink.economy.format(newPrice));
             return true;
             
         }
@@ -2255,17 +2398,21 @@ public class MyChunkCommand implements CommandExecutor {
                 
             }
             
-            HashMap<Integer, HashMap<String, Object>> results = SQLiteBridge.select("world, x, z","MyChunks","owner = '"+player.getName()+"'","","");
+            HashMap<Integer, HashMap<String, String>> results = SQLBridge.select("world, x, z", "MyChunks", "owner = '"+player.getName()+"'", "", "");
+            
             List<Chunk> chunks = new ArrayList<Chunk>();
             
-            for (int i = 0; i < results.size(); i++) {
+            if (results != null && !results.isEmpty()) {
                 
-                HashMap<String, Object> result = results.get(i);
-                String world = (String)result.get("world");
-                int x = Integer.parseInt(result.get("x")+"");
-                int z = Integer.parseInt(result.get("z")+"");
-                chunks.add(Bukkit.getWorld(world).getChunkAt(x, z));
-                
+                for (int i  : results.keySet()) {
+
+                    String world = results.get(i).get("world");
+                    int x = Integer.parseInt(results.get(i).get("x"));
+                    int z = Integer.parseInt(results.get(i).get("z"));
+                    chunks.add(Bukkit.getWorld(world).getChunkAt(x, z));
+
+                }
+
             }
             
             for (Chunk thisChunk: chunks) {
@@ -2315,7 +2462,8 @@ public class MyChunkCommand implements CommandExecutor {
             }
             
             String worldName = world.getName();
-            SQLiteBridge.query("DELETE FROM MyChunks WHERE world = '"+worldName+"'");
+            
+            SQLBridge.query("DELETE FROM MyChunks WHERE world = '"+worldName+"'");
             
             sender.sendMessage(ChatColor.GOLD + Lang.get("CommandMessageAllChunksIn") + " " + ChatColor.WHITE + world.getName() + " " + ChatColor.GOLD + Lang.get("CommandMessageAreNow") + " " + Lang.get("Unowned"));
             
@@ -2393,7 +2541,6 @@ public class MyChunkCommand implements CommandExecutor {
             try {
                 newRate = Double.parseDouble(args[1]);
             } catch (NumberFormatException e) {
-                // TODO: Lang
                 sender.sendMessage(ChatColor.RED + Lang.get("RateNotNumber") + " (e.g. 5.00)");
                 sender.sendMessage(ChatColor.RED + "/mychunk rampRate {"+Lang.get("NewRampRate")+"}");
                 return false;
@@ -2446,7 +2593,7 @@ public class MyChunkCommand implements CommandExecutor {
         if (args.length == 1) {
             
             sender.sendMessage(ChatColor.RED + Lang.get("SpecifyToggle"));
-            sender.sendMessage(ChatColor.RED + "/mychunk toggle [refund | overbuy | neighbours | resales | unclaimed | expiry | allownether | allowend | notify | firstChunkFree | preventEntry | preventPVP | mobGrief ]");
+            sender.sendMessage(ChatColor.RED + "/mychunk toggle [refund | overbuy | neighbours | resales | unclaimed | expiry | allownether | allowend | notify | firstChunkFree | preventEntry | preventPVP | mobGrief | useChatFormat ]");
             
             return false;
             
@@ -2753,9 +2900,27 @@ public class MyChunkCommand implements CommandExecutor {
                 }
                 return true;
                 
+            } else if (args[1].equalsIgnoreCase("useChatFormat")) {
+                
+                /* mobGrief */
+                
+                if (!sender.hasPermission("mychunk.commands.toggle.useChatFormat")) {
+                    sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
+                    return false;
+                }
+                
+                plugin.toggleSetting("useChatFormat");
+                
+                if (MyChunk.getToggle("useChatFormat")) {
+                    sender.sendMessage(ChatColor.GOLD + Lang.get("ToggleChatFormatOn"));
+                } else {
+                    sender.sendMessage(ChatColor.GOLD + Lang.get("ToggleChatFormatOff"));
+                }
+                return true;
+                
             }
             
-            sender.sendMessage(ChatColor.RED + "/mychunk toggle [refund | overbuy | neighbours | resales | unclaimed | expiry | allownether | allowend | notify | firstChunkFree | preventEntry | preventPVP | mobGrief ]");
+            sender.sendMessage(ChatColor.RED + "/mychunk toggle [refund | overbuy | neighbours | resales | unclaimed | expiry | allownether | allowend | notify | firstChunkFree | preventEntry | preventPVP | mobGrief | useChatFormat ]");
             return false;
             
         }
@@ -2841,7 +3006,7 @@ public class MyChunkCommand implements CommandExecutor {
                     int claimed = MyChunkChunk.getOwnedChunkCount(player.getName());
                     price += MyChunk.getDoubleSetting("priceRampRate") * claimed;
                 }
-                MyChunkVaultLink.getEconomy().depositPlayer(player.getName(), price / 100 * MyChunk.getDoubleSetting("refundPercent"));
+                MyChunkVaultLink.economy.depositPlayer(player.getName(), price / 100 * MyChunk.getDoubleSetting("refundPercent"));
             }
 
         }
@@ -3049,7 +3214,7 @@ public class MyChunkCommand implements CommandExecutor {
                         price += MyChunk.getDoubleSetting("priceRampRate");
                     }
                 }
-                MyChunkVaultLink.getEconomy().depositPlayer(player.getName(), price / 100 * MyChunk.getDoubleSetting("refundPrecent"));
+                MyChunkVaultLink.economy.depositPlayer(player.getName(), price / 100 * MyChunk.getDoubleSetting("refundPrecent"));
 
             }
 
@@ -3109,7 +3274,7 @@ __      _____  _ __| | __| |
                 sender.sendMessage(ChatColor.GOLD + "MyChunk World List");
                 for (World world : Bukkit.getWorlds()) {
                     if (MyChunk.isWorldEnabled(world.getName())) {
-                        
+                        sender.sendMessage(ChatColor.GOLD + world.getName());
                     }
                 }
                 
