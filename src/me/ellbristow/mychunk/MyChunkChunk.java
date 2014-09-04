@@ -69,7 +69,7 @@ public class MyChunkChunk {
         } else {
 
                 gang = chunkData.get(0).get("gang");
-                if (!gang.equals("")) {
+                if (gang != null && !gang.equals("")) {
                     isGangland = true;
                 }
 
