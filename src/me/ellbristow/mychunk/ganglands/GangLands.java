@@ -1,20 +1,13 @@
 package me.ellbristow.mychunk.ganglands;
 
 import java.util.HashMap;
-import me.ellbristow.mychunk.MyChunk;
+
 import me.ellbristow.mychunk.utils.MyChunkVaultLink;
 import me.ellbristow.mychunk.utils.db.SQLBridge;
+
 import org.bukkit.entity.Player;
 
 public class GangLands {
-    
-    private MyChunk plugin;
-    
-    public GangLands(MyChunk instance) {
-        
-        plugin = instance;
-        
-    }
     
     public static void createGang(String gangName, Player player) {
         

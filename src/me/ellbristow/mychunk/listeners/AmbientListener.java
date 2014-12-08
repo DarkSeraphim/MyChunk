@@ -4,8 +4,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+
 import me.ellbristow.mychunk.MyChunk;
 import me.ellbristow.mychunk.MyChunkChunk;
+
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -19,6 +21,7 @@ import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.entity.EntityBreakDoorEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
+import org.bukkit.projectiles.ProjectileSource;
 
 
 public class AmbientListener implements Listener {
@@ -36,7 +39,6 @@ public class AmbientListener implements Listener {
         
         if (blocks != null) {
             
-            int index = 0;
             Collection<Block> saveBlocks = new HashSet<Block>();
             
             for (Iterator<Block> it = blocks.iterator(); it.hasNext();) {
@@ -52,8 +54,6 @@ public class AmbientListener implements Listener {
                     }
                     
                 }
-                
-                index++;
                 
             }
             
@@ -173,7 +173,7 @@ public class AmbientListener implements Listener {
                 return;
             }
             
-            LivingEntity shooter = potion.getShooter();
+            ProjectileSource shooter = potion.getShooter();
             
             if (shooter instanceof Player) {
                 

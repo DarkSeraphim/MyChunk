@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+
 import me.ellbristow.mychunk.MyChunk;
 import me.ellbristow.mychunk.MyChunkChunk;
 import me.ellbristow.mychunk.ganglands.GangLands;
@@ -12,6 +13,7 @@ import me.ellbristow.mychunk.utils.FactionsHook;
 import me.ellbristow.mychunk.utils.MyChunkVaultLink;
 import me.ellbristow.mychunk.utils.TownyHook;
 import me.ellbristow.mychunk.utils.WorldGuardHook;
+
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -28,6 +30,7 @@ import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.Attachable;
 import org.bukkit.material.MaterialData;
+import org.bukkit.projectiles.ProjectileSource;
 
 public class PlayerListener implements Listener {
     
@@ -66,7 +69,7 @@ public class PlayerListener implements Listener {
                     
                 } else if (damager instanceof Projectile) {
                     
-                    Entity shooter = ((Projectile)event.getDamager()).getShooter();
+                    ProjectileSource shooter = ((Projectile)event.getDamager()).getShooter();
                     
                     if (shooter instanceof Player && (!chunk.getAllowPVP() || !fromChunk.getAllowPVP())) {
                         event.setCancelled(true);
@@ -88,7 +91,7 @@ public class PlayerListener implements Listener {
                     
                 } else if (damager instanceof Projectile) {
                     
-                    Entity shooter = ((Projectile) event.getDamager()).getShooter();
+                	ProjectileSource shooter = ((Projectile) event.getDamager()).getShooter();
                     
                     if (shooter instanceof Player && !chunk.getAllowPVP()) {
                         event.setCancelled(true);
@@ -113,7 +116,7 @@ public class PlayerListener implements Listener {
                     
                 } else if (damager instanceof Projectile) {
                     
-                    Entity shooter = ((Projectile) event.getDamager()).getShooter();
+                	ProjectileSource shooter = ((Projectile) event.getDamager()).getShooter();
                     
                     if (shooter instanceof Player && !chunk.getOwner().equalsIgnoreCase(((Player)shooter).getName()) && !chunk.isAllowed(((Player)shooter).getName(), "A")) {
                         event.setCancelled(true);
@@ -166,7 +169,7 @@ public class PlayerListener implements Listener {
         if (event.isCancelled()) return;
         
         Player player = event.getPlayer();
-        int bucket = event.getBucket().getId();
+        Material bucket = event.getBucket();
         Block block = event.getBlockClicked();
         BlockFace face = event.getBlockFace();
         Block targetBlock;
@@ -183,7 +186,7 @@ public class PlayerListener implements Listener {
         
         if (!MyChunk.isWorldEnabled(event.getPlayer().getWorld().getName()) && !MyChunkChunk.getOwner(targetBlock.getChunk()).equalsIgnoreCase("Server")) return;
         
-        if (bucket == 327) {
+        if (bucket == Material.LAVA_BUCKET) {
             flag = "L";
             lang = "NoPermsLava";
         } else {
@@ -195,7 +198,7 @@ public class PlayerListener implements Listener {
             
             player.sendMessage(ChatColor.RED + Lang.get(lang));
             event.setCancelled(true);
-            player.setItemInHand(new ItemStack(bucket));
+            player.setItemInHand(new ItemStack(bucket, 1));
             
         }
         
@@ -226,7 +229,7 @@ public class PlayerListener implements Listener {
                         
                 }
                 
-            } else if (block.getTypeId() == 64 || block.getTypeId() == 96 || block.getTypeId() == 107) {
+            } else if (block.getType() == Material.WOODEN_DOOR || block.getType() == Material.TRAP_DOOR || block.getType() == Material.FENCE_GATE) {
                 
                 // Door
                 
@@ -260,7 +263,7 @@ public class PlayerListener implements Listener {
                     
                 }
                 
-            } else if (block.getTypeId() == 77 || block.getTypeId() == 143) {
+            } else if (block.getType() == Material.STONE_BUTTON || block.getType() == Material.WOOD_BUTTON) {
                 
                 // Button
                 
@@ -277,7 +280,7 @@ public class PlayerListener implements Listener {
                     
                 }
                 
-            } else if (block.getTypeId() == 69) {
+            } else if (block.getType() == Material.LEVER) {
                 
                 // Lever
                 
@@ -294,7 +297,7 @@ public class PlayerListener implements Listener {
                     
                 }
                 
-            } else if (block.getTypeId() == 54 || block.getTypeId() == 146) {
+            } else if (block.getType() == Material.CHEST || block.getType() == Material.TRAPPED_CHEST) {
                 
                 // Chest
                 
@@ -311,7 +314,7 @@ public class PlayerListener implements Listener {
                     
                 }
                 
-            } else if (block.getTypeId() == 61 || block.getTypeId() == 62 || block.getTypeId() == 23 || block.getTypeId() == 117 || block.getTypeId() == 116 || block.getTypeId() == 118 || block.getTypeId() == 120 || block.getTypeId() == 137 || block.getTypeId() == 138 || block.getTypeId() == 140 || block.getTypeId() == 145 || block.getTypeId() == 154 || block.getTypeId() == 158 || block.getTypeId() == 92) {
+            } else if (block.getType() == Material.FURNACE || block.getType() == Material.BURNING_FURNACE || block.getType() == Material.DISPENSER || block.getType() == Material.ENCHANTMENT_TABLE || block.getType() == Material.BREWING_STAND || block.getType() == Material.CAULDRON || block.getType() == Material.ENDER_PORTAL_FRAME || block.getType() == Material.COMMAND || block.getType() == Material.BEACON || block.getType() == Material.FLOWER_POT || block.getType() == Material.ANVIL || block.getType() == Material.HOPPER || block.getType() == Material.DROPPER || block.getType() == Material.CAKE_BLOCK) {
                 
                 // Special Block
                 
@@ -328,7 +331,7 @@ public class PlayerListener implements Listener {
                     
                 }
                 
-            } else if (block.getTypeId() == 93 || block.getTypeId() == 94 || block.getTypeId() == 149 || block.getTypeId() == 150) {
+            } else if (block.getType() == Material.DIODE_BLOCK_OFF || block.getType() == Material.DIODE_BLOCK_ON || block.getType() == Material.REDSTONE_COMPARATOR_OFF || block.getType() == Material.REDSTONE_COMPARATOR_ON) {
                 
                 // Redstone Repeaters/Comparators
                 
@@ -722,13 +725,13 @@ public class PlayerListener implements Listener {
     
     private static String getLeaseOwner(Block door) {
         
-        if (door.getTypeId() != 64 && door.getTypeId() != 96 && door.getTypeId() != 107) {
+        if (door.getType() != Material.WOODEN_DOOR && door.getType() != Material.TRAP_DOOR && door.getType() != Material.FENCE_GATE) {
             return "";
         }
         
         Block aboveDoor = door.getRelative(BlockFace.UP);
                     
-        while (aboveDoor.getTypeId() == 64 || aboveDoor.getTypeId() == 96 || aboveDoor.getTypeId() == 107) {
+        while (aboveDoor.getType() == Material.WOODEN_DOOR || aboveDoor.getType() == Material.TRAP_DOOR || aboveDoor.getType() == Material.FENCE_GATE) {
             aboveDoor = aboveDoor.getRelative(BlockFace.UP);
         }
         
