@@ -159,7 +159,7 @@ public class SignListener implements Listener {
                 }
             }
             
-            if (claimPrice != 0 && MyChunkVaultLink.economy.getBalance(player.getName()) < claimPrice) {
+            if (claimPrice != 0 && MyChunkVaultLink.economy.getBalance(player) < claimPrice) {
 
                 player.sendMessage(ChatColor.RED + Lang.get("CantAfford") + " (" + Lang.get("Price") + ": " + ChatColor.WHITE + MyChunkVaultLink.economy.format(claimPrice) + ChatColor.RED + ")!");
                 breakSign(block);
@@ -195,7 +195,7 @@ public class SignListener implements Listener {
                 if (claimPrice != 0 && !isFreeChunk) {
 
                     if (!(MyChunk.getToggle("firstChunkFree") && playerClaimed == 0) || chunk.isForSale()) {
-                        MyChunkVaultLink.economy.withdrawPlayer(player.getName(), claimPrice);
+                        MyChunkVaultLink.economy.withdrawPlayer(player, claimPrice);
                         player.sendMessage(MyChunkVaultLink.economy.format(claimPrice) + ChatColor.GOLD + " " + Lang.get("AmountDeducted"));
                     }
 
@@ -270,7 +270,7 @@ public class SignListener implements Listener {
 
                     }
 
-                    OfflinePlayer target = Bukkit.getServer().getOfflinePlayer(line1);
+                    Player target = Bukkit.getPlayer(line1);
 
                     if (!target.hasPlayedBefore() && !target.isOnline()) {
 
@@ -296,7 +296,7 @@ public class SignListener implements Listener {
                 if (claimPrice != 0 && !correctName.equalsIgnoreCase("server") && !correctName.equalsIgnoreCase("public")) {
                     
                     if (!isFreeChunk) {
-                        MyChunkVaultLink.economy.withdrawPlayer(player.getName(), claimPrice);
+                        MyChunkVaultLink.economy.withdrawPlayer(player, claimPrice);
                         player.sendMessage(MyChunkVaultLink.economy.format(claimPrice) + ChatColor.GOLD + " " + Lang.get("AmountDeducted"));
                     } else {
                         player.sendMessage(ChatColor.GOLD + " " + Lang.get("FirstChunkFree"));
@@ -375,7 +375,7 @@ public class SignListener implements Listener {
 
                     if (player.hasPermission("mychunk.claim.others")) {
 
-                        OfflinePlayer target = Bukkit.getServer().getOfflinePlayer(line1);
+                        Player target = Bukkit.getPlayer(line1);
                         if (!target.hasPlayedBefore()) {
 
                             player.sendMessage(ChatColor.RED + Lang.get("Player") + " " + ChatColor.WHITE + line1 + ChatColor.RED + " " + Lang.get("NotFound") + "!");
@@ -568,7 +568,7 @@ public class SignListener implements Listener {
 
                     }
 
-                    if (MyChunkVaultLink.economy.getBalance(player.getName()) < areaPrice) {
+                    if (MyChunkVaultLink.economy.getBalance(player) < areaPrice) {
 
                         player.sendMessage(ChatColor.RED + Lang.get("CantAffordClaimArea"));
                         player.sendMessage(ChatColor.RED + Lang.get("Price") + ": " + ChatColor.WHITE + MyChunkVaultLink.economy.format(areaPrice));
@@ -577,7 +577,7 @@ public class SignListener implements Listener {
 
                     }
 
-                    MyChunkVaultLink.economy.withdrawPlayer(player.getName(), areaPrice);
+                    MyChunkVaultLink.economy.withdrawPlayer(player, areaPrice);
                     player.sendMessage(ChatColor.GOLD + Lang.get("YouWereCharged") + " " + ChatColor.WHITE + MyChunkVaultLink.economy.format(areaPrice));
 
                 }
@@ -654,7 +654,7 @@ public class SignListener implements Listener {
                         int claimed = MyChunkChunk.getOwnedChunkCount(player.getName());
                         price += MyChunk.getDoubleSetting("priceRampRate") * claimed;
                     }
-                    MyChunkVaultLink.economy.depositPlayer(player.getName(), price / 100 * MyChunk.getDoubleSetting("refundPercent"));
+                    MyChunkVaultLink.economy.depositPlayer(player, price / 100 * MyChunk.getDoubleSetting("refundPercent"));
                 }
 
             }
@@ -702,7 +702,7 @@ public class SignListener implements Listener {
 
                     if (player.hasPermission("mychunk.unclaim.others")) {
 
-                        OfflinePlayer target = Bukkit.getServer().getOfflinePlayer(line1);
+                        Player target = Bukkit.getPlayer(line1);
                         if (!target.hasPlayedBefore()) {
 
                             player.sendMessage(ChatColor.RED + Lang.get("Player") + " " + ChatColor.WHITE + line1 + ChatColor.RED + " " + Lang.get("NotFound") + "!");
@@ -783,7 +783,7 @@ public class SignListener implements Listener {
 
                 List<MyChunkChunk> foundChunks = new ArrayList<MyChunkChunk>();
                 int chunkCount = 0;
-                xloop:
+
                 for (int x = startX; x <= endX; x++) {
 
                     for (int z = startZ; z <= endZ; z++) {
@@ -828,7 +828,7 @@ public class SignListener implements Listener {
                             price += MyChunk.getDoubleSetting("priceRampRate");
                         }
                     }
-                    MyChunkVaultLink.economy.depositPlayer(player.getName(), price / 100 * MyChunk.getDoubleSetting("refundPrecent"));
+                    MyChunkVaultLink.economy.depositPlayer(player, price / 100 * MyChunk.getDoubleSetting("refundPrecent"));
 
                 }
 
@@ -903,7 +903,7 @@ public class SignListener implements Listener {
 
                 if (!"*".equalsIgnoreCase(line1)) {
                     
-                    OfflinePlayer target = Bukkit.getServer().getOfflinePlayer(line1);
+                    Player target = Bukkit.getPlayer(line1);
 
                     if (!target.hasPlayedBefore()) {
 
@@ -992,7 +992,7 @@ public class SignListener implements Listener {
 
                 if (!"*".equalsIgnoreCase(line1)) {
 
-                    OfflinePlayer target = Bukkit.getServer().getOfflinePlayer(line1);
+                    Player target = Bukkit.getPlayer(line1);
 
                     if (!target.hasPlayedBefore()) {
 
@@ -1111,7 +1111,7 @@ public class SignListener implements Listener {
 
                 if (!"*".equalsIgnoreCase(line1)) {
 
-                    OfflinePlayer target = Bukkit.getServer().getOfflinePlayer(line1);
+                    Player target = Bukkit.getPlayer(line1);
 
                     if (!target.hasPlayedBefore()) {
 
@@ -1203,7 +1203,7 @@ public class SignListener implements Listener {
 
                 if (!"*".equalsIgnoreCase(line1)) {
 
-                    OfflinePlayer target = Bukkit.getServer().getOfflinePlayer(line1);
+                    Player target = Bukkit.getPlayer(line1);
 
                     if (!target.hasPlayedBefore()) {
 
@@ -1541,7 +1541,7 @@ public class SignListener implements Listener {
             Block attached = getAttachedBlock(block);
             Block door = attached.getRelative(BlockFace.DOWN);
             
-            if ( door.getTypeId() != 64 && door.getTypeId() != 96 && door.getTypeId() != 107) {
+            if (door.getType() != Material.WOOD_DOOR && door.getType() != Material.TRAP_DOOR && door.getType() != Material.FENCE_GATE) {
                 
                 player.sendMessage(ChatColor.RED + Lang.get("LeaseAboveDoor"));
                 breakSign(block);
@@ -1620,11 +1620,9 @@ public class SignListener implements Listener {
 
     private void breakSign(Block block) {
 
-        if (block.getTypeId() == 63 || block.getTypeId() == 68) {
-
-            block.setTypeId(0);
-            block.getWorld().dropItem(block.getLocation(), new ItemStack(323, 1));
-
+        if (block.getType() == Material.SIGN_POST || block.getType() == Material.WALL_SIGN) {
+            block.setType(Material.AIR);
+            block.getWorld().dropItem(block.getLocation(), new ItemStack(Material.SIGN, 1));
         }
 
     }

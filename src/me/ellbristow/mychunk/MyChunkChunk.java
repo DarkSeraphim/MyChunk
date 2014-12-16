@@ -649,7 +649,7 @@ public class MyChunkChunk {
         }
         // First find the highest buildable AIR block in the correct corner
         Block checkBlock = chunk.getBlock( x , y , z );
-        while (checkBlock.getTypeId() != 0 && y > 0) {
+        while (checkBlock.getType() != Material.AIR && y > 0) {
             y--;
             checkBlock = chunk.getBlock( x , y , z );
         }
@@ -669,11 +669,14 @@ public class MyChunkChunk {
     }
     
     private boolean notAttachable(Block block) {
-        Integer[] nonSolids = {0, 6, 10, 11, 18, 30, 31, 32, 37, 38, 39, 40, 50, 51, 59, 75, 76, 78, 83, 90, 104, 105, 106, 111, 115, 119};
-        for (int type : nonSolids) {
-            if (block.getTypeId() == type) {
+    	Material[] nonSolids = {Material.AIR, Material.SAPLING, Material.LAVA, Material.STATIONARY_LAVA, Material.WEB, Material.LONG_GRASS,
+    			Material.DEAD_BUSH, Material.YELLOW_FLOWER, Material.RED_ROSE, Material.BROWN_MUSHROOM, Material.RED_MUSHROOM,
+    			Material.TORCH, Material.FIRE, Material.CROPS, Material.REDSTONE_TORCH_OFF, Material.REDSTONE_TORCH_ON,
+    			Material.SNOW, Material.SUGAR_CANE_BLOCK, Material.PORTAL, Material.PUMPKIN_STEM, Material.MELON_STEM,
+    			Material.VINE, Material.WATER_LILY, Material.NETHER_WARTS, Material.ENDER_PORTAL};
+        for (Material m : nonSolids) {
+            if (block.getType() == m)
                 return true;
-            }
         }
         return false;
     }

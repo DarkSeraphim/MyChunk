@@ -112,7 +112,8 @@ public class AmbientListener implements Listener {
         
     }
     
-    @EventHandler (priority = EventPriority.NORMAL)
+    @SuppressWarnings("deprecation")
+	@EventHandler (priority = EventPriority.NORMAL)
     public void onPistonRetract(BlockPistonRetractEvent event) {
          
         if (event.isCancelled()) return;
@@ -147,6 +148,8 @@ public class AmbientListener implements Listener {
                             case WEST:
                                 event.getBlock().setData((byte)3);
                                 break;
+                            default:
+                            	break;
                         }
                         
                         event.getBlock().getRelative(event.getDirection()).setType(Material.AIR);

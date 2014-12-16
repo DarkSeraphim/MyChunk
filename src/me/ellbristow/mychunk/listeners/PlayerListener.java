@@ -238,10 +238,10 @@ public class PlayerListener implements Listener {
                     // ANY door
                     
                     player.sendMessage(ChatColor.RED + Lang.get("NoPermsDoor"));
-                    OfflinePlayer owner = Bukkit.getServer().getOfflinePlayer(MyChunkChunk.getOwner(chunk));
+                    Player owner = Bukkit.getPlayer(MyChunkChunk.getOwner(chunk));
                     
                     if (owner.isOnline() && MyChunk.getToggle("ownerNotifications")) {
-                        owner.getPlayer().sendMessage(ChatColor.GOLD + Lang.get("NoPermsDoorOwner"));
+                        owner.sendMessage(ChatColor.GOLD + Lang.get("NoPermsDoorOwner"));
                     }
                     
                     event.setCancelled(true);
@@ -270,10 +270,10 @@ public class PlayerListener implements Listener {
                 if (!MyChunkChunk.isAllowed(chunk, player, "U")) {
                     
                     player.sendMessage(ChatColor.RED + Lang.get("NoPermsButton"));
-                    OfflinePlayer owner = Bukkit.getServer().getOfflinePlayer(MyChunkChunk.getOwner(chunk));
+                    Player owner = Bukkit.getPlayer(MyChunkChunk.getOwner(chunk));
                     
                     if (owner.isOnline() && MyChunk.getToggle("ownerNotifications")) {
-                        owner.getPlayer().sendMessage(ChatColor.GOLD + Lang.get("NoPermsButtonOwner"));
+                        owner.sendMessage(ChatColor.GOLD + Lang.get("NoPermsButtonOwner"));
                     }
                     
                     event.setCancelled(true);
@@ -287,10 +287,10 @@ public class PlayerListener implements Listener {
                 if (!MyChunkChunk.isAllowed(chunk, player, "U")) {
                     
                     player.sendMessage(ChatColor.RED + Lang.get("NoPermsLever"));
-                    OfflinePlayer owner = Bukkit.getServer().getOfflinePlayer(MyChunkChunk.getOwner(chunk));
+                    Player owner = Bukkit.getPlayer(MyChunkChunk.getOwner(chunk));
                     
                     if (owner.isOnline() && MyChunk.getToggle("ownerNotifications")) {
-                        owner.getPlayer().sendMessage(ChatColor.GOLD + Lang.get("NoPermsLeverOwner"));
+                        owner.sendMessage(ChatColor.GOLD + Lang.get("NoPermsLeverOwner"));
                     }
                     
                     event.setCancelled(true);
@@ -304,10 +304,10 @@ public class PlayerListener implements Listener {
                 if (!MyChunkChunk.isAllowed(chunk, player, "C")) {
                     
                     player.sendMessage(ChatColor.RED + Lang.get("NoPermsChest"));
-                    OfflinePlayer owner = Bukkit.getServer().getOfflinePlayer(MyChunkChunk.getOwner(chunk));
+                    Player owner = Bukkit.getPlayer(MyChunkChunk.getOwner(chunk));
                     
                     if (owner.isOnline() && MyChunk.getToggle("ownerNotifications")) {
-                        owner.getPlayer().sendMessage(ChatColor.GOLD + Lang.get("NoPermsChestOwner"));
+                        owner.sendMessage(ChatColor.GOLD + Lang.get("NoPermsChestOwner"));
                     }
                     
                     event.setCancelled(true);
@@ -321,10 +321,10 @@ public class PlayerListener implements Listener {
                 if (!MyChunkChunk.isAllowed(chunk, player, "S")) {
                     
                     player.sendMessage(ChatColor.RED + Lang.get("NoPermsSpecial"));
-                    OfflinePlayer owner = Bukkit.getServer().getOfflinePlayer(MyChunkChunk.getOwner(chunk));
+                    Player owner = Bukkit.getPlayer(MyChunkChunk.getOwner(chunk));
                     
                     if (owner.isOnline() && MyChunk.getToggle("ownerNotifications")) {
-                        owner.getPlayer().sendMessage(ChatColor.GOLD + Lang.get("NoPermsSpecialOwner"));
+                        owner.sendMessage(ChatColor.GOLD + Lang.get("NoPermsSpecialOwner"));
                     }
                     
                     event.setCancelled(true);
@@ -373,13 +373,13 @@ public class PlayerListener implements Listener {
                                 
                                 leaseConfirm.remove(player.getName());
                                 
-                                if (!(MyChunkVaultLink.economy.getBalance(player.getName()) >= price)) {
+                                if (!(MyChunkVaultLink.economy.getBalance(player) >= price)) {
                                     player.sendMessage(ChatColor.RED + "You cannot afford this Lease!");
                                     event.setCancelled(true);
                                     return;
                                 }
                                 
-                                MyChunkVaultLink.economy.withdrawPlayer(player.getName(), price);
+                                MyChunkVaultLink.economy.withdrawPlayer(player, price);
                                 
                                 sign.setLine(2, ChatColor.GREEN + player.getName());
                                 Date date = new Date();
