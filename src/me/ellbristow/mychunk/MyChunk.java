@@ -83,7 +83,7 @@ public class MyChunk extends JavaPlugin {
         
         // Register Commands
         getCommand("mychunk").setExecutor(new MyChunkCommand(this));
-        getCommand("gang").setExecutor(new GangCommand(this));
+//        getCommand("gang").setExecutor(new GangCommand(this));
         
         // Register Events
         getServer().getPluginManager().registerEvents(new AmbientListener(), this);

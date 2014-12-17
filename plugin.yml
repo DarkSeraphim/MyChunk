@@ -1,7 +1,7 @@
 name: MyChunk
 main: me.ellbristow.mychunk.MyChunk
-version: 2.5.0b
-author: ellbristow
+version: 2.6
+author: dwilson390
 description: >
              Buy/Sell chunks for currency, get protection, make profit.
 softdepend: [Vault,My Worlds,Multiverse,dynmap,DynmapMyChunk,Factions,Towny]
@@ -10,9 +10,9 @@ commands:
   mychunk:
     description: Use /mychunk ? for command help
     aliases: [mc,chunk]
-  gang:
-    description: Use /gang ? for command help
-    aliases: [g]
+#  gang:
+#    description: Use /gang ? for command help
+#    aliases: [g]
 
 permissions:
 

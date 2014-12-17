@@ -189,7 +189,7 @@ public class MyChunkCommand implements CommandExecutor {
         PluginDescriptionFile pdfFile = plugin.getDescription();
         
         sender.sendMessage("");
-        sender.sendMessage(ChatColor.GOLD + "MyChunk v" + ChatColor.WHITE + pdfFile.getVersion() + ChatColor.GOLD + " " + Lang.get("By") + " " + ChatColor.WHITE + "ellbristow");
+        sender.sendMessage(ChatColor.GOLD + "MyChunk v" + ChatColor.WHITE + pdfFile.getVersion() + ChatColor.GOLD + " " + Lang.get("Updated By") + " " + ChatColor.WHITE + "brc" + ChatColor.GOLD + " " + Lang.get("and") + ChatColor.WHITE + "dwilson390");
         sender.sendMessage(ChatColor.GRAY + "====");
         
         if (page != 2) {
