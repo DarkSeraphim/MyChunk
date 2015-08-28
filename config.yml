@@ -40,6 +40,8 @@ charge_overbuy_on_resales: true
 protect_unclaimed: false
 useClaimExpiry: false
 claimExpiresAfter: 7
+default_allow_pvp: false
+default_allow_mobs: false
 worlds: []
 preventPVP: false
 databaseType: sqlite

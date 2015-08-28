@@ -133,13 +133,20 @@ public class MyChunkChunk {
      */
     public void claim(String playerName, String gangName) {
         MyChunkClaimEvent event = new MyChunkClaimEvent(chunkWorld, chunkX, chunkZ, owner, playerName, forSale, gangName);
+        int allowMobs = 0;
+        int allowPVP = 0;
         this.owner = playerName;
         this.gang = gangName;
         if (!gangName.equals("")) {
             this.isGangland = true;
         }
-        
-        SQLBridge.query("REPLACE INTO MyChunks (world, x, z, owner, salePrice, allowMobs, allowPVP, allowed, lastActive, gang) VALUES ('"+chunkWorld+"', "+chunkX+", "+chunkZ+", '"+playerName+"', 0, 0, 0, '', "+lastActive+", '"+gangName+"')");
+        if (MyChunk.getToggle("defaultAllowMobs")) {
+        	allowMobs = 1;
+        }
+        if (MyChunk.getToggle("defaultAllowPVP")) {
+        	allowPVP = 1;
+        }
+        SQLBridge.query("REPLACE INTO MyChunks (world, x, z, owner, salePrice, allowMobs, allowPVP, allowed, lastActive, gang) VALUES ('"+chunkWorld+"', "+chunkX+", "+chunkZ+", '"+playerName+"', 0, '"+allowMobs+"', '"+allowPVP+"', '', "+lastActive+", '"+gangName+"')");
         forSale = false;
         if (!playerName.equalsIgnoreCase("Public")) {
             if (chunkNE.isLiquid() || chunkNE.getType().equals(Material.ICE)) {

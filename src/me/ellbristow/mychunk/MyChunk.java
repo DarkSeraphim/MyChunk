@@ -50,6 +50,8 @@ public class MyChunk extends JavaPlugin {
     private static double priceRampRate = 25.00;
     private static int maxChunks = 8;
     private static boolean notify = true;
+    private static boolean defaultAllowMobs = false;
+    private static boolean defaultAllowPVP = false;
     private static List<String> enabledWorlds = new ArrayList<String>();
     private static List<String> disabledWorlds = new ArrayList<String>();
     private static List<String> prefixes = new ArrayList<String>();
@@ -310,6 +312,10 @@ public class MyChunk extends JavaPlugin {
         config.set("owner_notifications", notify);
         refundPercent = config.getDouble("refund_percent", 100);
         config.set("refund_percent", refundPercent);
+        defaultAllowMobs = config.getBoolean("default_allow_mobs", false);
+        config.set("default_allow_mobs", defaultAllowMobs);
+        defaultAllowPVP = config.getBoolean("default_allow_pvp", false);
+        config.set("default_allow_pvp", defaultAllowPVP);
         List<String> worldsList = config.getStringList("worlds");
         enabledWorlds = new ArrayList<String>(worldsList);
         List<String> disabledWorldsList = config.getStringList("disabledworlds");
@@ -473,6 +479,8 @@ public class MyChunk extends JavaPlugin {
         if (setting.equalsIgnoreCase("allowMobGrief")) return allowMobGrief;
         if (setting.equalsIgnoreCase("rampChunkPrice")) return rampChunkPrice;
         if (setting.equalsIgnoreCase("useChatFormat")) return useChatFormat;
+        if (setting.equalsIgnoreCase("defaultAllowMobs")) return defaultAllowMobs;
+        if (setting.equalsIgnoreCase("defaultAllowPVP")) return defaultAllowPVP;
         return false;
     }
     
