@@ -1,23 +1,14 @@
-# MyChunk 2.6 [1.8 Compatable] 
+# MyChunk 1.6.1
 
-Hello! This plugin is an updated version of the one ellbristow developed which is now abandoned.
+Current plugin version: **1.6.1** 
 
-The heavy work was done by brc (updating the plugin to 1.8), check out his repo over yonder: https://github.com/brcDev/MyChunk.
+This plugin is compatible with the following plugins:
 
-The following changes have been made by me:
-  - Updated Vault to 1.5 (From 1.4.1)
-  - Updated factions and MassiveCore to 2.7.4 (from 2.7.3)
-  - **Diabled** (Not removed) the /gang command due to the fact it is not fully complete.
-
-This plugin can be used with the following plugins:
-
-  - WorldGuard 6.0.0-SNAPSHOT (You **must** Get it here: http://builds.enginehub.org/job/worldguard/6524) The plugin won't run with WorldGuard 6.0.0 Beta 2 from Bukkit.org!
-  - WorldEdit 6.0.1
-  - Vault 1.5
-  - Factions 2.7.4
-  - MassiveCore 2.7.4
-  - Towny Advanced 0.89.0.0
+  - WorldGuard 6.1
+  - WorldEdit 6.1
+  - Vault 1.5.6
+  - Factions 2.8
+  - MassiveCore 2.8
+  - Towny Advanced 0.89.2
   
-There are no know bugs. If you find one please submit an issue.
-
-Thanks!
+Please submit all bugs on the issue tracker, I aim to respond and fix all issues within 48 hours of them being submitted.
