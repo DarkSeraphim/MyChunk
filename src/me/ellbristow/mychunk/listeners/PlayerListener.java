@@ -304,7 +304,7 @@ public class PlayerListener implements Listener {
                 if (!MyChunkChunk.isAllowed(chunk, player, "C")) {
                     
                     player.sendMessage(ChatColor.RED + Lang.get("NoPermsChest"));
-                    OfflinePlayer owner = Bukkit.getOfflinePlayer(MyChunkChunk.getOwner(chunk));
+                    Player owner = Bukkit.getPlayer(MyChunkChunk.getOwner(chunk));
                     
                     if (owner.isOnline() && MyChunk.getToggle("ownerNotifications")) {
                         owner.getPlayer().sendMessage(ChatColor.GOLD + Lang.get("NoPermsChestOwner"));
@@ -321,7 +321,7 @@ public class PlayerListener implements Listener {
                 if (!MyChunkChunk.isAllowed(chunk, player, "S")) {
                     
                     player.sendMessage(ChatColor.RED + Lang.get("NoPermsSpecial"));
-                    OfflinePlayer owner = Bukkit.getOfflinePlayer(MyChunkChunk.getOwner(chunk));
+                    Player owner = Bukkit.getPlayer(MyChunkChunk.getOwner(chunk));
                     
                     if (owner.isOnline() && MyChunk.getToggle("ownerNotifications")) {
                         owner.getPlayer().sendMessage(ChatColor.GOLD + Lang.get("NoPermsSpecialOwner"));
