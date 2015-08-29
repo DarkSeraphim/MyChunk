@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import me.ellbristow.mychunk.commands.MyChunkCommand;
-import me.ellbristow.mychunk.ganglands.GangLands;
 import me.ellbristow.mychunk.lang.Lang;
 import me.ellbristow.mychunk.listeners.*;
 import me.ellbristow.mychunk.utils.FactionsHook;
@@ -13,6 +13,7 @@ import me.ellbristow.mychunk.utils.Metrics;
 import me.ellbristow.mychunk.utils.MyChunkVaultLink;
 import me.ellbristow.mychunk.utils.TownyHook;
 import me.ellbristow.mychunk.utils.db.SQLBridge;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -54,18 +55,11 @@ public class MyChunk extends JavaPlugin {
     private static List<String> enabledWorlds = new ArrayList<String>();
     private static List<String> disabledWorlds = new ArrayList<String>();
     private static List<String> prefixes = new ArrayList<String>();
-    private static int gangNameLength = 8;
     private static String groupTag = "[%PREFIX%&f] ";
-    private static ChatColor gangTagColor = ChatColor.GRAY;
-    private static String gangTag = "[%TAGCOLOR%%GANG%&f] ";
     private static String playerTag = "%RANKCOLOR%%DISPNAME%";
     private static String chatFormat = "%GROUPTAG%%PLAYERTAG%&7:&f %MSG%";
-    private static String gangChatFormat = "%GROUPTAG%%GANGTAG%%PLAYERTAG%&7:&f %MSG%";
     private final String[] tableColumns = {"world","x","z","owner","allowed","salePrice","allowMobs","allowPVP","lastActive", "gang", "PRIMARY KEY"};
     private final String[] tableDims = {"VARCHAR(32) NOT NULL", "INTEGER NOT NULL", "INTEGER NOT NULL", "TEXT NOT NULL", "TEXT NOT NULL", "INTEGER NOT NULL", "INTEGER(1) NOT NULL", "INTEGER(1) NOT NULL", "LONG NOT NULL", "TEXT", "(`world`, `x`, `z`)"};
-    private final String[] gangColumns = {"gangName","boss","assistants","members","invites","allys","enemies","damage","PRIMARY KEY"};
-    private final String[] gangDims = {"VARCHAR(16) NOT NULL","TEXT NOT NULL","TEXT NOT NULL","TEXT NOT NULL","TEXT NOT NULL","TEXT NOT NULL","TEXT NOT NULL","INTEGER NOT NULL DEFAULT 0","(`gangName`)"};    
-    private static int gangMultiplier = 12;
     private boolean useMySQL = false;
     private String mysqlHost = "localhost";
     private String mysqlPort = "port";
@@ -178,18 +172,6 @@ public class MyChunk extends JavaPlugin {
         saveConfig();
     }
     
-    public void setGangnamelength(int newMax) {
-        gangNameLength = newMax;
-        config.set("gangNameLength", gangNameLength);
-        saveConfig();
-    }
-    
-    public void setGangMultiplier(int newMax) {
-        gangMultiplier = newMax;
-        config.set("gangChunkMultiplier", gangMultiplier);
-        saveConfig();
-    }
-    
     public void setMaxChunks(int newMax) {
         config.set("max_chunks", newMax);
         maxChunks = newMax;
@@ -254,16 +236,9 @@ public class MyChunk extends JavaPlugin {
             // Create empty table
             SQLBridge.createTable("MyChunks", tableColumns, tableDims);
         }
-        if (!SQLBridge.checkTable("MyChunkGangs")) {
-            // Create empty table
-            SQLBridge.createTable("MyChunkGangs", gangColumns, gangDims);
-        }
         // Check Missing Columns
         if (!SQLBridge.tableContainsColumn("MyChunks", "allowPVP")) {
             SQLBridge.query("ALTER TABLE MyChunks ADD COLUMN allowPVP INT(1) NOT NULL DEFAULT 0");
-        }
-        if (!SQLBridge.tableContainsColumn("MyChunks", "gang")) {
-            SQLBridge.query("ALTER TABLE MyChunks ADD COLUMN gang TEXT");
         }
 
     }
@@ -342,8 +317,6 @@ public class MyChunk extends JavaPlugin {
         config.set("preventPVP", preventPVP);
         useChatFormat = config.getBoolean("useChatFormat", false);
         config.set("useChatFormat", useChatFormat);
-        gangNameLength = config.getInt("gangNameLength", 8);
-        config.set("gangNameLength", gangNameLength);
         List<String> defaultPrefixes = new ArrayList<String>();
         defaultPrefixes.add("&9Member");
         defaultPrefixes.add("&6VIP");
@@ -351,18 +324,10 @@ public class MyChunk extends JavaPlugin {
 
         groupTag = config.getString("groupTag", "[%PREFIX%&f] ");
         config.set("groupTag", groupTag);
-        gangTagColor = ChatColor.valueOf(config.getString("gangTagColor", "GRAY"));
-        config.set("gangTagColor", gangTagColor.name());
-        gangTag = config.getString("gangTag", "[%TAGCOLOR%%GANG%&f] ");
-        config.set("gangTag", gangTag);
         playerTag = config.getString("playerTag", "%RANKCOLOR%%DISPNAME%");
         config.set("playerTag", playerTag);
         chatFormat = config.getString("noGangChatFormat", "%GROUPTAG%%PLAYERTAG%&7:&f %MSG%");
         config.set("noGangChatFormat", chatFormat);
-        gangChatFormat = config.getString("gangChatFormat", "%GROUPTAG%%GANGTAG%%PLAYERTAG%&7:&f %MSG%");
-        config.set("gangChatFormat", gangChatFormat);
-        gangMultiplier = config.getInt("gangChunkMultiplier", 12);
-        config.set("gangChunkMultiplier", gangMultiplier);
         
         if (prefixes.isEmpty())
             prefixes = defaultPrefixes;
@@ -414,8 +379,6 @@ public class MyChunk extends JavaPlugin {
     public static int getIntSetting(String setting) {
         if (setting.equalsIgnoreCase("claimExpiryDays")) return claimExpiryDays;
         if (setting.equalsIgnoreCase("max_chunks")) return maxChunks;
-        if (setting.equalsIgnoreCase("gangNameLength")) return gangNameLength;
-        if (setting.equalsIgnoreCase("gangMultiplier")) return gangMultiplier;
         return 0;
     }
     
@@ -486,7 +449,6 @@ public class MyChunk extends JavaPlugin {
     public static String formatChat(String msg, Player player) {
         
         String grTag = MyChunk.groupTag;
-        String gTag = MyChunk.gangTag;
         String plTag = MyChunk.playerTag;
         
         String prefixList = "";
@@ -505,34 +467,8 @@ public class MyChunk extends JavaPlugin {
         }
         
         ChatColor rankColor = ChatColor.WHITE;
-        if (GangLands.isGangMember(player)) {
-            rankColor = ChatColor.BLUE;
-            if (GangLands.isGangBoss(player)) {
-                rankColor = ChatColor.GOLD;
-            } else if (GangLands.isGangAssistant(player)) {
-                rankColor = ChatColor.YELLOW;
-            }
-        }
-        
-        plTag = plTag.replace("%RANKCOLOR%", rankColor + "").replace("%DISPNAME%", player.getDisplayName());
-        
-        if (GangLands.isGangMember(player)) {
-            
-            ChatColor gangColor = gangTagColor;
-            
-            gTag = gTag.replace("%TAGCOLOR%", gangColor + "").replace("%GANG%",GangLands.getGang(player));
-            
-            msg = fixColors(gangChatFormat.replace("%GROUPTAG%", grTag).replace("%GANGTAG%", gTag).replace("%PLAYERTAG%", plTag).replace("%MSG%", msg));
-            
-            return msg.replace("%", "%%");
-            
-        } else {
-            
-            msg = fixColors(chatFormat.replace("%GANGTAG%", "").replace("%GROUPTAG%", grTag).replace("%PLAYERTAG%", plTag).replace("%MSG%", msg));
-            
-            return msg.replace("%", "%%");
-            
-        }
+
+        return plTag = plTag.replace("%RANKCOLOR%", rankColor + "").replace("%DISPNAME%", player.getDisplayName());
 
     }
     
@@ -561,36 +497,6 @@ public class MyChunk extends JavaPlugin {
         format = format.replace("&n", "");
         format = format.replace("&o", "");
         format = format.replace("&r", "");
-        
-        return format;
-        
-    }
-    
-    private static String fixColors(String format) {
-        
-        format = format.replace("&0", ChatColor.BLACK + "");
-        format = format.replace("&1", ChatColor.DARK_BLUE + "");
-        format = format.replace("&2", ChatColor.DARK_GREEN + "");
-        format = format.replace("&3", ChatColor.DARK_AQUA + "");
-        format = format.replace("&4", ChatColor.DARK_RED + "");
-        format = format.replace("&5", ChatColor.DARK_PURPLE + "");
-        format = format.replace("&6", ChatColor.GOLD + "");
-        format = format.replace("&7", ChatColor.GRAY + "");
-        format = format.replace("&8", ChatColor.DARK_GRAY + "");
-        format = format.replace("&9", ChatColor.BLUE + "");
-        format = format.replace("&a", ChatColor.GREEN + "");
-        format = format.replace("&b", ChatColor.AQUA + "");
-        format = format.replace("&c", ChatColor.RED + "");
-        format = format.replace("&d", ChatColor.LIGHT_PURPLE + "");
-        format = format.replace("&e", ChatColor.YELLOW + "");
-        format = format.replace("&f", ChatColor.WHITE + "");
-        
-        format = format.replace("&k", ChatColor.MAGIC + "");
-        format = format.replace("&l", ChatColor.BOLD + "");
-        format = format.replace("&m", ChatColor.STRIKETHROUGH + "");
-        format = format.replace("&n", ChatColor.UNDERLINE + "");
-        format = format.replace("&o", ChatColor.ITALIC + "");
-        format = format.replace("&r", ChatColor.RESET + "");
         
         return format;
         

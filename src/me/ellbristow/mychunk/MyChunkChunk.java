@@ -4,7 +4,6 @@ import java.util.*;
 import me.ellbristow.mychunk.events.MyChunkClaimEvent;
 import me.ellbristow.mychunk.events.MyChunkForSaleEvent;
 import me.ellbristow.mychunk.events.MyChunkUnclaimEvent;
-import me.ellbristow.mychunk.ganglands.GangLands;
 import me.ellbristow.mychunk.lang.Lang;
 import me.ellbristow.mychunk.utils.db.SQLBridge;
 import org.bukkit.*;
@@ -28,8 +27,6 @@ public class MyChunkChunk {
     private static String[] availableFlags = {"*", "A", "B","C","E","D","I","L","O","S","U","W"};
     private boolean allowMobs;
     private boolean allowPVP;
-    private boolean isGangland = false;
-    private String gang = "";
     private long lastActive;
     
     public MyChunkChunk (Block block) {
@@ -68,11 +65,6 @@ public class MyChunkChunk {
             chunkNW = findCorner("NW");
         } else {
 
-                gang = chunkData.get(0).get("gang");
-                if (gang != null && !gang.equals("")) {
-                    isGangland = true;
-                }
-
             owner = chunkData.get(0).get("owner");
             if (owner.equals("")) owner = "Unowned";
             Double price = Double.parseDouble(chunkData.get(0).get("salePrice"));
@@ -109,7 +101,7 @@ public class MyChunkChunk {
 
             // Claim expiry check
             lastActive = Long.parseLong(chunkData.get(0).get("lastActive"));
-            if (!isGangland && !owner.equalsIgnoreCase("Server") && !owner.equalsIgnoreCase("Public")){
+            if (!owner.equalsIgnoreCase("Server") && !owner.equalsIgnoreCase("Public")){
                 if (lastActive == 0) {
                     lastActive = new Date().getTime() / 1000;
                     SQLBridge.query("UPDATE MyChunks SET lastActive = " + lastActive + " WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
@@ -131,22 +123,18 @@ public class MyChunkChunk {
      * 
      * @param playerName Name of the player claiming the chunk
      */
-    public void claim(String playerName, String gangName) {
-        MyChunkClaimEvent event = new MyChunkClaimEvent(chunkWorld, chunkX, chunkZ, owner, playerName, forSale, gangName);
+    public void claim(String playerName) {
+        MyChunkClaimEvent event = new MyChunkClaimEvent(chunkWorld, chunkX, chunkZ, owner, playerName, forSale);
         int allowMobs = 0;
         int allowPVP = 0;
         this.owner = playerName;
-        this.gang = gangName;
-        if (!gangName.equals("")) {
-            this.isGangland = true;
-        }
         if (MyChunk.getToggle("defaultAllowMobs")) {
         	allowMobs = 1;
         }
         if (MyChunk.getToggle("defaultAllowPVP")) {
         	allowPVP = 1;
         }
-        SQLBridge.query("REPLACE INTO MyChunks (world, x, z, owner, salePrice, allowMobs, allowPVP, allowed, lastActive, gang) VALUES ('"+chunkWorld+"', "+chunkX+", "+chunkZ+", '"+playerName+"', 0, '"+allowMobs+"', '"+allowPVP+"', '', "+lastActive+", '"+gangName+"')");
+        SQLBridge.query("REPLACE INTO MyChunks (world, x, z, owner, salePrice, allowMobs, allowPVP, allowed, lastActive, gang) VALUES ('"+chunkWorld+"', "+chunkX+", "+chunkZ+", '"+playerName+"', 0, '"+allowMobs+"', '"+allowPVP+"', '', "+lastActive+")");
         forSale = false;
         if (!playerName.equalsIgnoreCase("Public")) {
             if (chunkNE.isLiquid() || chunkNE.getType().equals(Material.ICE)) {
@@ -447,11 +435,6 @@ public class MyChunkChunk {
      * @return 
      */
     public String getOwner() {
-        
-        if (isGangland) {
-            return gang;
-        }
-        
         return owner;
     }
     
@@ -479,15 +462,6 @@ public class MyChunkChunk {
      */
     public int getZ() {
         return chunkZ;
-    }
-    
-    /**
-     * Get the name of the gang that owns this chunk
-     * 
-     * @return name of gang or empty string if not Gangland
-     */
-    public String getGangName() {
-        return gang;
     }
     
     /**
@@ -521,13 +495,6 @@ public class MyChunkChunk {
      * @return 
      */
     public boolean isAllowed(String playerName, String flag) {
-        
-        if (isGangland) {
-            if (GangLands.isGangMemberOf(playerName, gang) || GangLands.isAllyOf(playerName, gang)) {
-                return true;
-            }
-            return false;
-        }
         
         String allowedFlags = allowed.get(playerName.toLowerCase());
         if (allowedFlags != null) {
@@ -576,15 +543,6 @@ public class MyChunkChunk {
     }
     
     /**
-     * Check if this chunk is owned by a gang
-     * 
-     * @return boolean
-     */
-    public boolean isGangland() {
-        return isGangland;
-    }
-    
-    /**
      * Set the chunk as For Sale for the specified price
      * 
      * @param price New For Sale price
@@ -592,7 +550,7 @@ public class MyChunkChunk {
     public void setForSale(Double price) {
         forSale = true;
         claimPrice = price;
-        MyChunkForSaleEvent event = new MyChunkForSaleEvent(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), getOwner(chunk), true, isGangland);
+        MyChunkForSaleEvent event = new MyChunkForSaleEvent(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), getOwner(chunk), true);
         
         SQLBridge.query("UPDATE MyChunks SET salePrice = " + claimPrice + " WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
         
@@ -606,7 +564,7 @@ public class MyChunkChunk {
         forSale = false;
         claimPrice = 0;
         
-        MyChunkForSaleEvent event = new MyChunkForSaleEvent(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), getOwner(chunk), false, isGangland);
+        MyChunkForSaleEvent event = new MyChunkForSaleEvent(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), getOwner(chunk), false);
         
         SQLBridge.query("UPDATE MyChunks SET salePrice = 0 WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
         
@@ -624,7 +582,7 @@ public class MyChunkChunk {
             SQLBridge.query("UPDATE MyChunks SET owner = '"+newOwner+"' WHERE world = '"+chunkWorld+"' AND x = " + chunkX + " AND z = " + chunkZ);
             
         } else {
-            claim(newOwner, this.gang);
+            claim(newOwner);
         }
     }
     
@@ -1090,11 +1048,9 @@ public class MyChunkChunk {
         if (results != null && !results.isEmpty()) {
             
             for (int i : results.keySet()) {
-                boolean isGang = false;
                 String owner = results.get(i).get("owner");
                 if (!results.get(i).get("gang").equals("")) {
                     owner = results.get(i).get("gang");
-                    isGang = true;
                 }
                 int x = Integer.parseInt(results.get(i).get("x"));
                 int z = Integer.parseInt(results.get(i).get("z"));
@@ -1106,7 +1062,7 @@ public class MyChunkChunk {
                         forSale = true;
                     }
                 }
-                worldChunks.add(new LiteChunk(w.getName(), x, z, owner, forSale, isGang));
+                worldChunks.add(new LiteChunk(w.getName(), x, z, owner, forSale));
             }
 
         }

@@ -7,15 +7,13 @@ public class LiteChunk {
         private int z;
         private String owner;
         private boolean forSale;
-        private boolean isGangland;
         
-        public LiteChunk(String worldName, int x, int z, String owner, Boolean forSale, boolean isGangland) {
+        public LiteChunk(String worldName, int x, int z, String owner, Boolean forSale) {
             this.worldName = worldName;
             this.x = x;
             this.z = z;
             this.owner = owner;
             this.forSale = forSale;
-            this.isGangland = isGangland;
         }
         
         public String getWorldName() {
@@ -38,8 +36,4 @@ public class LiteChunk {
             return forSale;
         }
         
-        public boolean isGangland() {
-            return isGangland;
-        }
-    
 }

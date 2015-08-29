@@ -12,7 +12,7 @@ public class MyChunkUnclaimEvent extends Event {
     private String oldOwner;
     
     public MyChunkUnclaimEvent(String worldName, int x, int z, String oldOwner) {
-        chunk = new LiteChunk(worldName, x, z, "", false, false);
+        chunk = new LiteChunk(worldName, x, z, "", false);
         this.oldOwner = oldOwner;
     }
     

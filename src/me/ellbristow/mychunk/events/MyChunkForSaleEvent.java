@@ -11,8 +11,8 @@ public class MyChunkForSaleEvent extends Event {
     private LiteChunk chunk;
     private String owner;
     
-    public MyChunkForSaleEvent(String worldName, int x, int z, String owner, boolean chunkForSale, boolean isGang) {
-        chunk = new LiteChunk(worldName, x, z, owner, chunkForSale, isGang);
+    public MyChunkForSaleEvent(String worldName, int x, int z, String owner, boolean chunkForSale) {
+        chunk = new LiteChunk(worldName, x, z, owner, chunkForSale);
         this.owner = owner;
     }
     

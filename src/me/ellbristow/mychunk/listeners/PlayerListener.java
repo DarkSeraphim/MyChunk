@@ -7,7 +7,6 @@ import java.util.HashMap;
 
 import me.ellbristow.mychunk.MyChunk;
 import me.ellbristow.mychunk.MyChunkChunk;
-import me.ellbristow.mychunk.ganglands.GangLands;
 import me.ellbristow.mychunk.lang.Lang;
 import me.ellbristow.mychunk.utils.FactionsHook;
 import me.ellbristow.mychunk.utils.MyChunkVaultLink;
@@ -512,22 +511,12 @@ public class PlayerListener implements Listener {
                     
                     ChatColor color = ChatColor.GOLD;
                     
-                    if (toChunk.isGangland()) {
-                        
-                        if (GangLands.isGangMemberOf(player, toChunk.getGangName())) {
-                            color = ChatColor.DARK_GREEN;
-                        } else {
-                            color = ChatColor.DARK_RED;
-                        }
-                        
-                    }
-                    
                     message += color + "~" + toChunkOwner + forSale;
                 }
                 
             } else if (!toChunkOwner.equals("")) {
                 
-                if (!toChunk.isGangland() && MyChunk.getToggle("preventEntry")) {
+                if (MyChunk.getToggle("preventEntry")) {
                     if (toChunk.isClaimed() && !toChunk.getOwner().equalsIgnoreCase("Public") && !toChunk.getOwner().equalsIgnoreCase(player.getName()) && !toChunk.isAllowed(player.getName(), "E") && !toChunk.isForSale() && !player.hasPermission("mychunk.override")) {
                         if (!toChunk.getOwner().equalsIgnoreCase("Server") ^ !player.hasPermission("mychunk.server.entry")) {
                             message += toChunk.getOwner() + " " + ChatColor.RED + Lang.get("NoEntry");
@@ -639,14 +628,6 @@ public class PlayerListener implements Listener {
                 } else {
                     
                     ChatColor color = ChatColor.GOLD;
-                    
-                    if (toChunk.isGangland()) {
-                        if (GangLands.isGangMemberOf(player, toChunk.getGangName())) {
-                            color = ChatColor.DARK_GREEN;
-                        } else {
-                            color = ChatColor.DARK_RED;
-                        }
-                    }
                     
                     player.sendMessage(color + "~" + toChunkOwner + forSale);
                 }

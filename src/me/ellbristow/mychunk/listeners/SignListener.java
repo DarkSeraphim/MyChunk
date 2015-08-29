@@ -220,7 +220,7 @@ public class SignListener implements Listener {
 
                 }
 
-                chunk.claim(player.getName(), "");
+                chunk.claim(player.getName());
                 player.sendMessage(ChatColor.GOLD + Lang.get("ChunkClaimed"));
 
 
@@ -290,7 +290,7 @@ public class SignListener implements Listener {
 
                 }
 
-                chunk.claim(correctName, "");
+                chunk.claim(correctName);
                 player.sendMessage(ChatColor.GOLD + Lang.get("ChunkClaimedFor") + " " + ChatColor.WHITE + correctName + ChatColor.GOLD + "!");
 
                 if (claimPrice != 0 && !correctName.equalsIgnoreCase("server") && !correctName.equalsIgnoreCase("public")) {
@@ -583,7 +583,7 @@ public class SignListener implements Listener {
                 }
 
                 for (MyChunkChunk myChunk : foundChunks) {
-                    myChunk.claim(correctName, "");
+                    myChunk.claim(correctName);
                 }
 
                 player.sendMessage(ChatColor.GOLD + Lang.get("ChunksClaimed") + ": " + ChatColor.WHITE + foundChunks.size());

@@ -90,14 +90,6 @@ public class MyChunkCommand implements CommandExecutor {
         if (args[0].equalsIgnoreCase("forsale") || args[0].equalsIgnoreCase("fs")) {
             return commandForsale(sender, args);
         }
-        
-        if (args[0].equalsIgnoreCase("gangnamelength")) {
-            return commandGangnamelength(sender, args);
-        }
-        
-        if (args[0].equalsIgnoreCase("gangchunkmultiplier")) {
-            return commandGangMultiplier(sender, args);
-        }
 
         if (args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("?")) {
             return commandHelp(sender, args);
@@ -891,7 +883,7 @@ public class MyChunkCommand implements CommandExecutor {
 
             }
 
-            chunk.claim(player.getName(), "");
+            chunk.claim(player.getName());
             player.sendMessage(ChatColor.GOLD + Lang.get("ChunkClaimed"));
 
         } else {
@@ -953,7 +945,7 @@ public class MyChunkCommand implements CommandExecutor {
 
             }
 
-            chunk.claim(correctName, "");
+            chunk.claim(correctName);
             player.sendMessage(ChatColor.GOLD + Lang.get("ChunkClaimedFor") + " " + ChatColor.WHITE + correctName + ChatColor.GOLD + "!");
 
             if (claimPrice != 0 && !correctName.equalsIgnoreCase("server") && !correctName.equalsIgnoreCase("public")) {
@@ -1271,7 +1263,7 @@ public class MyChunkCommand implements CommandExecutor {
             }
 
             for (MyChunkChunk myChunk : foundChunks) {
-                myChunk.claim(correctName, "");
+                myChunk.claim(correctName);
             }
 
             player.sendMessage(ChatColor.GOLD + Lang.get("ChunksClaimed") + ": " + ChatColor.WHITE + foundChunks.size());
@@ -1740,92 +1732,6 @@ public class MyChunkCommand implements CommandExecutor {
         
         return true;
         
-    }
-    
-/*
-                                         _ _   _       _ _           
-                                        | | | (_)     | (_)          
-  __ _  __ _ _ __   __ _ _ __ ___  _   _| | |_ _ _ __ | |_  ___ _ __ 
- / _` |/ _` | '_ \ / _` | '_ ` _ \| | | | | __| | '_ \| | |/ _ \ '__|
-| (_| | (_| | | | | (_| | | | | | | |_| | | |_| | |_) | | |  __/ |   
- \__, |\__,_|_| |_|\__, |_| |_| |_|\__,_|_|\__|_| .__/|_|_|\___|_|   
-  __/ |             __/ |                       | |                  
- |___/             |___/                        |_|                  
-
-*/
-    
-    private boolean commandGangMultiplier(CommandSender sender, String[] args) {
-        
-        if (!sender.hasPermission("mychunk.commands.gangmultiplier")) {
-            sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
-            return false;
-        }
-        
-        if (args.length == 1) {
-            sender.sendMessage(ChatColor.RED + Lang.get("SpecifyNewGangMultiplier"));
-            sender.sendMessage(ChatColor.RED + "/mychunk gangmultiplier ["+Lang.get("NewLimit")+"]");
-            return false;
-        } else if (args.length == 2) {
-            
-            int newMax;
-            try {
-                newMax = Integer.parseInt(args[1]);
-            } catch (NumberFormatException e) {
-                sender.sendMessage(ChatColor.RED + Lang.get("AmountNotInteger") + " (e.g. 5)");
-                sender.sendMessage(ChatColor.RED + "/mychunk gangmultiplier ["+Lang.get("NewLimit")+"]");
-                return false;
-            }
-
-            plugin.setGangMultiplier(newMax);
-
-            sender.sendMessage(ChatColor.GOLD + Lang.get("CommandMessageNewGangMultiplier") + " " + newMax);
-            return true;
-            
-        }
-        return true;
-    }
-    
-/*
-                                                    _                  _   _     
-                                                   | |                | | | |    
-  __ _  __ _ _ __   __ _ _ __   __ _ _ __ ___   ___| | ___ _ __   __ _| |_| |__  
- / _` |/ _` | '_ \ / _` | '_ \ / _` | '_ ` _ \ / _ \ |/ _ \ '_ \ / _` | __| '_ \ 
-| (_| | (_| | | | | (_| | | | | (_| | | | | | |  __/ |  __/ | | | (_| | |_| | | |
- \__, |\__,_|_| |_|\__, |_| |_|\__,_|_| |_| |_|\___|_|\___|_| |_|\__, |\__|_| |_|
-  __/ |             __/ |                                         __/ |          
- |___/             |___/                                         |___/           
-
-*/
-    
-    private boolean commandGangnamelength(CommandSender sender, String[] args) {
-        
-        if (!sender.hasPermission("mychunk.commands.gangnamelength")) {
-            sender.sendMessage(ChatColor.RED + Lang.get("NoPermsCommand"));
-            return false;
-        }
-        
-        if (args.length == 1) {
-            sender.sendMessage(ChatColor.RED + Lang.get("SpecifyNewGangnamelength"));
-            sender.sendMessage(ChatColor.RED + "/mychunk gangNameLength ["+Lang.get("NewLimit")+"]");
-            return false;
-        } else if (args.length == 2) {
-            
-            int newMax;
-            try {
-                newMax = Integer.parseInt(args[1]);
-            } catch (NumberFormatException e) {
-                sender.sendMessage(ChatColor.RED + Lang.get("AmountNotInteger") + " (e.g. 5)");
-                sender.sendMessage(ChatColor.RED + "/mychunk gangNameLength ["+Lang.get("NewLimit")+"]");
-                return false;
-            }
-
-            plugin.setGangnamelength(newMax);
-
-            sender.sendMessage(ChatColor.GOLD + Lang.get("CommandMessageGangnamelength") + " " + newMax);
-            return true;
-            
-        }
-        return true;
     }
 
 /*
