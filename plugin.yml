@@ -1,7 +1,8 @@
 name: MyChunk
 main: me.ellbristow.mychunk.MyChunk
 version: 2.6.1
-author: dwilson390
+author: ellbristow
+authors: [ellbristow, dwilson390]
 description: >
              Buy/Sell chunks for currency, get protection, make profit.
 softdepend: [Vault,My Worlds,Multiverse,dynmap,DynmapMyChunk,Factions,Towny]
